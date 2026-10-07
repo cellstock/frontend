@@ -1,0 +1,35 @@
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { AUTH_TOKEN_COOKIE_NAME } from "@/lib/auth/constants";
+async function forward(request: Request) {
+  const token = (await cookies()).get(AUTH_TOKEN_COOKIE_NAME)?.value;
+  const base = process.env.LARAVEL_API_URL?.replace(/\/+$/, "");
+  if (!token)
+    return NextResponse.json(
+      { success: false, message: "Unauthenticated." },
+      { status: 401 },
+    );
+  if (!base)
+    return NextResponse.json(
+      { success: false, message: "API unavailable." },
+      { status: 503 },
+    );
+  const response = await fetch(`${base}/my-subscription`, {
+    method: request.method,
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(request.method === "PATCH"
+        ? { "Content-Type": "application/json" }
+        : {}),
+    },
+    body: request.method === "PATCH" ? await request.text() : undefined,
+    cache: "no-store",
+  });
+  return new NextResponse(await response.text(), {
+    status: response.status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+export const GET = forward;
+export const PATCH = forward;

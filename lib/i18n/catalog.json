@@ -1,0 +1,1842 @@
+{
+  "Language": ["Langue", "Sprache", "Lingua"],
+  "Dashboard": ["Tableau de bord", "Dashboard", "Dashboard"],
+  "Dashboard overview": ["Vue d’ensemble", "Übersicht", "Panoramica generale"],
+  "Dashboard navigation": [
+    "Navigation principale",
+    "Hauptnavigation",
+    "Navigazione principale"
+  ],
+  "Dashboard unavailable": [
+    "Tableau de bord indisponible",
+    "Übersicht nicht verfügbar",
+    "Panoramica non disponibile"
+  ],
+  "Welcome back": ["Bon retour", "Willkommen zur?ck", "Bentornato"],
+  "Workspace": ["Espace de travail", "Arbeitsbereich", "Area di lavoro"],
+  "Marketplace Hub": [
+    "Portail des marketplaces",
+    "Marktplatzportal",
+    "Portale marketplace"
+  ],
+  "Marketplaces": ["Marketplaces", "Marktpl?tze", "Marketplace"],
+  "Marketplace": ["Marketplace", "Marktplatz", "Marketplace"],
+  "Marketplace status": [
+    "État des marketplaces",
+    "Marktplatzstatus",
+    "Stato dei marketplace"
+  ],
+  "Marketplace statistics": [
+    "Statistiques des marketplaces",
+    "Marktplatzstatistiken",
+    "Statistiche dei marketplace"
+  ],
+  "Manage marketplaces": [
+    "Gérer les marketplaces",
+    "Marktplätze verwalten",
+    "Gestisci marketplace"
+  ],
+  "Orders": ["Commandes", "Bestellungen", "Ordini"],
+  "Order": ["Commande", "Bestellung", "Ordine"],
+  "Order #": ["Commande n°", "Bestellung Nr.", "Ordine n."],
+  "Order management": [
+    "Gestion des commandes",
+    "Bestellverwaltung",
+    "Gestione ordini"
+  ],
+  "Order search": ["Recherche de commande", "Bestellsuche", "Ricerca ordini"],
+  "Order results": [
+    "Résultats des commandes",
+    "Bestellergebnisse",
+    "Risultati ordini"
+  ],
+  "Recent orders": [
+    "Commandes récentes",
+    "Neueste Bestellungen",
+    "Ordini recenti"
+  ],
+  "Total orders": [
+    "Total des commandes",
+    "Bestellungen insgesamt",
+    "Ordini totali"
+  ],
+  "Pending orders": [
+    "Commandes en attente",
+    "Ausstehende Bestellungen",
+    "Ordini in sospeso"
+  ],
+  "Total order value": [
+    "Valeur totale des commandes",
+    "Gesamtbestellwert",
+    "Valore totale degli ordini"
+  ],
+  "Matching orders": [
+    "Commandes correspondantes",
+    "Passende Bestellungen",
+    "Ordini corrispondenti"
+  ],
+  "Paid on this page": [
+    "Payées sur cette page",
+    "Bezahlt auf dieser Seite",
+    "Pagati in questa pagina"
+  ],
+  "Value on this page": [
+    "Valeur sur cette page",
+    "Wert auf dieser Seite",
+    "Valore in questa pagina"
+  ],
+  "Latest orders across your marketplaces": [
+    "Dernières commandes de vos marketplaces",
+    "Neueste Bestellungen Ihrer Marktplätze",
+    "Ultimi ordini dei tuoi marketplace"
+  ],
+  "Your latest synchronized orders and marketplace connections.": [
+    "Vos dernières commandes synchronisées et connexions aux marketplaces.",
+    "Ihre zuletzt synchronisierten Bestellungen und Marktplatzverbindungen.",
+    "Gli ultimi ordini sincronizzati e le connessioni ai marketplace."
+  ],
+  "All imported orders, including cancelled and refunded": [
+    "Toutes les commandes importées, y compris annulées et remboursées",
+    "Alle importierten Bestellungen, einschließlich stornierter und erstatteter",
+    "Tutti gli ordini importati, inclusi annullati e rimborsati"
+  ],
+  "All synchronized orders": [
+    "Toutes les commandes synchronisées",
+    "Alle synchronisierten Bestellungen",
+    "Tutti gli ordini sincronizzati"
+  ],
+  "Orders with New or Pending status": [
+    "Commandes nouvelles ou en attente",
+    "Bestellungen mit Status Neu oder Ausstehend",
+    "Ordini con stato Nuovo o In sospeso"
+  ],
+  "Connections with connected status": [
+    "Connexions actives",
+    "Verbindungen mit Status Verbunden",
+    "Connessioni con stato Connesso"
+  ],
+  "Inventory": ["Inventaire", "Inventar", "Inventario"],
+  "Products": ["Produits", "Produkte", "Prodotti"],
+  "Product": ["Produit", "Produkt", "Prodotto"],
+  "Listings": ["Annonces", "Angebote", "Inserzioni"],
+  "Stock levels": ["Niveaux de stock", "Bestandsmengen", "Livelli di scorta"],
+  "Analytics": ["Analyses", "Analysen", "Analisi"],
+  "Overview": ["Vue d’ensemble", "Übersicht", "Panoramica"],
+  "Sales performance": [
+    "Performance des ventes",
+    "Verkaufsleistung",
+    "Andamento delle vendite"
+  ],
+  "Order insights": [
+    "Analyse des commandes",
+    "Bestellanalysen",
+    "Analisi degli ordini"
+  ],
+  "Inventory insights": [
+    "Analyse du stock",
+    "Bestandsanalysen",
+    "Analisi dell’inventario"
+  ],
+  "Customers": ["Clients", "Kunden", "Clienti"],
+  "Settings": ["Param?tres", "Einstellungen", "Impostazioni"],
+  "Notifications": ["Notifications", "Benachrichtigungen", "Notifiche"],
+  "You’re all caught up": [
+    "Vous êtes à jour",
+    "Sie sind auf dem neuesten Stand",
+    "Non ci sono novità"
+  ],
+  "New notifications will appear here.": [
+    "Les nouvelles notifications apparaîtront ici.",
+    "Neue Benachrichtigungen erscheinen hier.",
+    "Le nuove notifiche appariranno qui."
+  ],
+  "Open navigation": [
+    "Ouvrir la navigation",
+    "Navigation öffnen",
+    "Apri navigazione"
+  ],
+  "Close navigation": [
+    "Fermer la navigation",
+    "Navigation schließen",
+    "Chiudi navigazione"
+  ],
+  "Close menu": ["Fermer le menu", "Menü schließen", "Chiudi menu"],
+  "Open profile menu": [
+    "Ouvrir le menu du profil",
+    "Profilmenü öffnen",
+    "Apri menu profilo"
+  ],
+  "Search orders, products or customers...": [
+    "Rechercher des commandes, produits ou clients...",
+    "Bestellungen, Produkte oder Kunden suchen...",
+    "Cerca ordini, prodotti o clienti..."
+  ],
+  "Refresh": ["Actualiser", "Aktualisieren", "Aggiorna"],
+  "Refreshing...": [
+    "Actualisation...",
+    "Wird aktualisiert...",
+    "Aggiornamento..."
+  ],
+  "Updating dashboard...": [
+    "Mise à jour du tableau de bord...",
+    "Übersicht wird aktualisiert...",
+    "Aggiornamento della panoramica..."
+  ],
+  "Updating orders...": [
+    "Mise à jour des commandes...",
+    "Bestellungen werden aktualisiert...",
+    "Aggiornamento degli ordini..."
+  ],
+  "View": ["Voir", "Ansehen", "Visualizza"],
+  "View all": ["Tout voir", "Alle anzeigen", "Mostra tutto"],
+  "View order": [
+    "Voir la commande",
+    "Bestellung anzeigen",
+    "Visualizza ordine"
+  ],
+  "Back to dashboard": [
+    "Retour au tableau de bord",
+    "Zurück zur Übersicht",
+    "Torna alla panoramica"
+  ],
+  "Back to orders": [
+    "Retour aux commandes",
+    "Zurück zu Bestellungen",
+    "Torna agli ordini"
+  ],
+  "Back to marketplaces": [
+    "Retour aux marketplaces",
+    "Zurück zu Marktplätzen",
+    "Torna ai marketplace"
+  ],
+  "Return to orders": [
+    "Revenir aux commandes",
+    "Zurück zu Bestellungen",
+    "Torna agli ordini"
+  ],
+  "Return to marketplaces": [
+    "Revenir aux marketplaces",
+    "Zurück zu Marktplätzen",
+    "Torna ai marketplace"
+  ],
+  "Go back": ["Retour", "Zurück", "Indietro"],
+  "Try again": ["Réessayer", "Erneut versuchen", "Riprova"],
+  "Please wait...": ["Veuillez patienter...", "Bitte warten...", "Attendi..."],
+  "Search": ["Rechercher", "Suchen", "Cerca"],
+  "Search order ID": [
+    "Rechercher un numéro de commande",
+    "Bestell-ID suchen",
+    "Cerca ID ordine"
+  ],
+  "Filter orders": [
+    "Filtrer les commandes",
+    "Bestellungen filtern",
+    "Filtra ordini"
+  ],
+  "Find orders using marketplace and order data.": [
+    "Recherchez des commandes par marketplace et données de commande.",
+    "Bestellungen nach Marktplatz und Bestelldaten suchen.",
+    "Cerca ordini per marketplace e dati dell’ordine."
+  ],
+  "All marketplaces": [
+    "Toutes les marketplaces",
+    "Alle Marktplätze",
+    "Tutti i marketplace"
+  ],
+  "All statuses": ["Tous les statuts", "Alle Status", "Tutti gli stati"],
+  "Clear filters": [
+    "Effacer les filtres",
+    "Filter zurücksetzen",
+    "Cancella filtri"
+  ],
+  "Apply": ["Appliquer", "Anwenden", "Applica"],
+  "Country": ["Pays", "Land", "Paese"],
+  "Per page": ["Par page", "Pro Seite", "Per pagina"],
+  "Status": ["Statut", "Status", "Stato"],
+  "New": ["Nouvelle", "Neu", "Nuovo"],
+  "Pending": ["En attente", "Ausstehend", "In sospeso"],
+  "Paid": ["Payée", "Bezahlt", "Pagato"],
+  "Processing": ["En traitement", "In Bearbeitung", "In elaborazione"],
+  "Shipped": ["Expédiée", "Versandt", "Spedito"],
+  "Delivered": ["Livrée", "Zugestellt", "Consegnato"],
+  "Completed": ["Terminée", "Abgeschlossen", "Completato"],
+  "Cancelled": ["Annulée", "Storniert", "Annullato"],
+  "Refunded": ["Remboursée", "Erstattet", "Rimborsato"],
+  "Unknown": ["Inconnu", "Unbekannt", "Sconosciuto"],
+  "Order not found": [
+    "Commande introuvable",
+    "Bestellung nicht gefunden",
+    "Ordine non trovato"
+  ],
+  "No orders found": [
+    "Aucune commande trouvée",
+    "Keine Bestellungen gefunden",
+    "Nessun ordine trovato"
+  ],
+  "No synchronized orders yet": [
+    "Aucune commande synchronisée pour le moment",
+    "Noch keine synchronisierten Bestellungen",
+    "Nessun ordine sincronizzato"
+  ],
+  "No orders match the selected filters. Try removing one or more filters or synchronize your connected marketplaces.": [
+    "Aucune commande ne correspond aux filtres. Retirez des filtres ou synchronisez vos marketplaces.",
+    "Keine Bestellungen entsprechen den Filtern. Entfernen Sie Filter oder synchronisieren Sie Ihre Marktplätze.",
+    "Nessun ordine corrisponde ai filtri. Rimuovi alcuni filtri o sincronizza i marketplace."
+  ],
+  "This order does not exist or is not available to your account.": [
+    "Cette commande n’existe pas ou n’est pas accessible à votre compte.",
+    "Diese Bestellung existiert nicht oder ist für Ihr Konto nicht verfügbar.",
+    "Questo ordine non esiste o non è disponibile per il tuo account."
+  ],
+  "Review and track synchronized orders across all connected marketplaces.": [
+    "Consultez et suivez les commandes synchronisées de toutes les marketplaces connectées.",
+    "Synchronisierte Bestellungen aller verbundenen Marktplätze anzeigen und verfolgen.",
+    "Consulta e monitora gli ordini sincronizzati di tutti i marketplace connessi."
+  ],
+  "Review synchronized marketplace orders.": [
+    "Consultez les commandes synchronisées des marketplaces.",
+    "Synchronisierte Marktplatzbestellungen anzeigen.",
+    "Consulta gli ordini sincronizzati dei marketplace."
+  ],
+  "Order items": [
+    "Articles de la commande",
+    "Bestellpositionen",
+    "Articoli dell’ordine"
+  ],
+  "Order activity": [
+    "Activité de la commande",
+    "Bestellverlauf",
+    "Attività dell’ordine"
+  ],
+  "Order total": ["Total de la commande", "Bestellsumme", "Totale ordine"],
+  "Ordered": ["Commandée le", "Bestellt", "Ordinato"],
+  "Modified": ["Modifiée le", "Geändert", "Modificato"],
+  "Last synchronized": [
+    "Dernière synchronisation",
+    "Zuletzt synchronisiert",
+    "Ultima sincronizzazione"
+  ],
+  "Internal CelleXa order ID:": [
+    "Identifiant interne CelleXa :",
+    "Interne CelleXa-Bestell-ID:",
+    "ID ordine interno CelleXa:"
+  ],
+  "Internal ID:": ["Identifiant interne :", "Interne ID:", "ID interno:"],
+  "Item #": ["Article n°", "Position Nr.", "Articolo n."],
+  "Products included in this marketplace order.": [
+    "Produits inclus dans cette commande marketplace.",
+    "Produkte in dieser Marktplatzbestellung.",
+    "Prodotti inclusi in questo ordine marketplace."
+  ],
+  "No order items available": [
+    "Aucun article disponible",
+    "Keine Bestellpositionen verfügbar",
+    "Nessun articolo disponibile"
+  ],
+  "Quantity": ["Quantité", "Menge", "Quantità"],
+  "Unit price": ["Prix unitaire", "Stückpreis", "Prezzo unitario"],
+  "Commission": ["Commission", "Provision", "Commissione"],
+  "Condition": ["État", "Zustand", "Condizione"],
+  "Payment": ["Paiement", "Zahlung", "Pagamento"],
+  "Payment summary": [
+    "Récapitulatif du paiement",
+    "Zahlungsübersicht",
+    "Riepilogo pagamento"
+  ],
+  "Subtotal": ["Sous-total", "Zwischensumme", "Subtotale"],
+  "Shipping": ["Livraison", "Versand", "Spedizione"],
+  "Tax": ["Taxe", "Steuer", "Imposta"],
+  "Total": ["Total", "Gesamt", "Totale"],
+  "Billing address": [
+    "Adresse de facturation",
+    "Rechnungsadresse",
+    "Indirizzo di fatturazione"
+  ],
+  "Shipping address": [
+    "Adresse de livraison",
+    "Lieferadresse",
+    "Indirizzo di spedizione"
+  ],
+  "Address information is not available.": [
+    "Les coordonnées ne sont pas disponibles.",
+    "Adressinformationen sind nicht verfügbar.",
+    "L’indirizzo non è disponibile."
+  ],
+  "Tracking": ["Suivi", "Sendungsverfolgung", "Tracciamento"],
+  "Tracking number": [
+    "Numéro de suivi",
+    "Sendungsnummer",
+    "Numero di tracciamento"
+  ],
+  "Shipper": ["Transporteur", "Versanddienstleister", "Corriere"],
+  "Shipment and carrier information": [
+    "Informations d’expédition et de transport",
+    "Versand- und Transportinformationen",
+    "Informazioni sulla spedizione e sul corriere"
+  ],
+  "Tracking information is not available yet.": [
+    "Les informations de suivi ne sont pas encore disponibles.",
+    "Noch keine Sendungsverfolgung verfügbar.",
+    "Le informazioni di tracciamento non sono ancora disponibili."
+  ],
+  "Open tracking page": [
+    "Ouvrir le suivi",
+    "Sendungsverfolgung öffnen",
+    "Apri tracciamento"
+  ],
+  "Actions": ["Actions", "Aktionen", "Azioni"],
+  "Order pagination": [
+    "Pagination des commandes",
+    "Bestellseitennavigation",
+    "Paginazione ordini"
+  ],
+  "Orders pagination": [
+    "Pagination des commandes",
+    "Bestellseitennavigation",
+    "Paginazione ordini"
+  ],
+  "Go to previous page": [
+    "Page précédente",
+    "Vorherige Seite",
+    "Pagina precedente"
+  ],
+  "Go to next page": ["Page suivante", "Nächste Seite", "Pagina successiva"],
+  "Showing": ["Affichage", "Anzeige", "Visualizzazione"],
+  "of": ["sur", "von", "di"],
+  "to": ["à", "bis", "a"],
+  "orders": ["commandes", "Bestellungen", "ordini"],
+  "shown": ["affichées", "angezeigt", "mostrati"],
+  "item": ["article", "Position", "articolo"],
+  "items": ["articles", "Positionen", "articoli"],
+  "Integrations": ["Intégrations", "Integrationen", "Integrazioni"],
+  "Connected": ["Connectée", "Verbunden", "Connesso"],
+  "Connected marketplaces": [
+    "Marketplaces connectées",
+    "Verbundene Marktplätze",
+    "Marketplace connessi"
+  ],
+  "Available": ["Disponible", "Verfügbar", "Disponibile"],
+  "Available marketplaces": [
+    "Marketplaces disponibles",
+    "Verfügbare Marktplätze",
+    "Marketplace disponibili"
+  ],
+  "Not connected": ["Non connectée", "Nicht verbunden", "Non connesso"],
+  "Disconnected": ["Déconnectée", "Getrennt", "Disconnesso"],
+  "Disabled": ["Désactivée", "Deaktiviert", "Disabilitato"],
+  "Testing": ["Test en cours", "Wird getestet", "Test in corso"],
+  "Connection failed": [
+    "Échec de connexion",
+    "Verbindung fehlgeschlagen",
+    "Connessione non riuscita"
+  ],
+  "Failed": ["Échec", "Fehlgeschlagen", "Non riuscito"],
+  "Running": ["En cours", "Läuft", "In corso"],
+  "Queued": ["En file d’attente", "In Warteschlange", "In coda"],
+  "Successful": ["Réussies", "Erfolgreich", "Riusciti"],
+  "Processed": ["Traitées", "Verarbeitet", "Elaborati"],
+  "Total integrations": [
+    "Total des intégrations",
+    "Integrationen insgesamt",
+    "Integrazioni totali"
+  ],
+  "No connected marketplaces": [
+    "Aucune marketplace connectée",
+    "Keine verbundenen Marktplätze",
+    "Nessun marketplace connesso"
+  ],
+  "All marketplaces are connected": [
+    "Toutes les marketplaces sont connectées",
+    "Alle Marktplätze sind verbunden",
+    "Tutti i marketplace sono connessi"
+  ],
+  "No marketplaces available yet.": [
+    "Aucune marketplace disponible pour le moment.",
+    "Noch keine Marktplätze verfügbar.",
+    "Nessun marketplace disponibile."
+  ],
+  "connected sales channels": [
+    "canaux de vente connectés",
+    "verbundene Verkaufskanäle",
+    "canali di vendita connessi"
+  ],
+  "orders this month": [
+    "commandes ce mois-ci",
+    "Bestellungen diesen Monat",
+    "ordini questo mese"
+  ],
+  "Connect or sync a marketplace": [
+    "Connecter ou synchroniser une marketplace",
+    "Marktplatz verbinden oder synchronisieren",
+    "Connetti o sincronizza un marketplace"
+  ],
+  "Connect and manage marketplace accounts, synchronization settings and integration health from one place.": [
+    "Connectez et gérez vos comptes marketplace, la synchronisation et l’état des intégrations au même endroit.",
+    "Marktplatzkonten, Synchronisierung und Integrationsstatus zentral verwalten.",
+    "Connetti e gestisci account marketplace, sincronizzazione e stato delle integrazioni da un unico posto."
+  ],
+  "Active marketplace accounts currently managed through CelleXa.": [
+    "Comptes marketplace actifs gérés par CelleXa.",
+    "Aktive, über CelleXa verwaltete Marktplatzkonten.",
+    "Account marketplace attivi gestiti tramite CelleXa."
+  ],
+  "Add another marketplace account to your CelleXa workspace.": [
+    "Ajoutez un autre compte marketplace à votre espace CelleXa.",
+    "Fügen Sie Ihrem CelleXa-Arbeitsbereich ein weiteres Marktplatzkonto hinzu.",
+    "Aggiungi un altro account marketplace alla tua area CelleXa."
+  ],
+  "Set up an available marketplace to manage its products, orders and inventory through CelleXa.": [
+    "Configurez une marketplace pour gérer ses produits, commandes et stocks avec CelleXa.",
+    "Richten Sie einen Marktplatz ein, um Produkte, Bestellungen und Bestände über CelleXa zu verwalten.",
+    "Configura un marketplace per gestire prodotti, ordini e scorte tramite CelleXa."
+  ],
+  "There are no additional marketplace integrations available for setup.": [
+    "Aucune autre intégration marketplace n’est disponible.",
+    "Keine weiteren Marktplatzintegrationen verfügbar.",
+    "Non ci sono altre integrazioni marketplace disponibili."
+  ],
+  "Marketplace integration": [
+    "Intégration marketplace",
+    "Marktplatzintegration",
+    "Integrazione marketplace"
+  ],
+  "Marketplace not found": [
+    "Marketplace introuvable",
+    "Marktplatz nicht gefunden",
+    "Marketplace non trovato"
+  ],
+  "The marketplace does not exist, is inactive, or the address may be incorrect.": [
+    "La marketplace n’existe pas, est inactive ou l’adresse est incorrecte.",
+    "Der Marktplatz existiert nicht, ist inaktiv oder die Adresse ist falsch.",
+    "Il marketplace non esiste, è inattivo o l’indirizzo è errato."
+  ],
+  "Marketplace account and connection details.": [
+    "Détails du compte et de la connexion marketplace.",
+    "Marktplatzkonto und Verbindungsdetails.",
+    "Dettagli dell’account e della connessione marketplace."
+  ],
+  "Marketplace connection issue": [
+    "Problème de connexion marketplace",
+    "Problem mit der Marktplatzverbindung",
+    "Problema di connessione al marketplace"
+  ],
+  "Connection information": [
+    "Informations de connexion",
+    "Verbindungsinformationen",
+    "Informazioni sulla connessione"
+  ],
+  "Connection health": [
+    "État de la connexion",
+    "Verbindungsstatus",
+    "Stato della connessione"
+  ],
+  "Supported features": [
+    "Fonctionnalités prises en charge",
+    "Unterstützte Funktionen",
+    "Funzionalità supportate"
+  ],
+  "No capabilities configured": [
+    "Aucune fonctionnalité configurée",
+    "Keine Funktionen konfiguriert",
+    "Nessuna funzionalità configurata"
+  ],
+  "Connect": ["Connecter", "Verbinden", "Connetti"],
+  "Connecting...": [
+    "Connexion...",
+    "Verbindung wird hergestellt...",
+    "Connessione..."
+  ],
+  "Connect this marketplace": [
+    "Connecter cette marketplace",
+    "Diesen Marktplatz verbinden",
+    "Connetti questo marketplace"
+  ],
+  "Set up": ["Configurer", "Einrichten", "Configura"],
+  "Set up connection": [
+    "Configurer la connexion",
+    "Verbindung einrichten",
+    "Configura connessione"
+  ],
+  "Configure the marketplace account and choose what CelleXa should synchronize.": [
+    "Configurez le compte marketplace et choisissez les données à synchroniser.",
+    "Marktplatzkonto konfigurieren und zu synchronisierende Daten auswählen.",
+    "Configura l’account marketplace e scegli i dati da sincronizzare."
+  ],
+  "Add the marketplace account credentials and choose which supported data CelleXa should synchronize.": [
+    "Ajoutez les identifiants du compte et choisissez les données à synchroniser.",
+    "Kontozugangsdaten eingeben und zu synchronisierende Daten auswählen.",
+    "Inserisci le credenziali e scegli i dati da sincronizzare."
+  ],
+  "Account": ["Compte", "Konto", "Account"],
+  "Account name": ["Nom du compte", "Kontoname", "Nome account"],
+  "Account Name": ["Nom du compte", "Kontoname", "Nome account"],
+  "Account ID": ["Identifiant du compte", "Konto-ID", "ID account"],
+  "External account ID": [
+    "Identifiant du compte externe",
+    "Externe Konto-ID",
+    "ID account esterno"
+  ],
+  "Credentials": ["Identifiants", "Zugangsdaten", "Credenziali"],
+  "API key": ["Clé API", "API-Schlüssel", "Chiave API"],
+  "API credential saved": [
+    "Identifiant API enregistré",
+    "API-Zugangsdaten gespeichert",
+    "Credenziali API salvate"
+  ],
+  "Enter a new API key": [
+    "Saisissez une nouvelle clé API",
+    "Neuen API-Schlüssel eingeben",
+    "Inserisci una nuova chiave API"
+  ],
+  "Enter marketplace API key": [
+    "Saisissez la clé API de la marketplace",
+    "API-Schlüssel des Marktplatzes eingeben",
+    "Inserisci la chiave API del marketplace"
+  ],
+  "Show API key": [
+    "Afficher la clé API",
+    "API-Schlüssel anzeigen",
+    "Mostra chiave API"
+  ],
+  "Hide API key": [
+    "Masquer la clé API",
+    "API-Schlüssel ausblenden",
+    "Nascondi chiave API"
+  ],
+  "(optional)": ["(facultatif)", "(optional)", "(facoltativo)"],
+  "Secure credential handling": [
+    "Gestion sécurisée des identifiants",
+    "Sichere Verwaltung der Zugangsdaten",
+    "Gestione sicura delle credenziali"
+  ],
+  "The API key is sent through the secure CelleXa server proxy. It is never stored in browser storage or displayed after connection.": [
+    "La clé API est transmise via le serveur sécurisé CelleXa. Elle n’est jamais stockée dans le navigateur ni affichée après la connexion.",
+    "Der API-Schlüssel wird über den sicheren CelleXa-Server übertragen. Er wird weder im Browser gespeichert noch nach der Verbindung angezeigt.",
+    "La chiave API viene inviata tramite il server sicuro CelleXa. Non viene salvata nel browser né mostrata dopo la connessione."
+  ],
+  "For security, CelleXa never displays the saved API key. Use Edit settings to replace it.": [
+    "Pour votre sécurité, CelleXa n’affiche jamais la clé enregistrée. Modifiez les paramètres pour la remplacer.",
+    "CelleXa zeigt den gespeicherten API-Schlüssel niemals an. Ersetzen Sie ihn über Einstellungen bearbeiten.",
+    "Per sicurezza, CelleXa non mostra mai la chiave API salvata. Usa Modifica impostazioni per sostituirla."
+  ],
+  "Edit settings": [
+    "Modifier les paramètres",
+    "Einstellungen bearbeiten",
+    "Modifica impostazioni"
+  ],
+  "Saving...": ["Enregistrement...", "Wird gespeichert...", "Salvataggio..."],
+  "Synchronization settings": [
+    "Paramètres de synchronisation",
+    "Synchronisierungseinstellungen",
+    "Impostazioni di sincronizzazione"
+  ],
+  "Synchronization type": [
+    "Type de synchronisation",
+    "Synchronisierungstyp",
+    "Tipo di sincronizzazione"
+  ],
+  "Enabled synchronization": [
+    "Synchronisation activée",
+    "Aktivierte Synchronisierung",
+    "Sincronizzazione abilitata"
+  ],
+  "Data types currently enabled for automatic synchronization.": [
+    "Types de données activés pour la synchronisation automatique.",
+    "Für automatische Synchronisierung aktivierte Datentypen.",
+    "Tipi di dati abilitati per la sincronizzazione automatica."
+  ],
+  "Choose the data CelleXa should synchronize for this marketplace.": [
+    "Choisissez les données à synchroniser pour cette marketplace.",
+    "Wählen Sie die zu synchronisierenden Daten für diesen Marktplatz.",
+    "Scegli i dati da sincronizzare per questo marketplace."
+  ],
+  "Import and update marketplace orders.": [
+    "Importer et mettre à jour les commandes.",
+    "Marktplatzbestellungen importieren und aktualisieren.",
+    "Importa e aggiorna gli ordini del marketplace."
+  ],
+  "Keep product and listing information synchronized.": [
+    "Synchroniser les produits et les annonces.",
+    "Produkt- und Angebotsinformationen synchronisieren.",
+    "Mantieni sincronizzati prodotti e inserzioni."
+  ],
+  "Keep marketplace stock quantities up to date.": [
+    "Maintenir les quantités en stock à jour.",
+    "Bestandsmengen des Marktplatzes aktuell halten.",
+    "Mantieni aggiornate le quantità in magazzino."
+  ],
+  "Manual synchronization": [
+    "Synchronisation manuelle",
+    "Manuelle Synchronisierung",
+    "Sincronizzazione manuale"
+  ],
+  "Queue a full synchronization or synchronize one supported data type.": [
+    "Lancez une synchronisation complète ou d’un type de données.",
+    "Vollständige Synchronisierung oder einen Datentyp starten.",
+    "Avvia una sincronizzazione completa o di un tipo di dati."
+  ],
+  "Synchronize": ["Synchroniser", "Synchronisieren", "Sincronizza"],
+  "Starting sync...": [
+    "Démarrage de la synchronisation...",
+    "Synchronisierung startet...",
+    "Avvio sincronizzazione..."
+  ],
+  "Latest synchronization request": [
+    "Dernière demande de synchronisation",
+    "Letzte Synchronisierungsanfrage",
+    "Ultima richiesta di sincronizzazione"
+  ],
+  "Last synchronization": [
+    "Dernière synchronisation",
+    "Letzte Synchronisierung",
+    "Ultima sincronizzazione"
+  ],
+  "Last connection test": [
+    "Dernier test de connexion",
+    "Letzter Verbindungstest",
+    "Ultimo test di connessione"
+  ],
+  "Test connection": [
+    "Tester la connexion",
+    "Verbindung testen",
+    "Verifica connessione"
+  ],
+  "Testing connection...": [
+    "Test de connexion...",
+    "Verbindung wird getestet...",
+    "Verifica connessione..."
+  ],
+  "Test the saved marketplace credentials and connection availability.": [
+    "Testez les identifiants enregistrés et la disponibilité de la connexion.",
+    "Gespeicherte Zugangsdaten und Verbindung prüfen.",
+    "Verifica le credenziali salvate e la disponibilità della connessione."
+  ],
+  "Created": ["Créée le", "Erstellt", "Creato"],
+  "Started": ["Démarrée le", "Gestartet", "Avviato"],
+  "Danger zone": ["Zone à risque", "Gefahrenbereich", "Zona pericolosa"],
+  "Disconnect": ["Déconnecter", "Trennen", "Disconnetti"],
+  "Disconnect marketplace": [
+    "Déconnecter la marketplace",
+    "Marktplatz trennen",
+    "Disconnetti marketplace"
+  ],
+  "Disconnecting...": [
+    "Déconnexion...",
+    "Verbindung wird getrennt...",
+    "Disconnessione..."
+  ],
+  "Disconnecting stops future marketplace synchronization.": [
+    "La déconnexion arrête les synchronisations futures.",
+    "Durch Trennen werden zukünftige Synchronisierungen gestoppt.",
+    "La disconnessione interrompe le sincronizzazioni future."
+  ],
+  "CelleXa will stop synchronizing this marketplace. The saved connection credentials and settings will be removed. This action does not delete data from the marketplace itself.": [
+    "CelleXa arrêtera la synchronisation. Les identifiants et paramètres enregistrés seront supprimés. Les données de la marketplace ne seront pas supprimées.",
+    "CelleXa beendet die Synchronisierung. Gespeicherte Zugangsdaten und Einstellungen werden entfernt. Die Daten des Marktplatzes selbst bleiben erhalten.",
+    "CelleXa interromperà la sincronizzazione. Credenziali e impostazioni salvate verranno rimosse. I dati del marketplace non verranno eliminati."
+  ],
+  "Cancel": ["Annuler", "Abbrechen", "Annulla"],
+  "Close dialog": [
+    "Fermer la boîte de dialogue",
+    "Dialog schließen",
+    "Chiudi finestra"
+  ],
+  "Close confirmation dialog": [
+    "Fermer la confirmation",
+    "Bestätigung schließen",
+    "Chiudi conferma"
+  ],
+  "Close marketplace setup dialog": [
+    "Fermer la configuration marketplace",
+    "Marktplatzeinrichtung schließen",
+    "Chiudi configurazione marketplace"
+  ],
+  "Dismiss notification": [
+    "Fermer la notification",
+    "Benachrichtigung schließen",
+    "Chiudi notifica"
+  ],
+  "Attention": ["Attention", "Achtung", "Attenzione"],
+  "My profile": ["Mon profil", "Mein Profil", "Il mio profilo"],
+  "My Profile": ["Mon profil", "Mein Profil", "Il mio profilo"],
+  "Personal information": [
+    "Informations personnelles",
+    "Persönliche Informationen",
+    "Informazioni personali"
+  ],
+  "Full name": ["Nom complet", "Vollst?ndiger Name", "Nome completo"],
+  "Email address": ["Adresse e-mail", "E-Mail-Adresse", "Indirizzo email"],
+  "Role": ["Rôle", "Rolle", "Ruolo"],
+  "Account role": ["Rôle du compte", "Kontorolle", "Ruolo dell’account"],
+  "Account status": ["Statut du compte", "Kontostatus", "Stato dell’account"],
+  "Active account": ["Compte actif", "Aktives Konto", "Account attivo"],
+  "Inactive account": ["Compte inactif", "Inaktives Konto", "Account inattivo"],
+  "Information associated with your Cellexa account.": [
+    "Informations associées à votre compte CelleXa.",
+    "Informationen zu Ihrem CelleXa-Konto.",
+    "Informazioni associate al tuo account CelleXa."
+  ],
+  "View your personal information, role and account status.": [
+    "Consultez vos informations personnelles, votre rôle et le statut du compte.",
+    "Persönliche Informationen, Rolle und Kontostatus anzeigen.",
+    "Visualizza informazioni personali, ruolo e stato dell’account."
+  ],
+  "Security": ["Sécurité", "Sicherheit", "Sicurezza"],
+  "Review account access and security information.": [
+    "Consultez les informations d’accès et de sécurité.",
+    "Kontozugriff und Sicherheitsinformationen prüfen.",
+    "Consulta le informazioni di accesso e sicurezza."
+  ],
+  "Last successful login": [
+    "Dernière connexion réussie",
+    "Letzte erfolgreiche Anmeldung",
+    "Ultimo accesso riuscito"
+  ],
+  "Password": ["Mot de passe", "Passwort", "Password"],
+  "Password changes will be available after the corresponding Laravel endpoint is implemented.": [
+    "La modification du mot de passe n’est pas encore disponible.",
+    "Passwortänderungen sind noch nicht verfügbar.",
+    "La modifica della password non è ancora disponibile."
+  ],
+  "Sign in": ["Se connecter", "Anmelden", "Accedi"],
+  "Sign in to CelleXa": [
+    "Se connecter ? CelleXa",
+    "Bei CelleXa anmelden",
+    "Accedi a CelleXa"
+  ],
+  "Signing in...": ["Connexion...", "Anmeldung...", "Accesso..."],
+  "Enter your account details to access the management portal.": [
+    "Saisissez vos identifiants pour acc?der au portail.",
+    "Geben Sie Ihre Kontodaten ein, um auf das Portal zuzugreifen.",
+    "Inserisci i dati dell?account per accedere al portale."
+  ],
+  "Enter your registered email": [
+    "Saisissez votre e-mail enregistr?",
+    "Geben Sie Ihre registrierte E-Mail ein",
+    "Inserisci l?email registrata"
+  ],
+  "Enter your password": [
+    "Saisissez votre mot de passe",
+    "Geben Sie Ihr Passwort ein",
+    "Inserisci la password"
+  ],
+  "Show password": [
+    "Afficher le mot de passe",
+    "Passwort anzeigen",
+    "Mostra password"
+  ],
+  "Hide password": [
+    "Masquer le mot de passe",
+    "Passwort ausblenden",
+    "Nascondi password"
+  ],
+  "Minimum 8 characters": [
+    "Minimum 8 caract?res",
+    "Mindestens 8 Zeichen",
+    "Minimo 8 caratteri"
+  ],
+  "Protected and secure access": [
+    "Acc?s prot?g? et s?curis?",
+    "Gesch?tzter und sicherer Zugriff",
+    "Accesso protetto e sicuro"
+  ],
+  "Unified orders": [
+    "Commandes centralisées",
+    "Zentrale Bestellungen",
+    "Ordini centralizzati"
+  ],
+  "Product control": [
+    "Gestion des produits",
+    "Produktverwaltung",
+    "Gestione prodotti"
+  ],
+  "Manage marketplace orders from one secure workspace.": [
+    "Gérez vos commandes depuis un espace sécurisé unique.",
+    "Marktplatzbestellungen in einem sicheren Arbeitsbereich verwalten.",
+    "Gestisci gli ordini da un’unica area sicura."
+  ],
+  "Keep products and listings organized and synchronized.": [
+    "Organisez et synchronisez vos produits et annonces.",
+    "Produkte und Angebote organisieren und synchronisieren.",
+    "Mantieni prodotti e inserzioni organizzati e sincronizzati."
+  ],
+  "Manage every marketplace from one place.": [
+    "Gérez toutes vos marketplaces au même endroit.",
+    "Alle Marktplätze zentral verwalten.",
+    "Gestisci tutti i marketplace da un unico posto."
+  ],
+  "Control products, listings, orders and marketplace performance through one centralized management portal.": [
+    "Gérez produits, annonces, commandes et performances via un portail centralisé.",
+    "Produkte, Angebote, Bestellungen und Leistung über ein zentrales Portal verwalten.",
+    "Gestisci prodotti, inserzioni, ordini e prestazioni tramite un portale centralizzato."
+  ],
+  "Cellexa. All rights reserved.": [
+    "Cellexa. Tous droits réservés.",
+    "Cellexa. Alle Rechte vorbehalten.",
+    "Cellexa. Tutti i diritti riservati."
+  ],
+  "Loading dashboard data": [
+    "Chargement du tableau de bord",
+    "Übersicht wird geladen",
+    "Caricamento panoramica"
+  ],
+  "Loading marketplace details": [
+    "Chargement de la marketplace",
+    "Marktplatzdetails werden geladen",
+    "Caricamento dettagli marketplace"
+  ],
+  "Loading marketplaces": [
+    "Chargement des marketplaces",
+    "Marktplätze werden geladen",
+    "Caricamento marketplace"
+  ],
+  "Loading order details": [
+    "Chargement de la commande",
+    "Bestelldetails werden geladen",
+    "Caricamento dettagli ordine"
+  ],
+  "Loading orders": [
+    "Chargement des commandes",
+    "Bestellungen werden geladen",
+    "Caricamento ordini"
+  ],
+  "Opening orders": [
+    "Ouverture des commandes",
+    "Bestellungen werden geöffnet",
+    "Apertura ordini"
+  ],
+  "Unable to load marketplace": [
+    "Impossible de charger la marketplace",
+    "Marktplatz kann nicht geladen werden",
+    "Impossibile caricare il marketplace"
+  ],
+  "Unable to load marketplaces": [
+    "Impossible de charger les marketplaces",
+    "Marktplätze können nicht geladen werden",
+    "Impossibile caricare i marketplace"
+  ],
+  "Unable to load order": [
+    "Impossible de charger la commande",
+    "Bestellung kann nicht geladen werden",
+    "Impossibile caricare l’ordine"
+  ],
+  "The marketplace response was incomplete.": [
+    "La réponse de la marketplace est incomplète.",
+    "Die Marktplatzantwort war unvollständig.",
+    "La risposta del marketplace è incompleta."
+  ],
+  "The order response was incomplete.": [
+    "La réponse de la commande est incomplète.",
+    "Die Bestellantwort war unvollständig.",
+    "La risposta dell’ordine è incompleta."
+  ],
+  "Showing previous data. Use Refresh to retry.": [
+    "Les données précédentes sont affichées. Actualisez pour réessayer.",
+    "Vorherige Daten werden angezeigt. Zum Wiederholen aktualisieren.",
+    "Sono mostrati i dati precedenti. Aggiorna per riprovare."
+  ],
+  "Not available": ["Non disponible", "Nicht verf?gbar", "Non disponibile"],
+  "Never": ["Jamais", "Nie", "Mai"],
+  "Sign out": ["Se d?connecter", "Abmelden", "Esci"],
+  "Signing out...": ["D?connexion...", "Abmeldung...", "Disconnessione..."],
+  "Full synchronization": [
+    "Synchronisation complète",
+    "Vollständige Synchronisierung",
+    "Sincronizzazione completa"
+  ],
+  "Orders only": ["Commandes uniquement", "Nur Bestellungen", "Solo ordini"],
+  "Products only": ["Produits uniquement", "Nur Produkte", "Solo prodotti"],
+  "Inventory only": ["Stock uniquement", "Nur Bestand", "Solo inventario"],
+  "Save changes": [
+    "Enregistrer les modifications",
+    "?nderungen speichern",
+    "Salva modifiche"
+  ],
+  "Save settings": [
+    "Enregistrer les paramètres",
+    "Einstellungen speichern",
+    "Salva impostazioni"
+  ],
+  "Amount": ["Montant", "Betrag", "Importo"],
+  "CX": ["CX", "CX", "CX"],
+  "CelleXa": ["CelleXa", "CelleXa", "CelleXa"],
+  "WeTransform": ["WeTransform", "WeTransform", "WeTransform"],
+  "SKU": ["SKU", "SKU", "SKU"],
+  "Customer, item, payment and delivery information for synchronized orders.": [
+    "Informations sur le client, l’article, le paiement et la livraison des commandes synchronisées.",
+    "Kunden-, Artikel-, Zahlungs- und Lieferinformationen für synchronisierte Bestellungen.",
+    "Informazioni su cliente, articolo, pagamento e consegna degli ordini sincronizzati."
+  ],
+  "Date & site": ["Date et site", "Datum und Website", "Data e sito"],
+  "Order & item details": [
+    "Commande et article",
+    "Bestell- und Artikeldetails",
+    "Ordine e articolo"
+  ],
+  "Customer & total": [
+    "Client et total",
+    "Kunde und Gesamtbetrag",
+    "Cliente e totale"
+  ],
+  "Status & payment": [
+    "Statut et paiement",
+    "Status und Zahlung",
+    "Stato e pagamento"
+  ],
+  "Delivery": ["Livraison", "Lieferung", "Consegna"],
+  "Customer": ["Client", "Kunde", "Cliente"],
+  "Customer unavailable": [
+    "Client indisponible",
+    "Kunde nicht verfügbar",
+    "Cliente non disponibile"
+  ],
+  "Unavailable": ["Indisponible", "Nicht verfügbar", "Non disponibile"],
+  "No item details available": [
+    "Aucun détail d’article disponible",
+    "Keine Artikeldetails verfügbar",
+    "Nessun dettaglio articolo disponibile"
+  ],
+  "Untitled item": [
+    "Article sans titre",
+    "Artikel ohne Titel",
+    "Articolo senza titolo"
+  ],
+  "Qty": ["Qté", "Menge", "Qtà"],
+  "additional item": [
+    "article supplémentaire",
+    "weiterer Artikel",
+    "articolo aggiuntivo"
+  ],
+  "additional items": [
+    "articles supplémentaires",
+    "weitere Artikel",
+    "articoli aggiuntivi"
+  ],
+  "Payment pending": [
+    "Paiement en attente",
+    "Zahlung ausstehend",
+    "Pagamento in attesa"
+  ],
+  "Synced": ["Synchronisé", "Synchronisiert", "Sincronizzato"],
+  "Carrier": ["Transporteur", "Versanddienstleister", "Corriere"],
+  "Carrier not assigned": [
+    "Transporteur non attribué",
+    "Kein Versanddienstleister zugewiesen",
+    "Corriere non assegnato"
+  ],
+  "Not assigned": ["Non attribué", "Nicht zugewiesen", "Non assegnato"],
+  "Open tracking": [
+    "Ouvrir le suivi",
+    "Sendungsverfolgung öffnen",
+    "Apri tracciamento"
+  ],
+  "Tracking link unavailable": [
+    "Lien de suivi indisponible",
+    "Tracking-Link nicht verfügbar",
+    "Link di tracciamento non disponibile"
+  ],
+  "Refurbed markets": [
+    "Marchés Refurbed",
+    "Refurbed-Märkte",
+    "Mercati Refurbed"
+  ],
+  "Choose the countries and functions CelleXa may manage.": [
+    "Choisissez les pays et les fonctions que CelleXa peut gérer.",
+    "Wählen Sie die Länder und Funktionen, die CelleXa verwalten darf.",
+    "Scegli i paesi e le funzioni che CelleXa può gestire."
+  ],
+  "Load markets": ["Charger les marchés", "Märkte laden", "Carica mercati"],
+  "Loading markets...": [
+    "Chargement des marchés...",
+    "Märkte werden geladen...",
+    "Caricamento mercati..."
+  ],
+  "Manage orders": [
+    "Gérer les commandes",
+    "Bestellungen verwalten",
+    "Gestisci ordini"
+  ],
+  "Manage offers": [
+    "Gérer les offres",
+    "Angebote verwalten",
+    "Gestisci offerte"
+  ],
+  "Home": ["Accueil", "Startseite", "Home"],
+  "About": ["? propos", "?ber uns", "Chi siamo"],
+  "Portal details": [
+    "D?tails du portail",
+    "Portal?bersicht",
+    "Dettagli del portale"
+  ],
+  "Plans": ["Offres", "Tarife", "Piani"],
+  "Contact": ["Contact", "Kontakt", "Contatti"],
+  "Get started": ["Commencer", "Loslegen", "Inizia"],
+  "Explore": ["Explorer", "Entdecken", "Esplora"],
+  "Create account": ["Cr?er un compte", "Konto erstellen", "Crea account"],
+  "Contact support": [
+    "Contacter le support",
+    "Support kontaktieren",
+    "Contatta il support"
+  ],
+  "All rights reserved.": [
+    "Tous droits r?serv?s.",
+    "Alle Rechte vorbehalten.",
+    "Tutti i diritti riservati."
+  ],
+  "Start now": ["Commencer maintenant", "Jetzt starten", "Inizia ora"],
+  "Create your account": [
+    "Cr?ez votre compte",
+    "Erstellen Sie Ihr Konto",
+    "Crea il tuo account"
+  ],
+  "Explore the portal": [
+    "Explorer le portail",
+    "Portal entdecken",
+    "Esplora il portale"
+  ],
+  "Everything your team needs": [
+    "Tout ce dont votre ?quipe a besoin",
+    "Alles, was Ihr Team braucht",
+    "Tutto ci? che serve al tuo team"
+  ],
+  "Built around real marketplace operations": [
+    "Con?u pour les op?rations r?elles des marketplaces",
+    "F?r echte Marketplace-Abl?ufe entwickelt",
+    "Progettato per operazioni marketplace reali"
+  ],
+  "About CelleXa": [
+    "? propos de CelleXa",
+    "?ber CelleXa",
+    "Informazioni su CelleXa"
+  ],
+  "Our purpose": ["Notre mission", "Unser Ziel", "Il nostro obiettivo"],
+  "Focused operations": [
+    "Op?rations cibl?es",
+    "Fokussierte Abl?ufe",
+    "Operazioni mirate"
+  ],
+  "Team-ready": [
+    "Pr?t pour les ?quipes",
+    "F?r Teams geeignet",
+    "Pronto per i team"
+  ],
+  "Reliable by design": [
+    "Fiable par conception",
+    "Zuverl?ssig konzipiert",
+    "Affidabile per progettazione"
+  ],
+  "Plans and pricing": [
+    "Offres et tarifs",
+    "Tarife und Preise",
+    "Piani e prezzi"
+  ],
+  "Starter": ["D?butant", "Starter", "Starter"],
+  "Growth": ["Croissance", "Wachstum", "Crescita"],
+  "Enterprise": ["Entreprise", "Enterprise", "Enterprise"],
+  "Custom": ["Sur mesure", "Individuell", "Personalizzato"],
+  " / month": [" / mois", " / Monat", " / mese"],
+  "Contact sales": [
+    "Contacter les ventes",
+    "Vertrieb kontaktieren",
+    "Contatta le vendite"
+  ],
+  "Contact Cellexa": [
+    "Contacter Cellexa",
+    "Cellexa kontaktieren",
+    "Contatta Cellexa"
+  ],
+  "Talk to our team": [
+    "Parlez ? notre ?quipe",
+    "Sprechen Sie mit unserem Team",
+    "Parla con il nostro team"
+  ],
+  "We?re here to help.": [
+    "Nous sommes l? pour vous aider.",
+    "Wir helfen Ihnen gerne.",
+    "Siamo qui per aiutarti."
+  ],
+  "Name": ["Nom", "Name", "Nome"],
+  "Email": ["E-mail", "E-Mail", "Email"],
+  "Company": ["Entreprise", "Unternehmen", "Azienda"],
+  "Subject": ["Objet", "Betreff", "Oggetto"],
+  "How can we help?": [
+    "Comment pouvons-nous vous aider ?",
+    "Wie k?nnen wir helfen?",
+    "Come possiamo aiutarti?"
+  ],
+  "Send message": ["Envoyer le message", "Nachricht senden", "Invia messaggio"],
+  "Sending...": ["Envoi...", "Wird gesendet...", "Invio..."],
+  "Please complete all required fields with valid information.": [
+    "Veuillez remplir tous les champs obligatoires avec des informations valides.",
+    "Bitte f?llen Sie alle Pflichtfelder mit g?ltigen Angaben aus.",
+    "Compila tutti i campi obbligatori con informazioni valide."
+  ],
+  "Thank you. Your message has been received.": [
+    "Merci. Votre message a bien ?t? re?u.",
+    "Vielen Dank. Ihre Nachricht ist eingegangen.",
+    "Grazie. Il tuo messaggio ? stato ricevuto."
+  ],
+  "Unable to send your message.": [
+    "Impossible d?envoyer votre message.",
+    "Ihre Nachricht konnte nicht gesendet werden.",
+    "Impossibile inviare il messaggio."
+  ],
+  "Product and account questions": [
+    "Questions sur le produit et le compte",
+    "Produkt- und Kontofragen",
+    "Domande su prodotto e account"
+  ],
+  "Operational support": [
+    "Support op?rationnel",
+    "Betrieblicher Support",
+    "Supporto operativo"
+  ],
+  "Your details are protected": [
+    "Vos donn?es sont prot?g?es",
+    "Ihre Angaben sind gesch?tzt",
+    "I tuoi dati sono protetti"
+  ],
+  "Ready to simplify marketplace operations?": [
+    "Pr?t ? simplifier vos op?rations marketplace ?",
+    "Bereit, Ihre Marketplace-Abl?ufe zu vereinfachen?",
+    "Pronto a semplificare le operazioni marketplace?"
+  ],
+  "Run every marketplace workflow from one clear portal.": [
+    "G?rez chaque workflow marketplace depuis un portail clair.",
+    "Steuern Sie jeden Marketplace-Ablauf ?ber ein ?bersichtliches Portal.",
+    "Gestisci ogni flusso marketplace da un unico portale chiaro."
+  ],
+  "A complete workspace for connected marketplace operations.": [
+    "Un espace complet pour des op?rations marketplace connect?es.",
+    "Ein vollst?ndiger Arbeitsbereich f?r vernetzte Marketplace-Abl?ufe.",
+    "Uno spazio completo per operazioni marketplace connesse."
+  ],
+  "Choose a plan that grows with your marketplace operation.": [
+    "Choisissez une offre adapt?e ? la croissance de vos marketplaces.",
+    "W?hlen Sie einen Tarif, der mit Ihrem Marketplace-Gesch?ft w?chst.",
+    "Scegli un piano che cresce con le tue operazioni marketplace."
+  ],
+  "Let?s improve your marketplace workflow.": [
+    "Am?liorons votre workflow marketplace.",
+    "Verbessern wir Ihren Marketplace-Ablauf.",
+    "Miglioriamo il tuo flusso marketplace."
+  ],
+  "Marketplace operations, connected": [
+    "Op?rations marketplace connect?es",
+    "Vernetzte Marketplace-Abl?ufe",
+    "Operazioni marketplace connesse"
+  ],
+  "A centralized portal for managing marketplace orders, inventory, synchronization and operational workflows.": [
+    "Un portail centralis? pour g?rer commandes, inventaire, synchronisation et op?rations marketplace.",
+    "Ein zentrales Portal f?r Bestellungen, Inventar, Synchronisierung und Marketplace-Abl?ufe.",
+    "Un portale centralizzato per ordini, inventario, sincronizzazione e operazioni marketplace."
+  ],
+  "CelleXa brings orders, inventory, connections and daily operational actions together so your team can work faster with fewer errors.": [
+    "CelleXa r?unit commandes, inventaire, connexions et op?rations quotidiennes pour acc?l?rer le travail de votre ?quipe et r?duire les erreurs.",
+    "CelleXa b?ndelt Bestellungen, Inventar, Verbindungen und t?gliche Abl?ufe, damit Ihr Team schneller und fehler?rmer arbeitet.",
+    "CelleXa riunisce ordini, inventario, connessioni e attivit? quotidiane per aiutare il team a lavorare pi? velocemente e con meno errori."
+  ],
+  "Unified order management": [
+    "Gestion unifi?e des commandes",
+    "Einheitliche Bestellverwaltung",
+    "Gestione unificata degli ordini"
+  ],
+  "Database-backed inventory": [
+    "Inventaire bas? sur la base de donn?es",
+    "Datenbankgest?tztes Inventar",
+    "Inventario basato sul database"
+  ],
+  "Reliable synchronization": [
+    "Synchronisation fiable",
+    "Zuverl?ssige Synchronisierung",
+    "Sincronizzazione affidabile"
+  ],
+  "Operational visibility": [
+    "Visibilit? op?rationnelle",
+    "Operative ?bersicht",
+    "Visibilit? operativa"
+  ],
+  "Multilingual workspace": [
+    "Espace multilingue",
+    "Mehrsprachiger Arbeitsbereich",
+    "Spazio di lavoro multilingue"
+  ],
+  "Review orders, customers, statuses, tracking and documents from one workspace.": [
+    "Consultez commandes, clients, statuts, suivis et documents depuis un seul espace.",
+    "Pr?fen Sie Bestellungen, Kunden, Status, Sendungsverfolgung und Dokumente in einem Arbeitsbereich.",
+    "Controlla ordini, clienti, stati, tracciamento e documenti in un unico spazio."
+  ],
+  "Synchronize offers, manage stock and use fast database filters and pagination.": [
+    "Synchronisez les offres, g?rez le stock et utilisez des filtres et une pagination rapides.",
+    "Synchronisieren Sie Angebote, verwalten Sie Best?nde und nutzen Sie schnelle Filter und Seitennavigation.",
+    "Sincronizza le offerte, gestisci lo stock e usa filtri e paginazione rapidi."
+  ],
+  "Track marketplace connections, synchronization runs and errors.": [
+    "Suivez les connexions, les synchronisations et les erreurs.",
+    "Verfolgen Sie Marketplace-Verbindungen, Synchronisierungsl?ufe und Fehler.",
+    "Monitora connessioni, sincronizzazioni ed errori."
+  ],
+  "Monitor dashboard totals, recent activity and marketplace performance.": [
+    "Suivez les totaux, l?activit? r?cente et les performances des marketplaces.",
+    "?berwachen Sie Kennzahlen, aktuelle Aktivit?ten und Marketplace-Leistung.",
+    "Monitora totali, attivit? recenti e prestazioni dei marketplace."
+  ],
+  "Use CelleXa in English, French, German or Italian across desktop and mobile.": [
+    "Utilisez CelleXa en anglais, fran?ais, allemand ou italien sur ordinateur et mobile.",
+    "Nutzen Sie CelleXa auf Englisch, Franz?sisch, Deutsch oder Italienisch auf Desktop und Mobilger?ten.",
+    "Usa CelleXa in inglese, francese, tedesco o italiano su desktop e mobile."
+  ],
+  "Marketplace management designed around the people doing the work.": [
+    "Une gestion marketplace pens?e pour les ?quipes op?rationnelles.",
+    "Marketplace-Verwaltung f?r die Menschen, die t?glich damit arbeiten.",
+    "Gestione marketplace pensata per chi svolge il lavoro."
+  ],
+  "CelleXa helps commerce teams replace repetitive portal switching with one dependable operational workspace.": [
+    "CelleXa remplace les changements r?p?titifs de portail par un espace op?rationnel fiable.",
+    "CelleXa ersetzt wiederholte Portalwechsel durch einen zuverl?ssigen Arbeitsbereich.",
+    "CelleXa sostituisce i continui cambi di portale con uno spazio operativo affidabile."
+  ],
+  "Tools organized around the work marketplace teams complete every day.": [
+    "Des outils organis?s autour du travail quotidien des ?quipes marketplace.",
+    "Werkzeuge f?r die t?glichen Aufgaben von Marketplace-Teams.",
+    "Strumenti organizzati intorno al lavoro quotidiano dei team marketplace."
+  ],
+  "A shared portal gives staff and managers consistent data and workflows.": [
+    "Un portail partag? fournit aux ?quipes des donn?es et workflows coh?rents.",
+    "Ein gemeinsames Portal bietet Mitarbeitern und Managern konsistente Daten und Abl?ufe.",
+    "Un portale condiviso offre a personale e responsabili dati e flussi coerenti."
+  ],
+  "Local storage, synchronization records and validation make work easier to verify.": [
+    "Le stockage local, l?historique de synchronisation et la validation facilitent les contr?les.",
+    "Lokale Speicherung, Synchronisierungsprotokolle und Validierung erleichtern die Pr?fung.",
+    "Archiviazione locale, registri di sincronizzazione e convalida facilitano le verifiche."
+  ],
+  "Clear plans for teams moving from manual portal work to connected, database-backed operations.": [
+    "Des offres claires pour passer du travail manuel ? des op?rations connect?es et centralis?es.",
+    "Klare Tarife f?r den Wechsel von manueller Portalarbeit zu vernetzten, datenbankgest?tzten Abl?ufen.",
+    "Piani chiari per passare dal lavoro manuale a operazioni connesse e basate sul database."
+  ],
+  "1 marketplace connection": [
+    "1 connexion marketplace",
+    "1 Marketplace-Verbindung",
+    "1 connessione marketplace"
+  ],
+  "Order and inventory synchronization": [
+    "Synchronisation des commandes et de l?inventaire",
+    "Bestell- und Inventarsynchronisierung",
+    "Sincronizzazione ordini e inventario"
+  ],
+  "Core exports and documents": [
+    "Exports et documents essentiels",
+    "Grundlegende Exporte und Dokumente",
+    "Esportazioni e documenti essenziali"
+  ],
+  "Multiple marketplace connections": [
+    "Plusieurs connexions marketplace",
+    "Mehrere Marketplace-Verbindungen",
+    "Pi? connessioni marketplace"
+  ],
+  "Advanced order and inventory tools": [
+    "Outils avanc?s pour commandes et inventaire",
+    "Erweiterte Bestell- und Inventarwerkzeuge",
+    "Strumenti avanzati per ordini e inventario"
+  ],
+  "Priority synchronization and support": [
+    "Synchronisation et support prioritaires",
+    "Priorisierte Synchronisierung und Support",
+    "Sincronizzazione e supporto prioritari"
+  ],
+  "Custom marketplace scope": [
+    "P?rim?tre marketplace personnalis?",
+    "Individueller Marketplace-Umfang",
+    "Ambito marketplace personalizzato"
+  ],
+  "Team and workflow configuration": [
+    "Configuration des ?quipes et workflows",
+    "Team- und Ablaufkonfiguration",
+    "Configurazione di team e flussi"
+  ],
+  "Dedicated onboarding and support": [
+    "Accompagnement et support d?di?s",
+    "Dediziertes Onboarding und Support",
+    "Onboarding e supporto dedicati"
+  ],
+  "Explore the functions available in CelleXa and how they support work from connection through fulfillment.": [
+    "D?couvrez les fonctions de CelleXa, de la connexion ? l?exp?dition.",
+    "Entdecken Sie CelleXa-Funktionen von der Verbindung bis zur Auftragsabwicklung.",
+    "Scopri le funzioni di CelleXa, dalla connessione all?evasione."
+  ],
+  "Tell us about your marketplaces, operational goals or support needs. Our team will help you find the right next step.": [
+    "Parlez-nous de vos marketplaces, de vos objectifs ou de vos besoins de support. Notre ?quipe vous aidera.",
+    "Erz?hlen Sie uns von Ihren Marketplaces, Zielen oder Supportanforderungen. Unser Team hilft Ihnen weiter.",
+    "Raccontaci dei tuoi marketplace, obiettivi o esigenze di supporto. Il nostro team ti aiuter?."
+  ],
+  "Discuss plans, onboarding and account access.": [
+    "Discutez des offres, de l?int?gration et de l?acc?s au compte.",
+    "Besprechen Sie Tarife, Onboarding und Kontozugriff.",
+    "Parla di piani, onboarding e accesso account."
+  ],
+  "Get help with orders, inventory and marketplace synchronization.": [
+    "Obtenez de l?aide pour les commandes, l?inventaire et la synchronisation.",
+    "Erhalten Sie Hilfe bei Bestellungen, Inventar und Synchronisierung.",
+    "Ricevi aiuto con ordini, inventario e sincronizzazione."
+  ],
+  "Your message is stored securely for our support team.": [
+    "Votre message est conserv? de mani?re s?curis?e pour notre ?quipe.",
+    "Ihre Nachricht wird sicher f?r unser Support-Team gespeichert.",
+    "Il messaggio viene archiviato in modo sicuro per il nostro team."
+  ],
+  "Create your CelleXa workspace and bring orders, inventory and marketplace connections into one portal.": [
+    "Cr?ez votre espace CelleXa et r?unissez commandes, inventaire et connexions dans un seul portail.",
+    "Erstellen Sie Ihren CelleXa-Arbeitsbereich und b?ndeln Sie Bestellungen, Inventar und Verbindungen in einem Portal.",
+    "Crea il tuo spazio CelleXa e riunisci ordini, inventario e connessioni in un unico portale."
+  ],
+  "Cellexa Marketplace Hub": [
+    "Hub Marketplace Cellexa",
+    "Cellexa Marketplace Hub",
+    "Hub Marketplace Cellexa"
+  ],
+  "One workspace for every marketplace operation.": [
+    "Un espace unique pour toutes vos op?rations marketplace.",
+    "Ein Arbeitsbereich f?r alle Marketplace-Abl?ufe.",
+    "Un unico spazio per tutte le operazioni marketplace."
+  ],
+  "Manage orders, inventory, connections and daily workflows with a portal designed for speed and clarity.": [
+    "G?rez commandes, inventaire, connexions et workflows quotidiens avec un portail rapide et clair.",
+    "Verwalten Sie Bestellungen, Inventar, Verbindungen und t?gliche Abl?ufe in einem schnellen, ?bersichtlichen Portal.",
+    "Gestisci ordini, inventario, connessioni e attivit? quotidiane con un portale veloce e chiaro."
+  ],
+  "Synchronized inventory": [
+    "Inventaire synchronis?",
+    "Synchronisiertes Inventar",
+    "Inventario sincronizzato"
+  ],
+  "Secure account access": [
+    "Acc?s s?curis? au compte",
+    "Sicherer Kontozugriff",
+    "Accesso sicuro all?account"
+  ],
+  "Keep offers and stock organized with database-backed synchronization.": [
+    "Organisez offres et stock gr?ce ? une synchronisation bas?e sur la base de donn?es.",
+    "Organisieren Sie Angebote und Bestand mit datenbankgest?tzter Synchronisierung.",
+    "Organizza offerte e stock con la sincronizzazione basata sul database."
+  ],
+  "Use protected authentication to access your operational data.": [
+    "Utilisez une authentification prot?g?e pour acc?der ? vos donn?es.",
+    "Greifen Sie mit gesch?tzter Authentifizierung auf Ihre Betriebsdaten zu.",
+    "Accedi ai dati operativi con autenticazione protetta."
+  ],
+  "Create your CelleXa account": [
+    "Cr?ez votre compte CelleXa",
+    "Erstellen Sie Ihr CelleXa-Konto",
+    "Crea il tuo account CelleXa"
+  ],
+  "Enter your details to access the management portal.": [
+    "Saisissez vos informations pour acc?der au portail.",
+    "Geben Sie Ihre Daten ein, um auf das Portal zuzugreifen.",
+    "Inserisci i tuoi dati per accedere al portale."
+  ],
+  "Confirm password": [
+    "Confirmer le mot de passe",
+    "Passwort best?tigen",
+    "Conferma password"
+  ],
+  "Already have an account?": [
+    "Vous avez d?j? un compte ?",
+    "Sie haben bereits ein Konto?",
+    "Hai gi? un account?"
+  ],
+  "New to CelleXa?": [
+    "Nouveau sur CelleXa ?",
+    "Neu bei CelleXa?",
+    "Nuovo su CelleXa?"
+  ],
+  "Create an account": [
+    "Cr?er un compte",
+    "Konto erstellen",
+    "Crea un account"
+  ],
+  "Creating account...": [
+    "Cr?ation du compte...",
+    "Konto wird erstellt...",
+    "Creazione account..."
+  ],
+  "Email address is required.": [
+    "L?adresse e-mail est requise.",
+    "Die E-Mail-Adresse ist erforderlich.",
+    "L?indirizzo email ? obbligatorio."
+  ],
+  "Enter a valid email address.": [
+    "Saisissez une adresse e-mail valide.",
+    "Geben Sie eine g?ltige E-Mail-Adresse ein.",
+    "Inserisci un indirizzo email valido."
+  ],
+  "Password is required.": [
+    "Le mot de passe est requis.",
+    "Das Passwort ist erforderlich.",
+    "La password ? obbligatoria."
+  ],
+  "Password must contain at least 8 characters.": [
+    "Le mot de passe doit contenir au moins 8 caract?res.",
+    "Das Passwort muss mindestens 8 Zeichen enthalten.",
+    "La password deve contenere almeno 8 caratteri."
+  ],
+  "The email address or password is incorrect.": [
+    "L?adresse e-mail ou le mot de passe est incorrect.",
+    "E-Mail-Adresse oder Passwort ist falsch.",
+    "L?indirizzo email o la password non sono corretti."
+  ],
+  "Enter your full name.": [
+    "Saisissez votre nom complet.",
+    "Geben Sie Ihren vollst?ndigen Namen ein.",
+    "Inserisci il tuo nome completo."
+  ],
+  "Use at least 8 characters with a letter and a number.": [
+    "Utilisez au moins 8 caract?res avec une lettre et un chiffre.",
+    "Verwenden Sie mindestens 8 Zeichen mit einem Buchstaben und einer Zahl.",
+    "Usa almeno 8 caratteri con una lettera e un numero."
+  ],
+  "Passwords do not match.": [
+    "Les mots de passe ne correspondent pas.",
+    "Die Passw?rter stimmen nicht ?berein.",
+    "Le password non corrispondono."
+  ],
+  "Unable to connect to CelleXa. Please try again.": [
+    "Impossible de se connecter ? CelleXa. R?essayez.",
+    "Verbindung zu CelleXa nicht m?glich. Bitte erneut versuchen.",
+    "Impossibile connettersi a CelleXa. Riprova."
+  ],
+  "View and update your personal information and account security.": [
+    "Consultez et mettez ? jour vos informations personnelles et la s?curit? du compte.",
+    "Pers?nliche Daten und Kontosicherheit anzeigen und aktualisieren.",
+    "Visualizza e aggiorna le informazioni personali e la sicurezza dell?account."
+  ],
+  "Update the name and email address associated with your account.": [
+    "Mettez ? jour le nom et l?adresse e-mail associ?s ? votre compte.",
+    "Aktualisieren Sie Name und E-Mail-Adresse Ihres Kontos.",
+    "Aggiorna il nome e l?indirizzo email associati al tuo account."
+  ],
+  "Change password": [
+    "Modifier le mot de passe",
+    "Passwort ?ndern",
+    "Cambia password"
+  ],
+  "Leave these fields empty to keep your current password.": [
+    "Laissez ces champs vides pour conserver votre mot de passe actuel.",
+    "Lassen Sie diese Felder leer, um Ihr aktuelles Passwort zu behalten.",
+    "Lascia questi campi vuoti per mantenere la password attuale."
+  ],
+  "Current password": [
+    "Mot de passe actuel",
+    "Aktuelles Passwort",
+    "Password attuale"
+  ],
+  "New password": ["Nouveau mot de passe", "Neues Passwort", "Nuova password"],
+  "Confirm new password": [
+    "Confirmer le nouveau mot de passe",
+    "Neues Passwort best?tigen",
+    "Conferma nuova password"
+  ],
+  "Show passwords": [
+    "Afficher les mots de passe",
+    "Passw?rter anzeigen",
+    "Mostra password"
+  ],
+  "Hide passwords": [
+    "Masquer les mots de passe",
+    "Passw?rter ausblenden",
+    "Nascondi password"
+  ],
+  "Profile updated successfully.": [
+    "Profil mis ? jour avec succ?s.",
+    "Profil erfolgreich aktualisiert.",
+    "Profilo aggiornato con successo."
+  ],
+  "Unable to update your profile.": [
+    "Impossible de mettre ? jour votre profil.",
+    "Profil konnte nicht aktualisiert werden.",
+    "Impossibile aggiornare il profilo."
+  ],
+  "Enter your current password.": [
+    "Saisissez votre mot de passe actuel.",
+    "Geben Sie Ihr aktuelles Passwort ein.",
+    "Inserisci la password attuale."
+  ],
+  "The current password is incorrect.": [
+    "Le mot de passe actuel est incorrect.",
+    "Das aktuelle Passwort ist falsch.",
+    "La password attuale non ? corretta."
+  ],
+  "Use at least 8 characters with uppercase, lowercase and a number.": [
+    "Utilisez au moins 8 caract?res avec une majuscule, une minuscule et un chiffre.",
+    "Verwenden Sie mindestens 8 Zeichen mit Gro?buchstaben, Kleinbuchstaben und einer Zahl.",
+    "Usa almeno 8 caratteri con maiuscola, minuscola e un numero."
+  ],
+  "Profile image": ["Photo de profil", "Profilbild", "Immagine profilo"],
+  "Upload image": ["T?l?verser une image", "Bild hochladen", "Carica immagine"],
+  "Change image": ["Modifier l?image", "Bild ?ndern", "Cambia immagine"],
+  "Remove": ["Supprimer", "Entfernen", "Rimuovi"],
+  "JPG, PNG or WebP. Maximum 2 MB.": [
+    "JPG, PNG ou WebP. Maximum 2 Mo.",
+    "JPG, PNG oder WebP. Maximal 2 MB.",
+    "JPG, PNG o WebP. Massimo 2 MB."
+  ],
+  "Choose a JPG, PNG or WebP image up to 2 MB.": [
+    "Choisissez une image JPG, PNG ou WebP de 2 Mo maximum.",
+    "W?hlen Sie ein JPG-, PNG- oder WebP-Bild bis 2 MB.",
+    "Scegli un?immagine JPG, PNG o WebP fino a 2 MB."
+  ],
+  "Profile image updated successfully.": [
+    "Photo de profil mise ? jour.",
+    "Profilbild erfolgreich aktualisiert.",
+    "Immagine profilo aggiornata."
+  ],
+  "Profile image removed successfully.": [
+    "Photo de profil supprim?e.",
+    "Profilbild erfolgreich entfernt.",
+    "Immagine profilo rimossa."
+  ],
+  "Unable to upload the profile image.": [
+    "Impossible de t?l?verser la photo de profil.",
+    "Profilbild konnte nicht hochgeladen werden.",
+    "Impossibile caricare l?immagine profilo."
+  ],
+  "Unable to remove the profile image.": [
+    "Impossible de supprimer la photo de profil.",
+    "Profilbild konnte nicht entfernt werden.",
+    "Impossibile rimuovere l?immagine profilo."
+  ],
+  "Signing you out": [
+    "D?connexion en cours",
+    "Sie werden abgemeldet",
+    "Disconnessione in corso"
+  ],
+  "Please wait while we securely close your session.": [
+    "Veuillez patienter pendant la fermeture s?curis?e de votre session.",
+    "Bitte warten Sie, w?hrend Ihre Sitzung sicher beendet wird.",
+    "Attendi mentre chiudiamo la sessione in modo sicuro."
+  ],
+  "Session expired": [
+    "Session expir?e",
+    "Sitzung abgelaufen",
+    "Sessione scaduta"
+  ],
+  "Please wait while we return you to sign in.": [
+    "Veuillez patienter pendant votre retour ? la connexion.",
+    "Bitte warten Sie, w?hrend Sie zur Anmeldung zur?ckkehren.",
+    "Attendi mentre torniamo alla pagina di accesso."
+  ],
+  "Please wait while CelleXa prepares your content.": [
+    "Veuillez patienter pendant la pr?paration de votre contenu.",
+    "Bitte warten Sie, w?hrend CelleXa Ihre Inhalte vorbereitet.",
+    "Attendi mentre CelleXa prepara i contenuti."
+  ],
+  "Opening page": [
+    "Ouverture de la page",
+    "Seite wird ge?ffnet",
+    "Apertura pagina"
+  ],
+  "Loading CelleXa": [
+    "Chargement de CelleXa",
+    "CelleXa wird geladen",
+    "Caricamento di CelleXa"
+  ],
+  "Signing in": ["Connexion en cours", "Anmeldung l?uft", "Accesso in corso"],
+  "Please wait while we securely open your workspace.": [
+    "Veuillez patienter pendant l?ouverture s?curis?e de votre espace.",
+    "Bitte warten Sie, w?hrend Ihr Arbeitsbereich sicher ge?ffnet wird.",
+    "Attendi mentre apriamo in modo sicuro il tuo spazio."
+  ],
+  "Creating your account": [
+    "Cr?ation de votre compte",
+    "Ihr Konto wird erstellt",
+    "Creazione del tuo account"
+  ],
+  "Please wait while we prepare your CelleXa workspace.": [
+    "Veuillez patienter pendant la pr?paration de votre espace CelleXa.",
+    "Bitte warten Sie, w?hrend Ihr CelleXa-Arbeitsbereich vorbereitet wird.",
+    "Attendi mentre prepariamo il tuo spazio CelleXa."
+  ],
+  "Sending your message": [
+    "Envoi de votre message",
+    "Ihre Nachricht wird gesendet",
+    "Invio del messaggio"
+  ],
+  "Please wait while we send your message securely.": [
+    "Veuillez patienter pendant l?envoi s?curis? de votre message.",
+    "Bitte warten Sie, w?hrend Ihre Nachricht sicher gesendet wird.",
+    "Attendi mentre inviamo il messaggio in modo sicuro."
+  ],
+  "Updating profile image": [
+    "Mise ? jour de la photo de profil",
+    "Profilbild wird aktualisiert",
+    "Aggiornamento immagine profilo"
+  ],
+  "Saving your profile": [
+    "Enregistrement de votre profil",
+    "Profil wird gespeichert",
+    "Salvataggio del profilo"
+  ],
+  "Please wait while we securely update your account.": [
+    "Veuillez patienter pendant la mise ? jour s?curis?e de votre compte.",
+    "Bitte warten Sie, w?hrend Ihr Konto sicher aktualisiert wird.",
+    "Attendi mentre aggiorniamo in modo sicuro il tuo account."
+  ],
+  "Choose language": [
+    "Choisir la langue",
+    "Sprache w?hlen",
+    "Scegli la lingua"
+  ],
+  "Search orders, inventory or pages...": [
+    "Rechercher commandes, inventaire ou pages...",
+    "Bestellungen, Inventar oder Seiten suchen...",
+    "Cerca ordini, inventario o pagine..."
+  ],
+  "Clear search": ["Effacer la recherche", "Suche l?schen", "Cancella ricerca"],
+  "Search results": [
+    "R?sultats de recherche",
+    "Suchergebnisse",
+    "Risultati di ricerca"
+  ],
+  "Quick navigation": [
+    "Navigation rapide",
+    "Schnellnavigation",
+    "Navigazione rapida"
+  ],
+  "Pages": ["Pages", "Seiten", "Pagine"],
+  "Open page": ["Ouvrir la page", "Seite ?ffnen", "Apri pagina"],
+  "Unknown customer": [
+    "Client inconnu",
+    "Unbekannter Kunde",
+    "Cliente sconosciuto"
+  ],
+  "Stock": ["Stock", "Bestand", "Stock"],
+  "No results found": [
+    "Aucun r?sultat trouv?",
+    "Keine Ergebnisse gefunden",
+    "Nessun risultato trovato"
+  ],
+  "Try a different order number, customer, SKU or page name.": [
+    "Essayez un autre num?ro de commande, client, SKU ou nom de page.",
+    "Versuchen Sie eine andere Bestellnummer, einen Kunden, eine SKU oder einen Seitennamen.",
+    "Prova un altro numero d?ordine, cliente, SKU o nome pagina."
+  ],
+  "Enter at least two characters to search data.": [
+    "Saisissez au moins deux caract?res pour rechercher.",
+    "Geben Sie mindestens zwei Zeichen f?r die Suche ein.",
+    "Inserisci almeno due caratteri per cercare."
+  ],
+  "View all matching orders": [
+    "Voir toutes les commandes correspondantes",
+    "Alle passenden Bestellungen anzeigen",
+    "Visualizza tutti gli ordini corrispondenti"
+  ],
+  "Administration": ["Administration", "Verwaltung", "Amministrazione"],
+  "User management": [
+    "Gestion des utilisateurs",
+    "Benutzerverwaltung",
+    "Gestione utenti"
+  ],
+  "Subscriptions": ["Abonnements", "Abonnements", "Abbonamenti"],
+  "My subscription": [
+    "Mon abonnement",
+    "Mein Abonnement",
+    "Il mio abbonamento"
+  ],
+  "Search, filter and manage portal records securely.": [
+    "Recherchez, filtrez et g?rez les donn?es du portail en toute s?curit?.",
+    "Portal-Datens?tze sicher suchen, filtern und verwalten.",
+    "Cerca, filtra e gestisci in sicurezza i dati del portale."
+  ],
+  "Add new": ["Ajouter", "Neu hinzuf?gen", "Aggiungi"],
+  "Search by name or email": [
+    "Rechercher par nom ou e-mail",
+    "Nach Name oder E-Mail suchen",
+    "Cerca per nome o email"
+  ],
+  "No records found.": [
+    "Aucun enregistrement trouv?.",
+    "Keine Datens?tze gefunden.",
+    "Nessun record trovato."
+  ],
+  "Edit record": ["Modifier", "Datensatz bearbeiten", "Modifica record"],
+  "Add new record": [
+    "Ajouter un enregistrement",
+    "Datensatz hinzuf?gen",
+    "Aggiungi record"
+  ],
+  "Confirm deletion": [
+    "Confirmer la suppression",
+    "L?schen best?tigen",
+    "Conferma eliminazione"
+  ],
+  "This action cannot be undone.": [
+    "Cette action est irr?versible.",
+    "Diese Aktion kann nicht r?ckg?ngig gemacht werden.",
+    "Questa azione non pu? essere annullata."
+  ],
+  "Deleted successfully.": [
+    "Supprim? avec succ?s.",
+    "Erfolgreich gel?scht.",
+    "Eliminato con successo."
+  ],
+  "Created successfully.": [
+    "Cr?? avec succ?s.",
+    "Erfolgreich erstellt.",
+    "Creato con successo."
+  ],
+  "Updated successfully.": [
+    "Mis ? jour avec succ?s.",
+    "Erfolgreich aktualisiert.",
+    "Aggiornato con successo."
+  ],
+  "You do not have an active subscription yet.": [
+    "Vous n?avez pas encore d?abonnement actif.",
+    "Sie haben noch kein aktives Abonnement.",
+    "Non hai ancora un abbonamento attivo."
+  ],
+  "Current plan": ["Offre actuelle", "Aktueller Tarif", "Piano attuale"],
+  "View or change the plan connected to your account.": [
+    "Consultez ou modifiez l?offre li?e ? votre compte.",
+    "Tarif Ihres Kontos anzeigen oder ?ndern.",
+    "Visualizza o cambia il piano collegato al tuo account."
+  ],
+  "Choose plan": ["Choisir cette offre", "Tarif w?hlen", "Scegli piano"],
+  "Subscription updated successfully.": [
+    "Abonnement mis ? jour.",
+    "Abonnement erfolgreich aktualisiert.",
+    "Abbonamento aggiornato."
+  ],
+  "Unable to update subscription.": [
+    "Impossible de mettre ? jour l?abonnement.",
+    "Abonnement konnte nicht aktualisiert werden.",
+    "Impossibile aggiornare l?abbonamento."
+  ],
+  "Users & customers": [
+    "Utilisateurs et clients",
+    "Benutzer und Kunden",
+    "Utenti e clienti"
+  ],
+  "Sr #": ["N°", "Nr.", "N."],
+  "Enabled / disabled": [
+    "Activé / désactivé",
+    "Aktiviert / deaktiviert",
+    "Attivato / disattivato"
+  ],
+  "Enabled": ["Activé", "Aktiviert", "Attivato"],
+  "User enabled successfully.": [
+    "Utilisateur activé.",
+    "Benutzer erfolgreich aktiviert.",
+    "Utente attivato."
+  ],
+  "User disabled successfully.": [
+    "Utilisateur désactivé.",
+    "Benutzer erfolgreich deaktiviert.",
+    "Utente disattivato."
+  ],
+  "Unable to update user status.": [
+    "Impossible de modifier le statut de l’utilisateur.",
+    "Der Benutzerstatus konnte nicht aktualisiert werden.",
+    "Impossibile aggiornare lo stato dell’utente."
+  ]
+}

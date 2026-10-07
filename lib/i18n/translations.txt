@@ -1,0 +1,287 @@
+﻿Language|Langue|Sprache|Lingua
+Dashboard|Tableau de bord|Übersicht|Panoramica
+Dashboard overview|Vue d’ensemble|Übersicht|Panoramica generale
+Dashboard navigation|Navigation principale|Hauptnavigation|Navigazione principale
+Dashboard unavailable|Tableau de bord indisponible|Übersicht nicht verfügbar|Panoramica non disponibile
+Welcome back|Bon retour|Willkommen zurück|Bentornato
+Workspace|Espace de travail|Arbeitsbereich|Area di lavoro
+Marketplace Hub|Portail des marketplaces|Marktplatzportal|Portale marketplace
+Marketplaces|Marketplaces|Marktplätze|Marketplace
+Marketplace|Marketplace|Marktplatz|Marketplace
+Marketplace status|État des marketplaces|Marktplatzstatus|Stato dei marketplace
+Marketplace statistics|Statistiques des marketplaces|Marktplatzstatistiken|Statistiche dei marketplace
+Manage marketplaces|Gérer les marketplaces|Marktplätze verwalten|Gestisci marketplace
+Orders|Commandes|Bestellungen|Ordini
+Order|Commande|Bestellung|Ordine
+Order #|Commande n°|Bestellung Nr.|Ordine n.
+Order management|Gestion des commandes|Bestellverwaltung|Gestione ordini
+Order search|Recherche de commande|Bestellsuche|Ricerca ordini
+Order results|Résultats des commandes|Bestellergebnisse|Risultati ordini
+Recent orders|Commandes récentes|Neueste Bestellungen|Ordini recenti
+Total orders|Total des commandes|Bestellungen insgesamt|Ordini totali
+Pending orders|Commandes en attente|Ausstehende Bestellungen|Ordini in sospeso
+Total order value|Valeur totale des commandes|Gesamtbestellwert|Valore totale degli ordini
+Matching orders|Commandes correspondantes|Passende Bestellungen|Ordini corrispondenti
+Paid on this page|Payées sur cette page|Bezahlt auf dieser Seite|Pagati in questa pagina
+Value on this page|Valeur sur cette page|Wert auf dieser Seite|Valore in questa pagina
+Latest orders across your marketplaces|Dernières commandes de vos marketplaces|Neueste Bestellungen Ihrer Marktplätze|Ultimi ordini dei tuoi marketplace
+Your latest synchronized orders and marketplace connections.|Vos dernières commandes synchronisées et connexions aux marketplaces.|Ihre zuletzt synchronisierten Bestellungen und Marktplatzverbindungen.|Gli ultimi ordini sincronizzati e le connessioni ai marketplace.
+All imported orders, including cancelled and refunded|Toutes les commandes importées, y compris annulées et remboursées|Alle importierten Bestellungen, einschließlich stornierter und erstatteter|Tutti gli ordini importati, inclusi annullati e rimborsati
+All synchronized orders|Toutes les commandes synchronisées|Alle synchronisierten Bestellungen|Tutti gli ordini sincronizzati
+Orders with New or Pending status|Commandes nouvelles ou en attente|Bestellungen mit Status Neu oder Ausstehend|Ordini con stato Nuovo o In sospeso
+Connections with connected status|Connexions actives|Verbindungen mit Status Verbunden|Connessioni con stato Connesso
+Inventory|Stock|Bestand|Inventario
+Products|Produits|Produkte|Prodotti
+Product|Produit|Produkt|Prodotto
+Listings|Annonces|Angebote|Inserzioni
+Stock levels|Niveaux de stock|Bestandsmengen|Livelli di scorta
+Analytics|Analyses|Analysen|Analisi
+Overview|Vue d’ensemble|Übersicht|Panoramica
+Sales performance|Performance des ventes|Verkaufsleistung|Andamento delle vendite
+Order insights|Analyse des commandes|Bestellanalysen|Analisi degli ordini
+Inventory insights|Analyse du stock|Bestandsanalysen|Analisi dell’inventario
+Customers|Clients|Kunden|Clienti
+Settings|Paramètres|Einstellungen|Impostazioni
+Notifications|Notifications|Benachrichtigungen|Notifiche
+You’re all caught up|Vous êtes à jour|Sie sind auf dem neuesten Stand|Non ci sono novità
+New notifications will appear here.|Les nouvelles notifications apparaîtront ici.|Neue Benachrichtigungen erscheinen hier.|Le nuove notifiche appariranno qui.
+Open navigation|Ouvrir la navigation|Navigation öffnen|Apri navigazione
+Close navigation|Fermer la navigation|Navigation schließen|Chiudi navigazione
+Close menu|Fermer le menu|Menü schließen|Chiudi menu
+Open profile menu|Ouvrir le menu du profil|Profilmenü öffnen|Apri menu profilo
+Search orders, products or customers...|Rechercher des commandes, produits ou clients...|Bestellungen, Produkte oder Kunden suchen...|Cerca ordini, prodotti o clienti...
+Refresh|Actualiser|Aktualisieren|Aggiorna
+Refreshing...|Actualisation...|Wird aktualisiert...|Aggiornamento...
+Updating dashboard...|Mise à jour du tableau de bord...|Übersicht wird aktualisiert...|Aggiornamento della panoramica...
+Updating orders...|Mise à jour des commandes...|Bestellungen werden aktualisiert...|Aggiornamento degli ordini...
+View|Voir|Ansehen|Visualizza
+View all|Tout voir|Alle anzeigen|Mostra tutto
+View order|Voir la commande|Bestellung anzeigen|Visualizza ordine
+Back to dashboard|Retour au tableau de bord|Zurück zur Übersicht|Torna alla panoramica
+Back to orders|Retour aux commandes|Zurück zu Bestellungen|Torna agli ordini
+Back to marketplaces|Retour aux marketplaces|Zurück zu Marktplätzen|Torna ai marketplace
+Return to orders|Revenir aux commandes|Zurück zu Bestellungen|Torna agli ordini
+Return to marketplaces|Revenir aux marketplaces|Zurück zu Marktplätzen|Torna ai marketplace
+Go back|Retour|Zurück|Indietro
+Try again|Réessayer|Erneut versuchen|Riprova
+Please wait...|Veuillez patienter...|Bitte warten...|Attendi...
+Search|Rechercher|Suchen|Cerca
+Search order ID|Rechercher un numéro de commande|Bestell-ID suchen|Cerca ID ordine
+Filter orders|Filtrer les commandes|Bestellungen filtern|Filtra ordini
+Find orders using marketplace and order data.|Recherchez des commandes par marketplace et données de commande.|Bestellungen nach Marktplatz und Bestelldaten suchen.|Cerca ordini per marketplace e dati dell’ordine.
+All marketplaces|Toutes les marketplaces|Alle Marktplätze|Tutti i marketplace
+All statuses|Tous les statuts|Alle Status|Tutti gli stati
+Clear filters|Effacer les filtres|Filter zurücksetzen|Cancella filtri
+Apply|Appliquer|Anwenden|Applica
+Country|Pays|Land|Paese
+Per page|Par page|Pro Seite|Per pagina
+Status|Statut|Status|Stato
+New|Nouvelle|Neu|Nuovo
+Pending|En attente|Ausstehend|In sospeso
+Paid|Payée|Bezahlt|Pagato
+Processing|En traitement|In Bearbeitung|In elaborazione
+Shipped|Expédiée|Versandt|Spedito
+Delivered|Livrée|Zugestellt|Consegnato
+Completed|Terminée|Abgeschlossen|Completato
+Cancelled|Annulée|Storniert|Annullato
+Refunded|Remboursée|Erstattet|Rimborsato
+Unknown|Inconnu|Unbekannt|Sconosciuto
+Order not found|Commande introuvable|Bestellung nicht gefunden|Ordine non trovato
+No orders found|Aucune commande trouvée|Keine Bestellungen gefunden|Nessun ordine trovato
+No synchronized orders yet|Aucune commande synchronisée pour le moment|Noch keine synchronisierten Bestellungen|Nessun ordine sincronizzato
+No orders match the selected filters. Try removing one or more filters or synchronize your connected marketplaces.|Aucune commande ne correspond aux filtres. Retirez des filtres ou synchronisez vos marketplaces.|Keine Bestellungen entsprechen den Filtern. Entfernen Sie Filter oder synchronisieren Sie Ihre Marktplätze.|Nessun ordine corrisponde ai filtri. Rimuovi alcuni filtri o sincronizza i marketplace.
+This order does not exist or is not available to your account.|Cette commande n’existe pas ou n’est pas accessible à votre compte.|Diese Bestellung existiert nicht oder ist für Ihr Konto nicht verfügbar.|Questo ordine non esiste o non è disponibile per il tuo account.
+Review and track synchronized orders across all connected marketplaces.|Consultez et suivez les commandes synchronisées de toutes les marketplaces connectées.|Synchronisierte Bestellungen aller verbundenen Marktplätze anzeigen und verfolgen.|Consulta e monitora gli ordini sincronizzati di tutti i marketplace connessi.
+Review synchronized marketplace orders.|Consultez les commandes synchronisées des marketplaces.|Synchronisierte Marktplatzbestellungen anzeigen.|Consulta gli ordini sincronizzati dei marketplace.
+Order items|Articles de la commande|Bestellpositionen|Articoli dell’ordine
+Order activity|Activité de la commande|Bestellverlauf|Attività dell’ordine
+Order total|Total de la commande|Bestellsumme|Totale ordine
+Ordered|Commandée le|Bestellt|Ordinato
+Modified|Modifiée le|Geändert|Modificato
+Last synchronized|Dernière synchronisation|Zuletzt synchronisiert|Ultima sincronizzazione
+Internal CelleXa order ID:|Identifiant interne CelleXa :|Interne CelleXa-Bestell-ID:|ID ordine interno CelleXa:
+Internal ID:|Identifiant interne :|Interne ID:|ID interno:
+Item #|Article n°|Position Nr.|Articolo n.
+Products included in this marketplace order.|Produits inclus dans cette commande marketplace.|Produkte in dieser Marktplatzbestellung.|Prodotti inclusi in questo ordine marketplace.
+No order items available|Aucun article disponible|Keine Bestellpositionen verfügbar|Nessun articolo disponibile
+Quantity|Quantité|Menge|Quantità
+Unit price|Prix unitaire|Stückpreis|Prezzo unitario
+Commission|Commission|Provision|Commissione
+Condition|État|Zustand|Condizione
+Payment|Paiement|Zahlung|Pagamento
+Payment summary|Récapitulatif du paiement|Zahlungsübersicht|Riepilogo pagamento
+Subtotal|Sous-total|Zwischensumme|Subtotale
+Shipping|Livraison|Versand|Spedizione
+Tax|Taxe|Steuer|Imposta
+Total|Total|Gesamt|Totale
+Billing address|Adresse de facturation|Rechnungsadresse|Indirizzo di fatturazione
+Shipping address|Adresse de livraison|Lieferadresse|Indirizzo di spedizione
+Address information is not available.|Les coordonnées ne sont pas disponibles.|Adressinformationen sind nicht verfügbar.|L’indirizzo non è disponibile.
+Tracking|Suivi|Sendungsverfolgung|Tracciamento
+Tracking number|Numéro de suivi|Sendungsnummer|Numero di tracciamento
+Shipper|Transporteur|Versanddienstleister|Corriere
+Shipment and carrier information|Informations d’expédition et de transport|Versand- und Transportinformationen|Informazioni sulla spedizione e sul corriere
+Tracking information is not available yet.|Les informations de suivi ne sont pas encore disponibles.|Noch keine Sendungsverfolgung verfügbar.|Le informazioni di tracciamento non sono ancora disponibili.
+Open tracking page|Ouvrir le suivi|Sendungsverfolgung öffnen|Apri tracciamento
+Actions|Actions|Aktionen|Azioni
+Order pagination|Pagination des commandes|Bestellseitennavigation|Paginazione ordini
+Orders pagination|Pagination des commandes|Bestellseitennavigation|Paginazione ordini
+Go to previous page|Page précédente|Vorherige Seite|Pagina precedente
+Go to next page|Page suivante|Nächste Seite|Pagina successiva
+Showing|Affichage|Anzeige|Visualizzazione
+of|sur|von|di
+to|à|bis|a
+orders|commandes|Bestellungen|ordini
+shown|affichées|angezeigt|mostrati
+item|article|Position|articolo
+items|articles|Positionen|articoli
+Integrations|Intégrations|Integrationen|Integrazioni
+Connected|Connectée|Verbunden|Connesso
+Connected marketplaces|Marketplaces connectées|Verbundene Marktplätze|Marketplace connessi
+Available|Disponible|Verfügbar|Disponibile
+Available marketplaces|Marketplaces disponibles|Verfügbare Marktplätze|Marketplace disponibili
+Not connected|Non connectée|Nicht verbunden|Non connesso
+Disconnected|Déconnectée|Getrennt|Disconnesso
+Disabled|Désactivée|Deaktiviert|Disabilitato
+Testing|Test en cours|Wird getestet|Test in corso
+Connection failed|Échec de connexion|Verbindung fehlgeschlagen|Connessione non riuscita
+Failed|Échec|Fehlgeschlagen|Non riuscito
+Running|En cours|Läuft|In corso
+Queued|En file d’attente|In Warteschlange|In coda
+Successful|Réussies|Erfolgreich|Riusciti
+Processed|Traitées|Verarbeitet|Elaborati
+Total integrations|Total des intégrations|Integrationen insgesamt|Integrazioni totali
+No connected marketplaces|Aucune marketplace connectée|Keine verbundenen Marktplätze|Nessun marketplace connesso
+All marketplaces are connected|Toutes les marketplaces sont connectées|Alle Marktplätze sind verbunden|Tutti i marketplace sono connessi
+No marketplaces available yet.|Aucune marketplace disponible pour le moment.|Noch keine Marktplätze verfügbar.|Nessun marketplace disponibile.
+connected sales channels|canaux de vente connectés|verbundene Verkaufskanäle|canali di vendita connessi
+orders this month|commandes ce mois-ci|Bestellungen diesen Monat|ordini questo mese
+Connect or sync a marketplace|Connecter ou synchroniser une marketplace|Marktplatz verbinden oder synchronisieren|Connetti o sincronizza un marketplace
+Connect and manage marketplace accounts, synchronization settings and integration health from one place.|Connectez et gérez vos comptes marketplace, la synchronisation et l’état des intégrations au même endroit.|Marktplatzkonten, Synchronisierung und Integrationsstatus zentral verwalten.|Connetti e gestisci account marketplace, sincronizzazione e stato delle integrazioni da un unico posto.
+Active marketplace accounts currently managed through CelleXa.|Comptes marketplace actifs gérés par CelleXa.|Aktive, über CelleXa verwaltete Marktplatzkonten.|Account marketplace attivi gestiti tramite CelleXa.
+Add another marketplace account to your CelleXa workspace.|Ajoutez un autre compte marketplace à votre espace CelleXa.|Fügen Sie Ihrem CelleXa-Arbeitsbereich ein weiteres Marktplatzkonto hinzu.|Aggiungi un altro account marketplace alla tua area CelleXa.
+Set up an available marketplace to manage its products, orders and inventory through CelleXa.|Configurez une marketplace pour gérer ses produits, commandes et stocks avec CelleXa.|Richten Sie einen Marktplatz ein, um Produkte, Bestellungen und Bestände über CelleXa zu verwalten.|Configura un marketplace per gestire prodotti, ordini e scorte tramite CelleXa.
+There are no additional marketplace integrations available for setup.|Aucune autre intégration marketplace n’est disponible.|Keine weiteren Marktplatzintegrationen verfügbar.|Non ci sono altre integrazioni marketplace disponibili.
+Marketplace integration|Intégration marketplace|Marktplatzintegration|Integrazione marketplace
+Marketplace not found|Marketplace introuvable|Marktplatz nicht gefunden|Marketplace non trovato
+The marketplace does not exist, is inactive, or the address may be incorrect.|La marketplace n’existe pas, est inactive ou l’adresse est incorrecte.|Der Marktplatz existiert nicht, ist inaktiv oder die Adresse ist falsch.|Il marketplace non esiste, è inattivo o l’indirizzo è errato.
+Marketplace account and connection details.|Détails du compte et de la connexion marketplace.|Marktplatzkonto und Verbindungsdetails.|Dettagli dell’account e della connessione marketplace.
+Marketplace connection issue|Problème de connexion marketplace|Problem mit der Marktplatzverbindung|Problema di connessione al marketplace
+Connection information|Informations de connexion|Verbindungsinformationen|Informazioni sulla connessione
+Connection health|État de la connexion|Verbindungsstatus|Stato della connessione
+Supported features|Fonctionnalités prises en charge|Unterstützte Funktionen|Funzionalità supportate
+No capabilities configured|Aucune fonctionnalité configurée|Keine Funktionen konfiguriert|Nessuna funzionalità configurata
+Connect|Connecter|Verbinden|Connetti
+Connecting...|Connexion...|Verbindung wird hergestellt...|Connessione...
+Connect this marketplace|Connecter cette marketplace|Diesen Marktplatz verbinden|Connetti questo marketplace
+Set up|Configurer|Einrichten|Configura
+Set up connection|Configurer la connexion|Verbindung einrichten|Configura connessione
+Configure the marketplace account and choose what CelleXa should synchronize.|Configurez le compte marketplace et choisissez les données à synchroniser.|Marktplatzkonto konfigurieren und zu synchronisierende Daten auswählen.|Configura l’account marketplace e scegli i dati da sincronizzare.
+Add the marketplace account credentials and choose which supported data CelleXa should synchronize.|Ajoutez les identifiants du compte et choisissez les données à synchroniser.|Kontozugangsdaten eingeben und zu synchronisierende Daten auswählen.|Inserisci le credenziali e scegli i dati da sincronizzare.
+Account|Compte|Konto|Account
+Account name|Nom du compte|Kontoname|Nome account
+Account Name|Nom du compte|Kontoname|Nome account
+Account ID|Identifiant du compte|Konto-ID|ID account
+External account ID|Identifiant du compte externe|Externe Konto-ID|ID account esterno
+Credentials|Identifiants|Zugangsdaten|Credenziali
+API key|Clé API|API-Schlüssel|Chiave API
+API credential saved|Identifiant API enregistré|API-Zugangsdaten gespeichert|Credenziali API salvate
+Enter a new API key|Saisissez une nouvelle clé API|Neuen API-Schlüssel eingeben|Inserisci una nuova chiave API
+Enter marketplace API key|Saisissez la clé API de la marketplace|API-Schlüssel des Marktplatzes eingeben|Inserisci la chiave API del marketplace
+Show API key|Afficher la clé API|API-Schlüssel anzeigen|Mostra chiave API
+Hide API key|Masquer la clé API|API-Schlüssel ausblenden|Nascondi chiave API
+(optional)|(facultatif)|(optional)|(facoltativo)
+Secure credential handling|Gestion sécurisée des identifiants|Sichere Verwaltung der Zugangsdaten|Gestione sicura delle credenziali
+The API key is sent through the secure CelleXa server proxy. It is never stored in browser storage or displayed after connection.|La clé API est transmise via le serveur sécurisé CelleXa. Elle n’est jamais stockée dans le navigateur ni affichée après la connexion.|Der API-Schlüssel wird über den sicheren CelleXa-Server übertragen. Er wird weder im Browser gespeichert noch nach der Verbindung angezeigt.|La chiave API viene inviata tramite il server sicuro CelleXa. Non viene salvata nel browser né mostrata dopo la connessione.
+For security, CelleXa never displays the saved API key. Use Edit settings to replace it.|Pour votre sécurité, CelleXa n’affiche jamais la clé enregistrée. Modifiez les paramètres pour la remplacer.|CelleXa zeigt den gespeicherten API-Schlüssel niemals an. Ersetzen Sie ihn über Einstellungen bearbeiten.|Per sicurezza, CelleXa non mostra mai la chiave API salvata. Usa Modifica impostazioni per sostituirla.
+Edit settings|Modifier les paramètres|Einstellungen bearbeiten|Modifica impostazioni
+Saving...|Enregistrement...|Wird gespeichert...|Salvataggio...
+Synchronization settings|Paramètres de synchronisation|Synchronisierungseinstellungen|Impostazioni di sincronizzazione
+Synchronization type|Type de synchronisation|Synchronisierungstyp|Tipo di sincronizzazione
+Enabled synchronization|Synchronisation activée|Aktivierte Synchronisierung|Sincronizzazione abilitata
+Data types currently enabled for automatic synchronization.|Types de données activés pour la synchronisation automatique.|Für automatische Synchronisierung aktivierte Datentypen.|Tipi di dati abilitati per la sincronizzazione automatica.
+Choose the data CelleXa should synchronize for this marketplace.|Choisissez les données à synchroniser pour cette marketplace.|Wählen Sie die zu synchronisierenden Daten für diesen Marktplatz.|Scegli i dati da sincronizzare per questo marketplace.
+Import and update marketplace orders.|Importer et mettre à jour les commandes.|Marktplatzbestellungen importieren und aktualisieren.|Importa e aggiorna gli ordini del marketplace.
+Keep product and listing information synchronized.|Synchroniser les produits et les annonces.|Produkt- und Angebotsinformationen synchronisieren.|Mantieni sincronizzati prodotti e inserzioni.
+Keep marketplace stock quantities up to date.|Maintenir les quantités en stock à jour.|Bestandsmengen des Marktplatzes aktuell halten.|Mantieni aggiornate le quantità in magazzino.
+Manual synchronization|Synchronisation manuelle|Manuelle Synchronisierung|Sincronizzazione manuale
+Queue a full synchronization or synchronize one supported data type.|Lancez une synchronisation complète ou d’un type de données.|Vollständige Synchronisierung oder einen Datentyp starten.|Avvia una sincronizzazione completa o di un tipo di dati.
+Synchronize|Synchroniser|Synchronisieren|Sincronizza
+Starting sync...|Démarrage de la synchronisation...|Synchronisierung startet...|Avvio sincronizzazione...
+Latest synchronization request|Dernière demande de synchronisation|Letzte Synchronisierungsanfrage|Ultima richiesta di sincronizzazione
+Last synchronization|Dernière synchronisation|Letzte Synchronisierung|Ultima sincronizzazione
+Last connection test|Dernier test de connexion|Letzter Verbindungstest|Ultimo test di connessione
+Test connection|Tester la connexion|Verbindung testen|Verifica connessione
+Testing connection...|Test de connexion...|Verbindung wird getestet...|Verifica connessione...
+Test the saved marketplace credentials and connection availability.|Testez les identifiants enregistrés et la disponibilité de la connexion.|Gespeicherte Zugangsdaten und Verbindung prüfen.|Verifica le credenziali salvate e la disponibilità della connessione.
+Created|Créée le|Erstellt|Creato
+Started|Démarrée le|Gestartet|Avviato
+Danger zone|Zone à risque|Gefahrenbereich|Zona pericolosa
+Disconnect|Déconnecter|Trennen|Disconnetti
+Disconnect marketplace|Déconnecter la marketplace|Marktplatz trennen|Disconnetti marketplace
+Disconnecting...|Déconnexion...|Verbindung wird getrennt...|Disconnessione...
+Disconnecting stops future marketplace synchronization.|La déconnexion arrête les synchronisations futures.|Durch Trennen werden zukünftige Synchronisierungen gestoppt.|La disconnessione interrompe le sincronizzazioni future.
+CelleXa will stop synchronizing this marketplace. The saved connection credentials and settings will be removed. This action does not delete data from the marketplace itself.|CelleXa arrêtera la synchronisation. Les identifiants et paramètres enregistrés seront supprimés. Les données de la marketplace ne seront pas supprimées.|CelleXa beendet die Synchronisierung. Gespeicherte Zugangsdaten und Einstellungen werden entfernt. Die Daten des Marktplatzes selbst bleiben erhalten.|CelleXa interromperà la sincronizzazione. Credenziali e impostazioni salvate verranno rimosse. I dati del marketplace non verranno eliminati.
+Cancel|Annuler|Abbrechen|Annulla
+Close dialog|Fermer la boîte de dialogue|Dialog schließen|Chiudi finestra
+Close confirmation dialog|Fermer la confirmation|Bestätigung schließen|Chiudi conferma
+Close marketplace setup dialog|Fermer la configuration marketplace|Marktplatzeinrichtung schließen|Chiudi configurazione marketplace
+Dismiss notification|Fermer la notification|Benachrichtigung schließen|Chiudi notifica
+Attention|Attention|Achtung|Attenzione
+My profile|Mon profil|Mein Profil|Il mio profilo
+My Profile|Mon profil|Mein Profil|Il mio profilo
+Personal information|Informations personnelles|Persönliche Informationen|Informazioni personali
+Full name|Nom complet|Vollständiger Name|Nome completo
+Email address|Adresse e-mail|E-Mail-Adresse|Indirizzo e-mail
+Role|Rôle|Rolle|Ruolo
+Account role|Rôle du compte|Kontorolle|Ruolo dell’account
+Account status|Statut du compte|Kontostatus|Stato dell’account
+Active account|Compte actif|Aktives Konto|Account attivo
+Inactive account|Compte inactif|Inaktives Konto|Account inattivo
+Information associated with your Cellexa account.|Informations associées à votre compte CelleXa.|Informationen zu Ihrem CelleXa-Konto.|Informazioni associate al tuo account CelleXa.
+View your personal information, role and account status.|Consultez vos informations personnelles, votre rôle et le statut du compte.|Persönliche Informationen, Rolle und Kontostatus anzeigen.|Visualizza informazioni personali, ruolo e stato dell’account.
+Security|Sécurité|Sicherheit|Sicurezza
+Review account access and security information.|Consultez les informations d’accès et de sécurité.|Kontozugriff und Sicherheitsinformationen prüfen.|Consulta le informazioni di accesso e sicurezza.
+Last successful login|Dernière connexion réussie|Letzte erfolgreiche Anmeldung|Ultimo accesso riuscito
+Password|Mot de passe|Passwort|Password
+Password changes will be available after the corresponding Laravel endpoint is implemented.|La modification du mot de passe n’est pas encore disponible.|Passwortänderungen sind noch nicht verfügbar.|La modifica della password non è ancora disponibile.
+Sign in|Se connecter|Anmelden|Accedi
+Sign in to CelleXa|Se connecter à CelleXa|Bei CelleXa anmelden|Accedi a CelleXa
+Signing in...|Connexion...|Anmeldung läuft...|Accesso in corso...
+Enter your account details to access the management portal.|Saisissez vos identifiants pour accéder au portail.|Geben Sie Ihre Kontodaten ein, um auf das Portal zuzugreifen.|Inserisci le credenziali per accedere al portale.
+Enter your registered email|Saisissez votre e-mail enregistré|Registrierte E-Mail-Adresse eingeben|Inserisci l’e-mail registrata
+Enter your password|Saisissez votre mot de passe|Passwort eingeben|Inserisci la password
+Show password|Afficher le mot de passe|Passwort anzeigen|Mostra password
+Hide password|Masquer le mot de passe|Passwort ausblenden|Nascondi password
+Minimum 8 characters|8 caractères minimum|Mindestens 8 Zeichen|Minimo 8 caratteri
+Protected and secure access|Accès protégé et sécurisé|Geschützter und sicherer Zugang|Accesso protetto e sicuro
+Unified orders|Commandes centralisées|Zentrale Bestellungen|Ordini centralizzati
+Product control|Gestion des produits|Produktverwaltung|Gestione prodotti
+Manage marketplace orders from one secure workspace.|Gérez vos commandes depuis un espace sécurisé unique.|Marktplatzbestellungen in einem sicheren Arbeitsbereich verwalten.|Gestisci gli ordini da un’unica area sicura.
+Keep products and listings organized and synchronized.|Organisez et synchronisez vos produits et annonces.|Produkte und Angebote organisieren und synchronisieren.|Mantieni prodotti e inserzioni organizzati e sincronizzati.
+Manage every marketplace from one place.|Gérez toutes vos marketplaces au même endroit.|Alle Marktplätze zentral verwalten.|Gestisci tutti i marketplace da un unico posto.
+Control products, listings, orders and marketplace performance through one centralized management portal.|Gérez produits, annonces, commandes et performances via un portail centralisé.|Produkte, Angebote, Bestellungen und Leistung über ein zentrales Portal verwalten.|Gestisci prodotti, inserzioni, ordini e prestazioni tramite un portale centralizzato.
+Cellexa. All rights reserved.|Cellexa. Tous droits réservés.|Cellexa. Alle Rechte vorbehalten.|Cellexa. Tutti i diritti riservati.
+Loading dashboard data|Chargement du tableau de bord|Übersicht wird geladen|Caricamento panoramica
+Loading marketplace details|Chargement de la marketplace|Marktplatzdetails werden geladen|Caricamento dettagli marketplace
+Loading marketplaces|Chargement des marketplaces|Marktplätze werden geladen|Caricamento marketplace
+Loading order details|Chargement de la commande|Bestelldetails werden geladen|Caricamento dettagli ordine
+Loading orders|Chargement des commandes|Bestellungen werden geladen|Caricamento ordini
+Opening orders|Ouverture des commandes|Bestellungen werden geöffnet|Apertura ordini
+Unable to load marketplace|Impossible de charger la marketplace|Marktplatz kann nicht geladen werden|Impossibile caricare il marketplace
+Unable to load marketplaces|Impossible de charger les marketplaces|Marktplätze können nicht geladen werden|Impossibile caricare i marketplace
+Unable to load order|Impossible de charger la commande|Bestellung kann nicht geladen werden|Impossibile caricare l’ordine
+The marketplace response was incomplete.|La réponse de la marketplace est incomplète.|Die Marktplatzantwort war unvollständig.|La risposta del marketplace è incompleta.
+The order response was incomplete.|La réponse de la commande est incomplète.|Die Bestellantwort war unvollständig.|La risposta dell’ordine è incompleta.
+Showing previous data. Use Refresh to retry.|Les données précédentes sont affichées. Actualisez pour réessayer.|Vorherige Daten werden angezeigt. Zum Wiederholen aktualisieren.|Sono mostrati i dati precedenti. Aggiorna per riprovare.
+Not available|Indisponible|Nicht verfügbar|Non disponibile
+Never|Jamais|Nie|Mai
+Sign out|Se déconnecter|Abmelden|Esci
+Signing out...|Déconnexion...|Abmeldung läuft...|Uscita in corso...
+Full synchronization|Synchronisation complète|Vollständige Synchronisierung|Sincronizzazione completa
+Orders only|Commandes uniquement|Nur Bestellungen|Solo ordini
+Products only|Produits uniquement|Nur Produkte|Solo prodotti
+Inventory only|Stock uniquement|Nur Bestand|Solo inventario
+Save changes|Enregistrer les modifications|Änderungen speichern|Salva modifiche
+Save settings|Enregistrer les paramètres|Einstellungen speichern|Salva impostazioni
+Amount|Montant|Betrag|Importo
