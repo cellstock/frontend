@@ -1,0 +1,3 @@
+{
+  "/api/merchant-addresses/[addressId]/route": "app/api/merchant-addresses/[addressId]/route.js"
+}

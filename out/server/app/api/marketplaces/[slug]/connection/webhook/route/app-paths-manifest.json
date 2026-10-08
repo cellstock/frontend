@@ -1,0 +1,3 @@
+{
+  "/api/marketplaces/[slug]/connection/webhook/route": "app/api/marketplaces/[slug]/connection/webhook/route.js"
+}

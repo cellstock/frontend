@@ -1,0 +1,3 @@
+{
+  "/api/inventory/sync/route": "app/api/inventory/sync/route.js"
+}
