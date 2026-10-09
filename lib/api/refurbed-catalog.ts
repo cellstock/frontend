@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/public-path";
 export interface RefurbedCatalogImport {
   id: number;
   file_name: string;
@@ -21,7 +22,7 @@ export interface RefurbedCatalogItem {
 }
 
 async function catalogRequest<T>(url: string, options?: RequestInit) {
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     ...options,
     credentials: "include",
     cache: "no-store",

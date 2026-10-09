@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/public-path";
 
 import {
   AlertCircle,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import { useI18n } from "@/components/i18n/language-provider";
 import { useDashboardUser } from "@/components/dashboard/dashboard-provider";
 import { formatUserRole } from "@/lib/auth/user-display";
@@ -92,7 +93,7 @@ export function ProfileContent() {
     setErrors({});
     setMessage("");
     try {
-      const response = await fetch("/api/auth/profile", {
+      const response = await apiFetch("/api/auth/profile", {
         method: "PATCH",
         headers: {
           Accept: "application/json",
@@ -167,7 +168,7 @@ export function ProfileContent() {
     try {
       const body = new FormData();
       body.append("avatar", file);
-      const response = await fetch("/api/auth/profile/avatar", {
+      const response = await apiFetch("/api/auth/profile/avatar", {
         method: "POST",
         body,
       });
@@ -197,7 +198,7 @@ export function ProfileContent() {
     setErrors({});
     setMessage("");
     try {
-      const response = await fetch("/api/auth/profile/avatar", {
+      const response = await apiFetch("/api/auth/profile/avatar", {
         method: "DELETE",
       });
       const result = (await response.json()) as {

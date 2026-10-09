@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/public-path";
 import type {
   OrderApiErrorResponse,
   OrderFilters,
@@ -220,7 +221,7 @@ export async function uploadOrderInvoice(
 ): Promise<{ success: boolean; message: string }> {
   const body = new FormData();
   body.append("file", file);
-  const response = await fetch(`/api/orders/${orderId}/invoice`, {
+  const response = await apiFetch(`/api/orders/${orderId}/invoice`, {
     method: "POST",
     credentials: "include",
     body,
@@ -309,7 +310,7 @@ async function orderApiRequest<T>(
   let response: Response;
 
   try {
-    response = await fetch(endpoint, {
+    response = await apiFetch(endpoint, {
       method: "GET",
       ...(options.method ? { method: options.method } : {}),
       credentials: "include",

@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/public-path";
 import { Check, CreditCard, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/i18n/language-provider";
@@ -20,8 +21,8 @@ export default function Page() {
   const [message, setMessage] = useState("");
   useEffect(() => {
     void Promise.all([
-      fetch("/api/subscription"),
-      fetch("/api/subscription/plans"),
+      apiFetch("/api/subscription"),
+      apiFetch("/api/subscription/plans"),
     ])
       .then(async ([subscriptionResponse, plansResponse]) => {
         const subscription = await subscriptionResponse.json();
@@ -38,7 +39,7 @@ export default function Page() {
     setError("");
     setMessage("");
     try {
-      const response = await fetch("/api/subscription", {
+      const response = await apiFetch("/api/subscription", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan_id: planId }),

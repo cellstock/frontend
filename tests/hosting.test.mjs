@@ -5,7 +5,8 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { readFileSync, existsSync } from "node:fs";
 
-test("PHP gateway preserves authentication, routes, uploads, and access checks", async (t) => {
+for (const basePath of ["", "/frontend/out"]) {
+test("PHP gateway preserves authentication, routes, uploads, and access checks at " + (basePath || "/"), async (t) => {
   const requests = [];
   const upstream = createServer(async (req, res) => {
     const chunks = [];
@@ -82,6 +83,7 @@ test("PHP gateway preserves authentication, routes, uploads, and access checks",
       windowsHide: true,
       env: {
         ...process.env,
+        CELLEXA_BASE_PATH: basePath,
         LARAVEL_API_URL: "http://127.0.0.1:" + upstream.address().port + "/api",
       },
       stdio: ["ignore", "pipe", "pipe"],
@@ -110,7 +112,7 @@ test("PHP gateway preserves authentication, routes, uploads, and access checks",
   for (let attempt = 0; attempt < 100; attempt++) {
     if (spawnError) throw spawnError;
     try {
-      await fetch(origin + "/api/auth/me");
+      await fetch(origin + basePath + "/api/auth/me");
       break;
     } catch {
       if (attempt === 99) throw new Error(logs);
@@ -118,7 +120,7 @@ test("PHP gateway preserves authentication, routes, uploads, and access checks",
     }
   }
   const call = (path, options = {}) =>
-    fetch(origin + "/api" + path, {
+    fetch(origin + basePath + "/api" + path, {
       ...options,
       headers: {
         Origin: origin,
@@ -292,6 +294,8 @@ test("PHP gateway preserves authentication, routes, uploads, and access checks",
   assert.doesNotMatch(logs, /PHP (Warning|Fatal|Parse)/);
 });
 
+}
+
 test("export contains HTML pages and PHP gateway, without Node server output", () => {
   for (const file of [
     "index.html",
@@ -310,4 +314,17 @@ test("export contains HTML pages and PHP gateway, without Node server output", (
   assert.equal(existsSync("out/server"), false);
   assert.equal(existsSync("out/package.json"), false);
   assert.match(readFileSync("out/.htaccess", "utf8"), /api\/index\.php/);
+});
+
+test("CSS, scripts and error-page URLs match the configured deployment path", () => {
+  const config = readFileSync("out/api/config.php", "utf8");
+  const basePath = config.match(/'base_path' => '([^']*)'/)[1];
+  const html = readFileSync("out/index.html", "utf8");
+  const assets = [...html.matchAll(/(?:href|src)="([^"]*\/_next\/[^"]+)"/g)].map((match) => match[1]);
+  assert.ok(assets.some((asset) => asset.endsWith(".css")), "No exported CSS reference");
+  for (const asset of assets) {
+    assert.ok(asset.startsWith(basePath + "/_next/"), asset);
+    assert.ok(existsSync("out" + asset.slice(basePath.length)), "Missing asset: " + asset);
+  }
+  assert.ok(readFileSync("out/.htaccess", "utf8").includes("ErrorDocument 404 " + basePath + "/404.html"));
 });

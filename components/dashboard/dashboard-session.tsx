@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch, publicPath } from "@/lib/public-path";
 
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -16,7 +17,7 @@ export function DashboardSession({ children }: { children: ReactNode }) {
     const controller = new AbortController();
     async function loadSession() {
       try {
-        const response = await fetch("/api/auth/me", {
+        const response = await apiFetch("/api/auth/me", {
           cache: "no-store",
           credentials: "same-origin",
           signal: controller.signal,
@@ -29,7 +30,7 @@ export function DashboardSession({ children }: { children: ReactNode }) {
         if (!response.ok || !result.success || !result.data?.user)
           throw new Error(result.message || "Unable to check your session.");
         if (result.data.user.status !== "active") {
-          window.location.replace("/api/auth/clear-session");
+          window.location.replace(publicPath("/api/auth/clear-session"));
           return;
         }
         setUser(result.data.user);
@@ -61,7 +62,7 @@ export function DashboardSession({ children }: { children: ReactNode }) {
         >
           Try again
         </button>
-        <a className="ml-4 underline" href="/login/">
+        <a className="ml-4 underline" href={publicPath("/login/")}>
           Sign in
         </a>
       </main>

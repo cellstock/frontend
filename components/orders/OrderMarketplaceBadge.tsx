@@ -1,5 +1,5 @@
 import { Store } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 
 import type { OrderMarketplace } from "@/types/order";
 

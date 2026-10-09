@@ -89,6 +89,11 @@ try {
   await send("Page.navigate", { url: origin + "/dashboard/settings/" });
   await until(() => evaluate('location.pathname === "/login/" && !!document.querySelector("#email")'), "anonymous dashboard redirect");
   console.log("PASS anonymous dashboard redirects to login");
+  const stylesheet = await evaluate('document.querySelector(\'link[rel="stylesheet"]\').getAttribute("href")');
+  assert.ok(stylesheet.startsWith("/_next/"), stylesheet);
+  assert.equal((await readHttp(origin + stylesheet)).status, 200);
+  assert.equal(await evaluate('getComputedStyle(document.querySelector(\'button[type="submit"]\')).display'), "flex");
+  console.log("PASS CSS loads and styles apply beneath /");
   await evaluate(`(() => {
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
     for (const [id, value] of [["email", "hosting@example.test"], ["password", "password123"]]) {

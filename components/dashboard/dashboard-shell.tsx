@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch, publicPath } from "@/lib/public-path";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/language-provider";
 
@@ -27,7 +28,7 @@ import {
   type ReactNode,
   type FormEvent,
 } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import { FullScreenTransition } from "@/components/ui/full-screen-transition";
 import { GlobalSearch } from "@/components/dashboard/global-search";
 
@@ -374,7 +375,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
     setIsSigningOut(true);
     setLogoutError("");
     try {
-      const response = await fetch("/api/auth/logout", {
+      const response = await apiFetch("/api/auth/logout", {
         method: "POST",
         headers: { Accept: "application/json" },
       });
@@ -657,7 +658,7 @@ export function DashboardShell({ children, user }: DashboardShellProps) {
 
                   <div className="border-t border-slate-100 p-2">
                     <form
-                      action="/api/auth/logout"
+                      action={publicPath("/api/auth/logout")}
                       method="POST"
                       onSubmit={signOut}
                     >

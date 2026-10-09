@@ -8,7 +8,7 @@ import {
   RefreshCw,
   Store,
 } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import { useRouter } from "next/navigation";
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 

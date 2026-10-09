@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/public-path";
 import type {
   InventoryInstance,
   InventoryOffer,
@@ -45,7 +46,7 @@ export class InventoryApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     credentials: "include",
     cache: "no-store",
     headers: { Accept: "application/json", ...options.headers },

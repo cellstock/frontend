@@ -1,4 +1,5 @@
 "use client";
+import { publicPath } from "@/lib/public-path";
 import { useI18n } from "@/components/i18n/language-provider";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -109,7 +110,7 @@ export function OrderPagination({
 
     const queryString = parameters.toString();
 
-    const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    const nextUrl = publicPath(queryString ? `${pathname}?${queryString}` : pathname);
     if (nextUrl !== window.location.pathname + window.location.search) {
       window.history.pushState(null, "", nextUrl);
     }

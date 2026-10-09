@@ -1,9 +1,10 @@
+import { apiFetch } from "@/lib/public-path";
 import type { DashboardData } from "@/types/dashboard";
 
 export async function getDashboardData(
   signal?: AbortSignal,
 ): Promise<DashboardData> {
-  const response = await fetch("/api/dashboard", {
+  const response = await apiFetch("/api/dashboard", {
     credentials: "include",
     cache: "no-store",
     signal,

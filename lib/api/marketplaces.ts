@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/public-path";
 import type {
   ApiErrorResponse,
   ApiSuccessResponse,
@@ -72,7 +73,7 @@ async function apiRequest<T>(
   let response: Response;
 
   try {
-    response = await fetch(endpoint, {
+    response = await apiFetch(endpoint, {
       method,
       credentials: "include",
       headers: {

@@ -8,7 +8,7 @@ import {
   RefreshCw,
   Search,
 } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import { useEffect, useMemo, useState } from "react";
 import { InventoryShell } from "@/components/inventory/InventoryTablePage";
 import { ContentLoading } from "@/components/ui/ContentLoading";

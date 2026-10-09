@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/public-path";
 export interface ShippingProfileDestination {
   market_code: string;
   market_name?: string | null;
@@ -51,7 +52,7 @@ export interface ShippingProfilePagination {
 export class ShippingProfileApiError extends Error {}
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     credentials: "include",
     cache: "no-store",
     headers: { Accept: "application/json", ...options.headers },

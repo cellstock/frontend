@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/public-path";
 export type MerchantAddressRecord = {
   id: number;
   external_id: string;
@@ -24,7 +25,7 @@ export type MerchantAddressInput = Omit<
 >;
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     credentials: "include",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     cache: "no-store",

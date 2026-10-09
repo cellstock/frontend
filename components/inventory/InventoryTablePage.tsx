@@ -19,7 +19,7 @@ import {
   XCircle,
   X,
 } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import AppLink from "@/components/ui/AppLink";

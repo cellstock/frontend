@@ -1,4 +1,5 @@
 "use client";
+import { publicPath } from "@/lib/public-path";
 import { useI18n } from "@/components/i18n/language-provider";
 
 import { Filter, RotateCcw, Search } from "lucide-react";
@@ -64,7 +65,7 @@ export function OrderFilters({
 
     const queryString = parameters.toString();
 
-    const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    const nextUrl = publicPath(queryString ? `${pathname}?${queryString}` : pathname);
     if (nextUrl !== window.location.pathname + window.location.search) {
       window.history.pushState(null, "", nextUrl);
     }
@@ -84,7 +85,7 @@ export function OrderFilters({
     setCountryCode("");
 
     if (window.location.search) {
-      window.history.pushState(null, "", pathname);
+      window.history.pushState(null, "", publicPath(pathname));
     }
   }
 

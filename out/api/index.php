@@ -24,17 +24,23 @@ function authCookie(string $token = ''): void
 {
     setcookie('cellexa_token', $token, [
         'expires' => $token === '' ? time() - 3600 : time() + 28800,
-        'path' => '/',
+        'path' => CELLEXA_BASE_PATH . '/',
         'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
 }
 
+$config = is_file(__DIR__ . '/config.php') ? require __DIR__ . '/config.php' : [];
+$configuredPath = getenv('CELLEXA_BASE_PATH');
+$basePath = rtrim($configuredPath !== false ? $configuredPath : ($config['base_path'] ?? ''), '/');
+if (!preg_match('~^(?:/[a-zA-Z0-9_-]+)*$~', $basePath)) fail('Invalid deployment path.', 503);
+define('CELLEXA_BASE_PATH', $basePath);
+
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-if (!is_string($path) || !str_starts_with($path, '/api/')) fail('Not found.', 404);
-$endpoint = rtrim(substr($path, 4), '/');
+if (!is_string($path) || !str_starts_with($path, $basePath . '/api/')) fail('Not found.', 404);
+$endpoint = rtrim(substr($path, strlen($basePath) + 4), '/');
 
 // Prevent encoded traversal, alternate separators, and header injection.
 foreach (explode('/', ltrim($endpoint, '/')) as $segment) {
@@ -102,7 +108,7 @@ if (!in_array($method, $allowed, true)) {
 }
 if ($endpoint === '/auth/clear-session') {
     authCookie();
-    header('Location: /login/', true, 303);
+    header('Location: ' . CELLEXA_BASE_PATH . '/login/', true, 303);
     exit;
 }
 
@@ -111,7 +117,7 @@ $token = $_COOKIE['cellexa_token'] ?? '';
 if (!is_string($token) || preg_match('/[\\r\\n]/', $token)) fail('Invalid session.', 401);
 if (!$public && $token === '' && $endpoint !== '/auth/logout') fail('Unauthenticated.', 401);
 
-$config = is_file(__DIR__ . '/config.php') ? require __DIR__ . '/config.php' : [];
+
 $base = rtrim(getenv('LARAVEL_API_URL') ?: ($config['api_url'] ?? ''), '/');
 if (!filter_var($base, FILTER_VALIDATE_URL) || !in_array(parse_url($base, PHP_URL_SCHEME), ['https', 'http'], true))
     fail('The Cellexa API is not configured.', 503);
@@ -168,7 +174,7 @@ curl_close($curl);
 if ($endpoint === '/auth/logout') {
     authCookie();
     if (!str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')) {
-        header('Location: /login/', true, 303);
+        header('Location: ' . CELLEXA_BASE_PATH . '/login/', true, 303);
         exit;
     }
     jsonResponse(['success' => true]);

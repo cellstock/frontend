@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/public-path";
 import {
   AlertCircle,
   ChevronLeft,
@@ -119,7 +120,7 @@ export function AdminResourcePage({ kind }: { kind: Kind }) {
         if (kind === "plans") q.set("active", String(status === "active"));
         else q.set("status", status);
       }
-      const r = await fetch(`/api/admin/${kind}?${q}`),
+      const r = await apiFetch(`/api/admin/${kind}?${q}`),
         j = await r.json();
       if (!r.ok) throw new Error(j.message);
       const payload = Array.isArray(j.data)
@@ -141,7 +142,7 @@ export function AdminResourcePage({ kind }: { kind: Kind }) {
     async function run() {
       try {
         if (kind === "users") {
-          const r = await fetch("/api/admin/roles"),
+          const r = await apiFetch("/api/admin/roles"),
             j = await r.json();
           if (r.ok)
             setOptions({
@@ -152,8 +153,8 @@ export function AdminResourcePage({ kind }: { kind: Kind }) {
             });
         } else if (kind === "subscriptions") {
           const [ur, pr] = await Promise.all([
-              fetch("/api/admin/users?per_page=100"),
-              fetch("/api/admin/plans?per_page=100"),
+              apiFetch("/api/admin/users?per_page=100"),
+              apiFetch("/api/admin/plans?per_page=100"),
             ]),
             [uj, pj] = await Promise.all([ur.json(), pr.json()]);
           setOptions({
@@ -189,7 +190,7 @@ export function AdminResourcePage({ kind }: { kind: Kind }) {
         data[name] = Number(data[name]);
     }
     try {
-      const r = await fetch(
+      const r = await apiFetch(
           `/api/admin/${kind}${editing?.id ? `/${editing.id}` : ""}`,
           {
             method: editing?.id ? "PATCH" : "POST",
@@ -220,7 +221,7 @@ export function AdminResourcePage({ kind }: { kind: Kind }) {
     setChangingStatus(row.id);
     setError("");
     try {
-      const r = await fetch(`/api/admin/users/${row.id}`, {
+      const r = await apiFetch(`/api/admin/users/${row.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: next }),
@@ -250,7 +251,7 @@ export function AdminResourcePage({ kind }: { kind: Kind }) {
     if (!deleting) return;
     setSaving(true);
     try {
-      const r = await fetch(`/api/admin/${kind}/${deleting.id}`, {
+      const r = await apiFetch(`/api/admin/${kind}/${deleting.id}`, {
           method: "DELETE",
         }),
         j = await r.json();

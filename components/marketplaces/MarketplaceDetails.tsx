@@ -18,7 +18,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import { useState } from "react";
 
 import { ConnectMarketplaceModal } from "@/components/marketplaces/ConnectMarketplaceModal";

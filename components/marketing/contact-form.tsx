@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/public-path";
 
 import { LoaderCircle, Send } from "lucide-react";
 import { FormEvent, useState } from "react";
@@ -46,7 +47,7 @@ export function ContactForm() {
     }
     setSubmitting(true);
     try {
-      const response = await fetch("/api/contact", {
+      const response = await apiFetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

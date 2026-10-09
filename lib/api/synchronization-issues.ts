@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/public-path";
 export type SynchronizationIssue = {
   id: string;
   kind: "sync_run" | "merchant_address" | "connection";
@@ -9,7 +10,7 @@ export type SynchronizationIssue = {
 };
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     credentials: "include",
     headers: { Accept: "application/json" },
     cache: "no-store",

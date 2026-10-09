@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/public-path";
 import type {
   LoginCredentials,
   LoginResponse,
@@ -17,7 +18,7 @@ export class AuthenticationError extends Error {
 export async function signup(
   credentials: SignupCredentials,
 ): Promise<LoginResponse> {
-  const response = await fetch("/api/auth/register", {
+  const response = await apiFetch("/api/auth/register", {
     method: "POST",
     credentials: "include",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
@@ -38,7 +39,7 @@ export async function signup(
 export async function login(
   credentials: LoginCredentials,
 ): Promise<LoginResponse> {
-  const response = await fetch("/api/auth/login", {
+  const response = await apiFetch("/api/auth/login", {
     method: "POST",
     credentials: "include",
     headers: {

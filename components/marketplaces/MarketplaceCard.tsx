@@ -7,7 +7,7 @@ import {
   ShoppingBag,
   Store,
 } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/AppImage";
 import Link from "@/components/ui/AppLink";
 
 import { MarketplaceStatusBadge } from "@/components/marketplaces/MarketplaceStatusBadge";
