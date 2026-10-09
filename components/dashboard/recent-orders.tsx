@@ -62,7 +62,7 @@ export function RecentOrders({ orders }: { orders: Order[] }) {
                 <tr key={order.id} className="transition hover:bg-slate-50">
                   <td className="px-5 py-4">
                     <Link
-                      href={`/dashboard/orders/${order.id}`}
+                      href={`/dashboard/orders/detail/?orderId=${order.id}`}
                       className="text-sm font-semibold text-slate-800 hover:text-blue-600"
                     >
                       #{order.external_order_id}
@@ -73,7 +73,7 @@ export function RecentOrders({ orders }: { orders: Order[] }) {
                   </td>
                   <td className="px-5 py-4 text-sm">
                     <Link
-                      href={`/dashboard/marketplaces/${encodeURIComponent(order.marketplace.slug)}`}
+                      href={`/dashboard/marketplaces/detail/?slug=${encodeURIComponent(order.marketplace.slug)}`}
                       className="text-slate-600 hover:text-blue-600"
                     >
                       {order.marketplace.name}

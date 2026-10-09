@@ -179,7 +179,7 @@ export function OrderReturnsPage() {
                     <td className="px-5 py-4">
                       {item.local_order_id ? (
                         <Link
-                          href={`/dashboard/orders/${item.local_order_id}`}
+                          href={`/dashboard/orders/detail/?orderId=${item.local_order_id}`}
                           className="font-semibold text-blue-600"
                         >
                           Handle return
@@ -254,7 +254,7 @@ export function OrderReturnsPage() {
                   )}
                   {item.local_order_id ? (
                     <Link
-                      href={`/dashboard/orders/${item.local_order_id}`}
+                      href={`/dashboard/orders/detail/?orderId=${item.local_order_id}`}
                       className="text-blue-600"
                     >
                       Handle return

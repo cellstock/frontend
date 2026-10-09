@@ -138,7 +138,7 @@ function DesktopOrderRow({
           </div>
           <div className="min-w-0">
             <Link
-              href={`/dashboard/orders/${order.id}`}
+              href={`/dashboard/orders/detail/?orderId=${order.id}`}
               className="font-bold text-blue-600 transition hover:text-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
             >
               #{order.external_order_id}
@@ -284,7 +284,7 @@ function MobileOrderCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <Link
-            href={`/dashboard/orders/${order.id}`}
+            href={`/dashboard/orders/detail/?orderId=${order.id}`}
             className="font-bold text-blue-600 hover:text-blue-700"
           >
             #{order.external_order_id}
@@ -330,7 +330,7 @@ function MobileOrderCard({
         />
       </dl>
       <Link
-        href={`/dashboard/orders/${order.id}`}
+        href={`/dashboard/orders/detail/?orderId=${order.id}`}
         className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
       >
         {t("View order")} <ArrowUpRight className="h-4 w-4" />

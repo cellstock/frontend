@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "php -S 127.0.0.1:8080 -t out scripts/preview.php",
     "lint": "eslint",
     "format": "prettier --write app components lib",
     "format:check": "prettier --check app components lib",
-    "test:cache": "node --test tests/resource-cache.test.cjs"
+    "test:cache": "node --test tests/resource-cache.test.cjs",
+    "postbuild": "node scripts/prepare-hosting.mjs",
+    "test:hosting": "node --test tests/hosting.test.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.47.0",

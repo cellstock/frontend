@@ -170,7 +170,7 @@ export function GlobalSearch() {
               {orders.map((order) => (
                 <ResultLink
                   key={order.id}
-                  href={`/dashboard/orders/${order.id}`}
+                  href={`/dashboard/orders/detail/?orderId=${order.id}`}
                   onClick={() => setOpen(false)}
                   icon={<FileText className="h-4 w-4" />}
                   title={`#${order.external_order_id}`}

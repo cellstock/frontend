@@ -4,8 +4,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { LOCALE_COOKIE, normalizeLocale, type Locale } from "@/lib/i18n/locale";
@@ -17,6 +18,17 @@ const LanguageContext = createContext<{
   t: (message: string, values?: Record<string, string | number>) => string;
 } | null>(null);
 
+function readLocale() {
+  const cookie = document.cookie
+    .split("; ")
+    .find((value) => value.startsWith(LOCALE_COOKIE + "="));
+  return normalizeLocale(cookie?.slice(LOCALE_COOKIE.length + 1));
+}
+function subscribeLocale(notify: () => void) {
+  window.addEventListener("cellexa:locale-changed", notify);
+  return () => window.removeEventListener("cellexa:locale-changed", notify);
+}
+
 export function LanguageProvider({
   initialLocale,
   children,
@@ -24,12 +36,18 @@ export function LanguageProvider({
   initialLocale: Locale;
   children: ReactNode;
 }) {
-  const [locale, updateLocale] = useState(initialLocale);
+  const locale = useSyncExternalStore(
+    subscribeLocale,
+    readLocale,
+    () => initialLocale,
+  );
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
   const setLocale = useCallback((next: Locale) => {
     const selected = normalizeLocale(next);
     document.cookie = `${LOCALE_COOKIE}=${selected}; Path=/; Max-Age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
-    document.documentElement.lang = selected;
-    updateLocale(selected);
+    window.dispatchEvent(new Event("cellexa:locale-changed"));
   }, []);
   const value = useMemo(
     () => ({

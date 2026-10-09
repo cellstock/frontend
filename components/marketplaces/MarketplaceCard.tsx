@@ -154,7 +154,7 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
         </div>
 
         <Link
-          href={`/dashboard/marketplaces/${encodeURIComponent(
+          href={`/dashboard/marketplaces/detail/?slug=${encodeURIComponent(
             marketplace.slug,
           )}`}
           className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-4 ${

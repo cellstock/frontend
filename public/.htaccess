@@ -1,0 +1,21 @@
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# Keep the existing same-origin API URLs; PHP talks to Laravel.
+RewriteRule ^api(?:/.*)?$ api/index.php [END]
+# Bookmarks from the previous dynamic Next.js deployment.
+RewriteRule ^dashboard/orders/([0-9]+)/?$ /dashboard/orders/detail/?orderId=$1 [R=302,L,NE]
+RewriteRule ^dashboard/marketplaces/((?!detail/?$)[a-zA-Z0-9_-]+)/?$ /dashboard/marketplaces/detail/?slug=$1 [R=302,L,NE]
+RewriteRule ^dashboard/inventory/offers/([^/]+)/edit/?$ /dashboard/inventory/offers/edit/?offerId=$1 [R=302,L,B]
+</IfModule>
+
+<FilesMatch "^(config\.php|\.env.*)$">
+Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+</IfModule>

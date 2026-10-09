@@ -1,3 +1,0 @@
-{
-  "/api/marketplaces/[slug]/sync/[runId]/route": "app/api/marketplaces/[slug]/sync/[runId]/route.js"
-}

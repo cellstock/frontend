@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   AlertCircle,
@@ -610,7 +610,7 @@ function InventoryDataTable({
                 <td className="px-4 py-5">
                   <div className="flex justify-center gap-2">
                     <AppLink
-                      href={`/dashboard/inventory/offers/${encodeURIComponent(offer.id)}/edit`}
+                      href={`/dashboard/inventory/offers/edit/?offerId=${encodeURIComponent(offer.id)}`}
                       title="Edit offer"
                       className="rounded-lg p-2 text-blue-600 hover:bg-blue-100"
                     >

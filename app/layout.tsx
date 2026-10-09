@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
-import { cookies } from "next/headers";
+
 import { LanguageProvider } from "@/components/i18n/language-provider";
-import { LOCALE_COOKIE, normalizeLocale } from "@/lib/i18n/locale";
+import { normalizeLocale } from "@/lib/i18n/locale";
 
 import "./globals.css";
 
@@ -55,10 +55,8 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default async function RootLayout({
-  children,
-}: Readonly<RootLayoutProps>) {
-  const locale = normalizeLocale((await cookies()).get(LOCALE_COOKIE)?.value);
+export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
+  const locale = normalizeLocale(undefined);
   return (
     <html
       lang={locale}

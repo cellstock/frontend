@@ -31,6 +31,7 @@ export default function AppLink({
     if (!cache || typeof href !== "string" || !href.startsWith("/dashboard"))
       return;
     const url = new URL(href, window.location.origin);
+    url.pathname = url.pathname.replace(/\/$/, "");
     if (url.pathname === "/dashboard")
       void cache.fetch("dashboard", getDashboardData);
     else if (url.pathname === "/dashboard/marketplaces")
@@ -48,20 +49,22 @@ export default function AppLink({
         ),
       );
     } else {
-      const order = url.pathname.match(/^\/dashboard\/orders\/(\d+)$/);
-      const marketplace = url.pathname.match(
-        /^\/dashboard\/marketplaces\/([^/]+)$/,
-      );
-      if (order)
-        void cache.fetch(`order:${order[1]}`, (signal) =>
-          getOrder(order[1], signal),
+      const orderId =
+        url.pathname === "/dashboard/orders/detail"
+          ? url.searchParams.get("orderId")
+          : null;
+      const slug =
+        url.pathname === "/dashboard/marketplaces/detail"
+          ? url.searchParams.get("slug")
+          : null;
+      if (orderId)
+        void cache.fetch(`order:${orderId}`, (signal) =>
+          getOrder(orderId, signal),
         );
-      if (marketplace) {
-        const slug = decodeURIComponent(marketplace[1]);
+      if (slug)
         void cache.fetch(`marketplace:${slug}`, (signal) =>
           getMarketplace(slug, signal),
         );
-      }
     }
   }
   return (

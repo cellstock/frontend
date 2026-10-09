@@ -1,7 +1,0 @@
-var R=require("../../../../../../chunks/[turbopack]_runtime.js")("server/app/api/marketplaces/[slug]/connection/webhook/route.js")
-R.c("server/chunks/[root-of-the-server]__1yfjqlt._.js")
-R.c("server/chunks/[root-of-the-server]__1d2kyf1._.js")
-R.c("server/chunks/node_modules_next_1_14bcs._.js")
-R.c("server/chunks/1oeh_server_app_api_marketplaces_[slug]_connection_webhook_route_actions_1d5c3g_.js")
-R.m(35580)
-module.exports=R.m(35580).exports

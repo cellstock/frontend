@@ -363,7 +363,7 @@ function Navigation({
 
 export function DashboardShell({ children, user }: DashboardShellProps) {
   const { t } = useI18n();
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/$/, "");
 
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);

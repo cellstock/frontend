@@ -55,7 +55,7 @@ export function MarketplaceStatus({
             return (
               <Link
                 key={marketplace.id}
-                href={`/dashboard/marketplaces/${encodeURIComponent(marketplace.slug)}`}
+                href={`/dashboard/marketplaces/detail/?slug=${encodeURIComponent(marketplace.slug)}`}
                 className="flex items-center gap-3 rounded-xl border border-slate-100 p-3.5 transition hover:border-blue-200 hover:bg-blue-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">

@@ -161,7 +161,7 @@ export function OrderActionsMenu({
             <div className="space-y-1 p-2 text-sm font-normal">
               {showViewOrder && (
                 <Link
-                  href={`/dashboard/orders/${order.id}`}
+                  href={`/dashboard/orders/detail/?orderId=${order.id}`}
                   className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
                 >
                   <Eye className="h-4 w-4" />
