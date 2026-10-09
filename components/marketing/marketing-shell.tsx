@@ -1,11 +1,19 @@
 "use client";
 
-import Link from "@/components/ui/AppLink";
+import { publicPath } from "@/lib/public-path";
 import { ArrowRight, Menu } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { CellexaLogo } from "@/components/branding/cellexa-logo";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { useI18n } from "@/components/i18n/language-provider";
+
+// Marketing pages use document navigation on static PHP hosting.
+function Link({ href, ...props }: ComponentProps<"a"> & { href: string }) {
+  const path = href.startsWith("/") && !href.endsWith("/") && !/[?#]/.test(href)
+    ? `${href}/`
+    : href;
+  return <a {...props} href={publicPath(path)} />;
+}
 
 const links = [
   ["/", "Home"],
