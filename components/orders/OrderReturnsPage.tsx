@@ -131,7 +131,7 @@ export function OrderReturnsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <EmptyRow text="Loading returns from Refurbed…" />
+                null
               ) : visibleReturns.length === 0 ? (
                 <EmptyRow text="No returns match your filters." />
               ) : (
@@ -198,11 +198,7 @@ export function OrderReturnsPage() {
         </div>
 
         <div className="divide-y divide-slate-100 md:hidden">
-          {loading ? (
-            <p className="p-5 text-sm text-slate-500">
-              Loading returns from Refurbed…
-            </p>
-          ) : visibleReturns.length === 0 ? (
+          {loading ? null : visibleReturns.length === 0 ? (
             <p className="p-5 text-sm text-slate-500">
               No returns match your filters.
             </p>

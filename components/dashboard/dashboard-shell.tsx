@@ -270,31 +270,37 @@ function Navigation({
 
             return (
               <div key={item.href}>
-                <button
-                  type="button"
-                  aria-expanded={isExpanded}
-                  aria-controls={submenuId}
-                  onClick={() => toggleItem(item.href)}
-                  className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
+                <div
+                  className={`group flex w-full items-center rounded-xl text-sm font-medium transition ${
                     isActive
                       ? "bg-blue-600 text-white"
                       : "text-white hover:bg-white/[0.08]"
                   }`}
                 >
-                  <Icon
-                    className={`h-5 w-5 shrink-0 transition ${
-                      isActive ? "text-white" : "text-white"
-                    }`}
-                  />
-
-                  <span className="flex-1">{t(item.name)}</span>
-
-                  <ChevronRight
-                    className={`h-4 w-4 text-white transition-transform duration-200 ${
-                      isExpanded ? "rotate-90" : ""
-                    }`}
-                  />
-                </button>
+                  <Link
+                    href={item.href}
+                    onClick={onNavigate}
+                    aria-current={pathname === item.href ? "page" : undefined}
+                    className="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-2.5"
+                  >
+                    <Icon className="h-5 w-5 shrink-0 text-white" />
+                    <span className="flex-1">{t(item.name)}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    aria-label={t(item.name)}
+                    aria-expanded={isExpanded}
+                    aria-controls={submenuId}
+                    onClick={() => toggleItem(item.href)}
+                    className="rounded-xl p-3 hover:bg-white/10"
+                  >
+                    <ChevronRight
+                      className={`h-4 w-4 text-white transition-transform duration-200 ${
+                        isExpanded ? "rotate-90" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
 
                 <div
                   id={submenuId}

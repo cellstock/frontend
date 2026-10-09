@@ -121,12 +121,7 @@ export function RefurbedWebhookSettings({ slug }: { slug: string }) {
         )}
       </div>
 
-      {loading ? (
-        <p className="mt-5 flex items-center gap-2 text-sm text-slate-500">
-          <LoaderCircle className="h-4 w-4 animate-spin" />
-          Loading settings...
-        </p>
-      ) : (
+      {loading ? null : (
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 p-4">
             <div className="flex items-center gap-2 font-semibold text-slate-900">

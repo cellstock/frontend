@@ -101,9 +101,7 @@ export function MerchantAddressesPage() {
       )}
 
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        {loading ? (
-          <p className="p-8 text-slate-500">Loading saved addresses…</p>
-        ) : addresses.length === 0 ? (
+        {loading ? null : addresses.length === 0 ? (
           <p className="p-8 text-slate-500">
             No merchant addresses are stored yet.
           </p>

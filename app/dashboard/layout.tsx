@@ -3,7 +3,7 @@ import { DashboardSession } from "@/components/dashboard/dashboard-session";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={<p role="status">Loading workspace...</p>}>
+    <Suspense fallback={null}>
       <DashboardSession>{children}</DashboardSession>
     </Suspense>
   );

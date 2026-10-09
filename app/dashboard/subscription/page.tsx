@@ -1,6 +1,6 @@
 "use client";
 import { apiFetch } from "@/lib/public-path";
-import { Check, CreditCard, LoaderCircle } from "lucide-react";
+import { Check, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/i18n/language-provider";
 type Plan = {
@@ -78,7 +78,7 @@ export default function Page() {
           </p>
         )}
         {current === undefined ? (
-          <LoaderCircle className="mx-auto mt-16 h-8 w-8 animate-spin text-blue-600" />
+          null
         ) : (
           <div className="mt-7 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {plans.map((plan) => (

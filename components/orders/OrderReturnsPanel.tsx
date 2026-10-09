@@ -153,11 +153,7 @@ export function OrderReturnsPanel({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading ? (
-              <tr>
-                <td colSpan={4} className="px-3 py-6 text-slate-500">
-                  Loading returns from Refurbed…
-                </td>
-              </tr>
+              null
             ) : returns.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-3 py-6 text-slate-500">

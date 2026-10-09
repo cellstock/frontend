@@ -107,9 +107,7 @@ export function SynchronizationIssuesPage() {
       )}
 
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        {loading ? (
-          <p className="p-8 text-slate-500">Loading synchronization status…</p>
-        ) : visibleIssues.length === 0 ? (
+        {loading ? null : visibleIssues.length === 0 ? (
           <div className="p-10 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
               <RefreshCw className="h-6 w-6" />

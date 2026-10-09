@@ -1,76 +1,20 @@
-"use client";
+import type { ComponentProps } from "react";
+import { publicPath } from "@/lib/public-path";
 
-import NextLink from "next/link";
-import { useContext, type ComponentProps } from "react";
-import { CacheContext } from "@/components/dashboard/dashboard-provider";
-import { getDashboardData } from "@/lib/dashboard/dashboard-data";
-import { getMarketplace, getMarketplaces } from "@/lib/api/marketplaces";
-import { getOrder, getOrders } from "@/lib/api/orders";
-
+/** Load exported HTML directly and preserve native new-tab navigation. */
 export default function AppLink({
   href,
-  children,
-  onMouseEnter,
-  onFocus,
-  prefetch,
   ...props
-}: ComponentProps<typeof NextLink>) {
-  const cache = useContext(CacheContext);
-  function warmData() {
-    if (!cache || typeof href !== "string" || !href.startsWith("/dashboard"))
-      return;
-    const url = new URL(href, window.location.origin);
-    url.pathname = url.pathname.replace(/\/$/, "");
-    if (url.pathname === "/dashboard")
-      void cache.fetch("dashboard", getDashboardData);
-    else if (url.pathname === "/dashboard/marketplaces")
-      void cache.fetch("marketplaces", getMarketplaces);
-    else if (url.pathname === "/dashboard/orders") {
-      const filters = Object.fromEntries(url.searchParams);
-      void cache.fetch(`orders?${url.searchParams.toString()}`, (signal) =>
-        getOrders(
-          {
-            ...filters,
-            page: Number(url.searchParams.get("page")) || 1,
-            per_page: Number(url.searchParams.get("per_page")) || 20,
-          },
-          signal,
-        ),
-      );
-    } else {
-      const orderId =
-        url.pathname === "/dashboard/orders/detail"
-          ? url.searchParams.get("orderId")
-          : null;
-      const slug =
-        url.pathname === "/dashboard/marketplaces/detail"
-          ? url.searchParams.get("slug")
-          : null;
-      if (orderId)
-        void cache.fetch(`order:${orderId}`, (signal) =>
-          getOrder(orderId, signal),
-        );
-      if (slug)
-        void cache.fetch(`marketplace:${slug}`, (signal) =>
-          getMarketplace(slug, signal),
-        );
-    }
+}: Omit<ComponentProps<"a">, "href"> & { href: string }) {
+  let destination = href;
+  if (href.startsWith("/") && !href.startsWith("//")) {
+    const separator = href.search(/[?#]/);
+    const path = separator < 0 ? href : href.slice(0, separator);
+    const suffix = separator < 0 ? "" : href.slice(separator);
+    const pagePath = path.endsWith("/") || /\.[^/]+$/.test(path)
+      ? path
+      : `${path}/`;
+    destination = publicPath(pagePath + suffix);
   }
-  return (
-    <NextLink
-      {...props}
-      href={href}
-      prefetch={prefetch ?? true}
-      onMouseEnter={(event) => {
-        onMouseEnter?.(event);
-        warmData();
-      }}
-      onFocus={(event) => {
-        onFocus?.(event);
-        warmData();
-      }}
-    >
-      {children}
-    </NextLink>
-  );
+  return <a {...props} href={destination} />;
 }

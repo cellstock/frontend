@@ -14,7 +14,7 @@ function EditOffer() {
 }
 export default function EditInventoryOfferPage() {
   return (
-    <Suspense fallback={<p role="status">Loading offer...</p>}>
+    <Suspense fallback={null}>
       <EditOffer />
     </Suspense>
   );

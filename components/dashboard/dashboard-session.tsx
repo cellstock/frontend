@@ -68,11 +68,7 @@ export function DashboardSession({ children }: { children: ReactNode }) {
       </main>
     );
   if (!user || (user.roleSlug === "user" && pathname === "/dashboard"))
-    return (
-      <p role="status" className="p-8 text-center">
-        Loading workspace...
-      </p>
-    );
+    return null;
   const displayUser = {
     ...user,
     role: formatUserRole(user.role),
