@@ -176,6 +176,7 @@ test("PHP gateway preserves authentication, routes, uploads, and access checks",
     async () => {
       for (const [path, expected] of [
         ["/subscription", "/api/my-subscription"],
+        ["/inventory/offers/sku%20one", "/api/inventory/offers/sku%20one"],
         ["/subscription/plans", "/api/available-plans"],
         ["/admin/users?page=2", "/api/users?page=2"],
         ["/orders?search=phone&page=2", "/api/orders?search=phone&page=2"],

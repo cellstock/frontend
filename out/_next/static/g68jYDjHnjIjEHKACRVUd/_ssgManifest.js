@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Fdashboard\u002Fanalytics\u002F[[...section]]","\u002Fdashboard\u002Finventory\u002F[[...section]]","\u002Fdashboard\u002Fsettings\u002F[section]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
