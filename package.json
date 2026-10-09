@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "php -S 127.0.0.1:8080 -t out scripts/preview.php",
     "lint": "eslint",

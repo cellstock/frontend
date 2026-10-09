@@ -1,22 +1,11 @@
 "use client";
 
-import NextLink, { useLinkStatus } from "next/link";
+import NextLink from "next/link";
 import { useContext, type ComponentProps } from "react";
 import { CacheContext } from "@/components/dashboard/dashboard-provider";
 import { getDashboardData } from "@/lib/dashboard/dashboard-data";
 import { getMarketplace, getMarketplaces } from "@/lib/api/marketplaces";
 import { getOrder, getOrders } from "@/lib/api/orders";
-import { FullScreenTransition } from "@/components/ui/full-screen-transition";
-
-function NavigationFeedback() {
-  const { pending } = useLinkStatus();
-  return pending ? (
-    <FullScreenTransition
-      title="Opening page"
-      description="Please wait while CelleXa prepares your content."
-    />
-  ) : null;
-}
 
 export default function AppLink({
   href,
@@ -82,7 +71,6 @@ export default function AppLink({
       }}
     >
       {children}
-      <NavigationFeedback />
     </NextLink>
   );
 }

@@ -1,15 +1,16 @@
 "use client";
-import { FullScreenTransition } from "@/components/ui/full-screen-transition";
+
+import { useI18n } from "@/components/i18n/language-provider";
 
 export function ContentLoading({
   label = "Loading content",
 }: {
   label?: string;
 }) {
+  const { t } = useI18n();
   return (
-    <FullScreenTransition
-      title={label}
-      description="Please wait while CelleXa prepares your content."
-    />
+    <p role="status" className="px-6 py-8 text-sm text-slate-500">
+      {t(label)}
+    </p>
   );
 }

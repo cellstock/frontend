@@ -10,7 +10,7 @@ Keep the existing LARAVEL_API_URL in frontend/.env.local and leave the frontend 
 
 Run npm run build. The deployment files are generated in frontend/out, including index.html, _next, api, .htaccess, and all page directories.
 
-For local frontend development, use npm run dev at http://localhost:3000/. For the complete exported PHP preview, use npm run start at http://127.0.0.1:8080/. PHP must be on PATH.
+For local frontend development, use npm run dev at http://localhost:3000/. This starts Next.js and a local PHP API gateway using LARAVEL_API_URL from .env.local. Restart npm run dev after changing environment settings. For the complete exported PHP preview, use npm run start at http://127.0.0.1:8080/. PHP must be on PATH.
 
 ## Upload
 
