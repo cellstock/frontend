@@ -4,6 +4,7 @@ import { LoaderCircle, MapPin, Pencil, Plus, Trash2, X } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 
 import {
+  fetchMerchantAddresses,
   createMerchantAddress,
   deleteMerchantAddress,
   getMerchantAddressRecords,
@@ -50,8 +51,32 @@ export function MerchantAddressesPage() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    let active = true;
+    getMerchantAddressRecords()
+      .then((response) => { if (active) setAddresses(response.data.addresses); })
+      .catch((caught: unknown) => {
+        if (active) setError(caught instanceof Error ? caught.message : "Unable to load addresses.");
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function fetchAddresses() {
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetchMerchantAddresses();
+      setAddresses(response.data.addresses);
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Unable to fetch addresses from Refurbed.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function remove(address: MerchantAddressRecord) {
     if (!window.confirm(`Delete ${address.label || address.company_name}?`))
@@ -87,13 +112,23 @@ export function MerchantAddressesPage() {
             Manage delivery and return addresses from CelleXa.
           </p>
         </div>
-        <button
-          onClick={() => setEditing(null)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-bold text-white"
-        >
-          <Plus className="h-5 w-5" />
-          Add address
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={busy || loading}
+            onClick={() => void fetchAddresses()}
+            className="rounded-xl border border-blue-200 px-4 py-3 font-semibold text-blue-700 disabled:opacity-50"
+          >
+            {busy ? "Please wait..." : "Fetch from Refurbed"}
+          </button>
+          <button
+            onClick={() => setEditing(null)}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-bold text-white"
+          >
+            <Plus className="h-5 w-5" />
+            Add address
+          </button>
+        </div>
       </header>
 
       {error && (

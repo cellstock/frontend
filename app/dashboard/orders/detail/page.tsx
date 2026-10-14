@@ -113,7 +113,7 @@ function OrderDetailsContent() {
 
   return (
     <main className="min-h-[calc(100vh-5rem)] bg-slate-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/dashboard/orders"
@@ -150,7 +150,11 @@ function OrderDetailsContent() {
         ) : (
           order && (
             <div aria-busy={isRefreshing}>
-              <OrderDetails key={order.id} order={order} />
+              <OrderDetails
+                key={order.id}
+                order={order}
+                onRefresh={() => void refresh()}
+              />
             </div>
           )
         )}

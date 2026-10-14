@@ -1,4 +1,7 @@
 {
+  "Disconnecting permanently deletes this connection and its imported orders, offers, shipping data, and synchronization history from CelleXa. Data on the marketplace itself is not deleted.": ["La d?connexion supprime d?finitivement cette connexion et ses commandes, offres, donn?es de livraison et historique de synchronisation import?s dans CelleXa. Les donn?es de la marketplace ne sont pas supprim?es.","Beim Trennen werden diese Verbindung und ihre importierten Bestellungen, Angebote, Versanddaten und der Synchronisierungsverlauf dauerhaft aus CelleXa gel?scht. Daten auf dem Marktplatz selbst werden nicht gel?scht.","La disconnessione elimina definitivamente questa connessione e gli ordini, le offerte, i dati di spedizione e la cronologia di sincronizzazione importati in CelleXa. I dati sul marketplace non vengono eliminati."],
+  "Select all": ["Tout s?lectionner", "Alle ausw?hlen", "Seleziona tutto"],
+  "Deselect all": ["Tout d?s?lectionner", "Alle abw?hlen", "Deseleziona tutto"],
   "Language": ["Langue", "Sprache", "Lingua"],
   "Dashboard": ["Tableau de bord", "Dashboard", "Dashboard"],
   "Dashboard overview": ["Vue d’ensemble", "Übersicht", "Panoramica generale"],

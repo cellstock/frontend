@@ -457,7 +457,7 @@ function InventoryDataTable({
       : "—";
   const logo =
     marketplace?.slug === "back-market"
-      ? "/images/marketplaces/back-market.jpg"
+      ? "/images/marketplaces/back-market.png"
       : "/images/marketplaces/refurbed.png";
   return (
     <div className="overflow-x-auto">
@@ -777,7 +777,7 @@ function MarketplacePicker({
   const [open, setOpen] = useState(false);
   const logo =
     marketplace?.slug === "back-market"
-      ? "/images/marketplaces/back-market.jpg"
+      ? "/images/marketplaces/back-market.png"
       : "/images/marketplaces/refurbed.png";
   const name = marketplace?.name || "Refurbed";
   const activeMarket =

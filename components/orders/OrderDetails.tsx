@@ -1,28 +1,25 @@
 "use client";
+import { publicPath } from "@/lib/public-path";
 import { useI18n } from "@/components/i18n/language-provider";
 import {
   Box,
-  CalendarClock,
-  CircleDollarSign,
-  CreditCard,
-  FileText,
   Download,
   ImageIcon,
   Pencil,
-  RefreshCw,
   RotateCcw,
   Save,
-  type LucideIcon,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  OrderDocumentPreview,
+  type OrderDocument,
+} from "./OrderDocumentPreview";
 
 import { OrderMarketplaceBadge } from "@/components/orders/OrderMarketplaceBadge";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import {
   formatOrderCurrency,
   formatOrderDateTime,
-  formatPaymentMethod,
 } from "@/lib/orders/formatters";
 import type {
   OrderDetails as OrderDetailsType,
@@ -31,124 +28,90 @@ import type {
 import {
   getRefurbedOrderInvoice,
   OrdersApiError,
-  refreshOrderFromRefurbed,
   updateOrderItemShipping,
 } from "@/lib/api/orders";
-import { OrderActionsMenu } from "@/components/orders/OrderActionsMenu";
 import { OrderEditSections } from "@/components/orders/OrderEditSections";
-import { OrderReturnsPanel } from "@/components/orders/OrderReturnsPanel";
 
 interface OrderDetailsProps {
   order: OrderDetailsType;
+  onRefresh?: () => void;
 }
 
-export function OrderDetails({ order }: OrderDetailsProps) {
-  const router = useRouter();
+export function OrderDetails({
+  order,
+  onRefresh = () => {},
+}: OrderDetailsProps) {
+  const [preview, setPreview] = useState<OrderDocument | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
-  async function refreshOrder() {
-    setBusy(true);
-    setMessage("");
-    try {
-      const response = await refreshOrderFromRefurbed(order.id);
-      setMessage(response.message ?? "Order synchronized from Refurbed.");
-      router.refresh();
-    } catch (error) {
-      setMessage(
-        error instanceof OrdersApiError
-          ? error.message
-          : "Unable to synchronize this order.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function openInvoice() {
+    if (busy) return;
     setBusy(true);
     setMessage("");
     try {
       const response = await getRefurbedOrderInvoice(order.id);
-      if (response.data.url) {
-        window.open(response.data.url, "_blank", "noopener,noreferrer");
-      } else {
-        setMessage(response.message ?? "Invoice preparation has started.");
+      if (!response.data.url) {
+        throw new OrdersApiError(
+          "No invoice is available for this order.",
+          404,
+        );
       }
+      const url = new URL(response.data.url, window.location.origin);
+      if (!["http:", "https:"].includes(url.protocol)) {
+        throw new Error("Invalid invoice URL.");
+      }
+      const customPath = "/api/orders/" + order.id + "/invoice/custom";
+      setPreview({
+        title: "Invoice #" + order.external_order_id,
+        source:
+          url.pathname.replace(/\/$/, "") === customPath
+            ? publicPath(customPath)
+            : url.href,
+      });
     } catch (error) {
       setMessage(
         error instanceof OrdersApiError
           ? error.message
-          : "No Refurbed invoice is available.",
+          : "Unable to open the invoice. Please try again.",
       );
     } finally {
       setBusy(false);
     }
   }
-  return (
-    <div className="space-y-6">
-      <OrderHeader order={order} />
 
-      {order.marketplace.slug === "refurbed" && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="font-bold text-slate-900">
-              Refurbed order controls
-            </h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Status, tracking and remote order data stay synchronized with
-              Refurbed.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              disabled={busy}
-              onClick={() => void refreshOrder()}
-              className="inline-flex items-center gap-2 rounded-xl border border-blue-200 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-50 disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} />
-              Synchronize
-            </button>
-            <button
-              disabled={busy}
-              onClick={() => void openInvoice()}
-              className="inline-flex items-center gap-2 rounded-xl border border-blue-200 px-4 py-2 text-sm font-bold text-blue-700 hover:bg-blue-50 disabled:opacity-50"
-            >
-              <FileText className="h-4 w-4" />
-              Open invoice
-            </button>
-            <OrderActionsMenu
-              order={order}
-              showViewOrder={false}
-              onUpdated={() => {
-                router.refresh();
-              }}
-            />
-          </div>
-        </section>
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <OrderHeader order={order} />
+      {preview && (
+        <OrderDocumentPreview
+          document={preview}
+          onClose={() => setPreview(null)}
+        />
       )}
-      {message && (
-        <p
-          role="status"
-          className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm font-medium text-blue-800"
-        >
-          {message}
-        </p>
-      )}
-      {order.shipping_labels.length > 0 && (
-        <ShippingLabels labels={order.shipping_labels} />
-      )}
-      {order.marketplace.slug === "refurbed" && (
-        <OrderReturnsPanel order={order} onUpdated={() => router.refresh()} />
-      )}
-      <OrderEditSections
-        order={order}
-        onRefresh={() => router.refresh()}
-        onInvoice={() => void openInvoice()}
-        orderedItems={
-          <OrderItems order={order} onUpdated={() => router.refresh()} />
-        }
-      />
+
+      <div className="space-y-5 p-4 sm:p-5">
+        {message && (
+          <p
+            role="status"
+            className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm font-medium text-blue-800"
+          >
+            {message}
+          </p>
+        )}
+        <OrderEditSections
+          order={order}
+          onRefresh={() => onRefresh()}
+          onInvoice={() => void openInvoice()}
+          onPreview={setPreview}
+          orderedItems={
+            <OrderItems order={order} onUpdated={() => onRefresh()} />
+          }
+        />
+        {order.shipping_labels.length > 0 && (
+          <ShippingLabels labels={order.shipping_labels} />
+        )}
+      </div>
     </div>
   );
 }
@@ -205,81 +168,32 @@ function ShippingLabels({
 
 function OrderHeader({ order }: OrderDetailsProps) {
   const { t, locale } = useI18n();
+  const country = order.country_code?.toUpperCase();
+  const flag = /^[A-Z]{2}$/.test(country ?? "")
+    ? String.fromCodePoint(
+        ...country.split("").map((letter) => 127397 + letter.charCodeAt(0)),
+      )
+    : "";
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400" />
-
-      <div className="p-6 sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                {t("Order #")}
-                {order.external_order_id}
-              </h1>
-
-              <OrderStatusBadge status={order.status} />
-            </div>
-
-            <div className="mt-5">
-              <OrderMarketplaceBadge marketplace={order.marketplace} />
-            </div>
-          </div>
-
-          <dl className="grid gap-3 sm:grid-cols-2 lg:min-w-[420px]">
-            <HeaderValue
-              icon={CalendarClock}
-              label={t("Ordered")}
-              value={formatOrderDateTime(order.ordered_at, locale)}
-            />
-
-            <HeaderValue
-              icon={RefreshCw}
-              label={t("Last synchronized")}
-              value={formatOrderDateTime(order.last_synced_at, locale)}
-            />
-
-            <HeaderValue
-              icon={CreditCard}
-              label={t("Payment")}
-              value={formatPaymentMethod(order.payment_method)}
-            />
-
-            <HeaderValue
-              icon={CircleDollarSign}
-              label={t("Order total")}
-              value={formatOrderCurrency(
-                order.total_amount,
-                order.currency,
-                locale,
-              )}
-            />
-          </dl>
+    <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-5 py-5 sm:px-6">
+      <div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+            {t("Order details")}{" "}
+            <span className="text-slate-500">#{order.external_order_id}</span>
+          </h1>
+          <span aria-label={country} className="text-xl">
+            {flag}
+          </span>
+          <OrderStatusBadge status={order.status} />
         </div>
+        <p className="mt-2 text-xs text-slate-500">
+          {t("Last synchronized")}:{" "}
+          {formatOrderDateTime(order.last_synced_at, locale)}
+        </p>
       </div>
-    </section>
-  );
-}
-
-function HeaderValue({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-}) {
-  const { t } = useI18n();
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-      <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
-        <Icon className="h-4 w-4" />
-        {t(label)}
-      </dt>
-
-      <dd className="mt-2 text-sm font-semibold text-slate-800">{value}</dd>
-    </div>
+      <OrderMarketplaceBadge marketplace={order.marketplace} />
+    </header>
   );
 }
 
@@ -359,7 +273,7 @@ function OrderItems({
       ) : (
         <>
           <div className="hidden overflow-x-auto lg:block">
-            <table className="min-w-[1120px] divide-y divide-slate-200">
+            <table className="w-full min-w-[1050px] divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
                   <ItemHeading>Position</ItemHeading>

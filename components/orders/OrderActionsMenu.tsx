@@ -218,19 +218,21 @@ export function OrderActionsMenu({
           </div>,
           document.body,
         )}
-      {pendingStatus && (
-        <OrderStatusModal
-          order={order}
-          status={pendingStatus}
-          saving={busy}
-          error={error}
-          onClose={() => {
-            setPendingStatus(null);
-            setError("");
-          }}
-          onConfirm={changeStatus}
-        />
-      )}
+      {pendingStatus &&
+        createPortal(
+          <OrderStatusModal
+            order={order}
+            status={pendingStatus}
+            saving={busy}
+            error={error}
+            onClose={() => {
+              setPendingStatus(null);
+              setError("");
+            }}
+            onConfirm={changeStatus}
+          />,
+          document.body,
+        )}
       {showShippingLabel &&
         createPortal(
           <ShippingLabelModal

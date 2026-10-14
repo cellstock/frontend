@@ -20,8 +20,10 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getMerchantAddressRecords, type MerchantAddressRecord } from "@/lib/api/merchant-addresses";
 
+import type { OrderDocument } from "./OrderDocumentPreview";
 import { createOrderPdf } from "@/lib/orders/order-pdf";
 import type { Order, OrderAddress } from "@/types/order";
 import {
@@ -44,13 +46,28 @@ export function OrderEditSections({
   order,
   onRefresh,
   onInvoice,
+  onPreview,
   orderedItems,
 }: {
   order: Order;
   onRefresh: () => void;
   onInvoice: () => void;
+  onPreview: (document: OrderDocument) => void;
   orderedItems: React.ReactNode;
 }) {
+  const [dispatchAddresses, setDispatchAddresses] = useState<MerchantAddressRecord[]>([]);
+  const [dispatchId, setDispatchId] = useState("");
+  useEffect(() => {
+    if (order.marketplace.slug !== "refurbed") return;
+    let active = true;
+    getMerchantAddressRecords().then((response) => {
+      if (!active) return;
+      const addresses = response.data.addresses.filter(address => address.type === "DELIVERY");
+      setDispatchAddresses(addresses);
+      if (addresses.length === 1) setDispatchId(String(addresses[0].id));
+    }).catch(() => { /* Printing remains available without a saved dispatch address. */ });
+    return () => { active = false; };
+  }, [order.id, order.marketplace.slug]);
   const [comment, setComment] = useState(order.internal_comment ?? "");
   const [contactBefore, setContactBefore] = useState(
     order.contact_before ?? "",
@@ -87,13 +104,14 @@ export function OrderEditSections({
   }
 
   function downloadPdf(kind: "priced" | "plain") {
-    const blob = createOrderPdf(order, kind === "priced");
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${kind}-${order.external_order_id}.pdf`;
-    anchor.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    onPreview({
+      title:
+        kind === "priced"
+          ? "Order slip with prices"
+          : "Order slip without prices",
+      source: createOrderPdf(order, kind === "priced", dispatchAddresses.find(address => String(address.id) === dispatchId)),
+      filename: kind + "-" + order.external_order_id + ".pdf",
+    });
   }
 
   function printShippingLabel() {
@@ -113,7 +131,10 @@ export function OrderEditSections({
       return;
     }
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    onPreview({
+      title: "Shipping label #" + order.external_order_id,
+      source: url,
+    });
   }
 
   async function uploadInvoice(file: File) {
@@ -133,7 +154,7 @@ export function OrderEditSections({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {feedback && (
         <p
           role={feedback.kind === "error" ? "alert" : "status"}
@@ -143,8 +164,8 @@ export function OrderEditSections({
         </p>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,0.42fr)]">
-        <section className="grid min-w-0 gap-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+        <section className="grid min-w-0 gap-6 rounded-2xl border border-slate-200 bg-white p-4  sm:p-6 md:grid-cols-2">
           <Address
             title="Shipping address"
             type="shipping"
@@ -164,11 +185,19 @@ export function OrderEditSections({
             onFeedback={setFeedback}
           />
         </section>
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 ">
           <h2 className="flex items-center gap-2 font-bold text-slate-900">
             <Printer className="h-5 w-5 text-blue-600" />
             Print documents
           </h2>
+          <label className="mt-4 block text-xs font-semibold text-slate-600">
+            Dispatching from
+            <select value={dispatchId} onChange={event => setDispatchId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-sm">
+              <option value="">No dispatch address selected</option>
+              {dispatchAddresses.map(address => <option key={address.id} value={address.id}>{address.label || address.company_name} - {address.town}</option>)}
+            </select>
+            <span className="mt-1 block font-normal">Manage these addresses under Inventory / Merchant addresses.</span>
+          </label>
           <div className="mt-4 divide-y divide-slate-100">
             <Action
               label="Print slip with prices"
@@ -186,7 +215,7 @@ export function OrderEditSections({
               onClick={printShippingLabel}
             />
             <Action
-              label="Open Refurbed bill"
+              label={"Print " + order.marketplace.name + " invoice"}
               actionLabel="Open"
               onClick={onInvoice}
             />
@@ -208,7 +237,7 @@ export function OrderEditSections({
         </section>
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,0.42fr)]">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
         <FulfilmentEditor
           order={order}
           onRefresh={onRefresh}
@@ -219,8 +248,8 @@ export function OrderEditSections({
 
       {orderedItems}
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,0.42fr)]">
-        <section className="grid min-w-0 gap-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+        <section className="grid min-w-0 gap-6 rounded-2xl border border-slate-200 bg-white p-4  sm:p-6 md:grid-cols-2">
           <div>
             <h2 className="flex items-center gap-2 font-bold text-slate-900">
               <MessageCircle className="h-5 w-5 text-blue-600" />
@@ -229,6 +258,7 @@ export function OrderEditSections({
             <textarea
               value={comment}
               onChange={(event) => setComment(event.target.value)}
+              aria-label="Order comments"
               rows={5}
               className="mt-4 w-full rounded-xl border border-slate-300 p-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             />
@@ -239,6 +269,7 @@ export function OrderEditSections({
             </h2>
             <input
               type="date"
+              aria-label="Contact customer before"
               value={contactBefore}
               onChange={(event) => setContactBefore(event.target.value)}
               className="mt-4 w-full rounded-xl border border-slate-300 p-3 text-sm"
@@ -301,7 +332,7 @@ function SpecificInformation({
     }
   }
   return (
-    <details className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <details className="rounded-2xl border border-slate-200 bg-white p-5 ">
       <summary className="cursor-pointer font-bold text-slate-900">
         Edit specific information
       </summary>
@@ -362,7 +393,7 @@ function BuyerEmails({
     }
   }
   return (
-    <details className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <details className="rounded-2xl border border-slate-200 bg-white p-5 ">
       <summary className="cursor-pointer font-bold text-slate-900">
         Send email to buyer
       </summary>
@@ -486,7 +517,7 @@ function FulfilmentEditor({
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-sm sm:p-6">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4  sm:p-6">
       <div className="grid min-w-0 gap-8 xl:grid-cols-2">
         <div className="min-w-0">
           <h2 className="flex items-center gap-3 font-bold text-slate-900">
@@ -616,7 +647,7 @@ function FulfilmentEditor({
           (mustTrack && available.includes("SHIPPED") && !trackingUrl.trim())
         }
         onClick={() => void save()}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-6 flex w-full xl:ml-auto xl:w-1/2 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {busy && <RefreshCw className="h-4 w-4 animate-spin" />}Save changes in
         this section
@@ -635,7 +666,7 @@ function OrderInformation({ order }: { order: Order }) {
   );
   const net = Number(order.total_amount || 0) - commission;
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 ">
       <h2 className="flex items-center gap-2 font-bold text-slate-900">
         <CalendarDays className="h-5 w-5 text-blue-600" />
         Order information
@@ -694,7 +725,7 @@ function InfoRow({
   strong?: boolean;
 }) {
   return (
-    <div className="flex justify-between gap-4">
+    <div className="flex justify-between gap-4 [&>dd]:min-w-0 [&>dd]:break-words [&>dd]:text-right">
       <dt className={strong ? "font-bold text-slate-900" : "text-slate-600"}>
         {label}
       </dt>
@@ -848,7 +879,16 @@ function Address({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-slate-900">{title}</h2>
+        <h2 className="flex items-center gap-3 font-bold text-slate-900">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            {type === "shipping" ? (
+              <Truck className="h-5 w-5" />
+            ) : (
+              <FileText className="h-5 w-5" />
+            )}
+          </span>
+          {title}
+        </h2>
         <button
           onClick={() => setEditing(true)}
           className="inline-flex items-center gap-1 text-sm font-bold text-blue-600"
@@ -977,7 +1017,9 @@ function Action({
         <FileText className="h-4 w-4" />
         {label}
       </span>
-      <span className="font-bold text-blue-600">{actionLabel}</span>
+      <span className="rounded-full border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-600">
+        {actionLabel}
+      </span>
     </button>
   );
 }

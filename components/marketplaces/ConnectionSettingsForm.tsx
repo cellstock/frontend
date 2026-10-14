@@ -150,6 +150,27 @@ export function ConnectionSettingsForm({
     }
   }
 
+  const allMarketsSelected =
+    (settings.markets ?? []).length > 0 &&
+    (settings.markets ?? []).every(
+      (market) => market.manage_orders && market.manage_offers,
+    );
+
+  function toggleAllMarkets(selected: boolean) {
+    setSettings((current) => {
+      const markets = current.markets ?? [];
+      if (markets.length === 0) return current;
+      return {
+        ...current,
+        markets: markets.map((market) => ({
+          ...market,
+          manage_orders: selected,
+          manage_offers: selected,
+        })),
+      };
+    });
+  }
+
   function updateMarket(
     code: string,
     changes: Partial<
@@ -435,6 +456,27 @@ export function ConnectionSettingsForm({
               {isLoadingMarkets ? t("Loading markets...") : t("Load markets")}
             </button>
           </div>
+
+          {(settings.markets ?? []).length > 0 && (
+            <label className="mt-3 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-blue-700">
+              <input
+                type="checkbox"
+                checked={allMarketsSelected}
+                ref={(input) => {
+                  if (input) {
+                    input.indeterminate = !allMarketsSelected &&
+                      (settings.markets ?? []).some(
+                        (market) => market.manage_orders || market.manage_offers,
+                      );
+                  }
+                }}
+                onChange={(event) => toggleAllMarkets(event.target.checked)}
+                disabled={isSubmitting || isLoadingMarkets}
+                className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {t("Select all")}
+            </label>
+          )}
 
           <FieldError errors={validationErrors} field="markets" />
 

@@ -63,3 +63,10 @@ export function updateMerchantAddress(id: number, input: MerchantAddressInput) {
 export function deleteMerchantAddress(id: number) {
   return request(`/api/merchant-addresses/${id}`, { method: "DELETE" });
 }
+
+export function fetchMerchantAddresses() {
+  return request<{
+    success: boolean;
+    data: { addresses: MerchantAddressRecord[] };
+  }>("/api/merchant-addresses/sync", { method: "POST" });
+}

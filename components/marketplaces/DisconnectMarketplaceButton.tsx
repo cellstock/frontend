@@ -94,7 +94,7 @@ export function DisconnectMarketplaceButton({
         description={
           <>
             {t(
-              "CelleXa will stop synchronizing this marketplace. The saved connection credentials and settings will be removed. This action does not delete data from the marketplace itself.",
+              "Disconnecting permanently deletes this connection and its imported orders, offers, shipping data, and synchronization history from CelleXa. Data on the marketplace itself is not deleted.",
             )}
           </>
         }

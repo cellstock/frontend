@@ -155,8 +155,9 @@ export function refreshOrderFromRefurbed(
 
 export function getRefurbedOrderInvoice(
   orderId: number,
+  operationId?: number,
 ): Promise<{ success: boolean; message?: string; data: { url: string | null; operation_id?: number } }> {
-  return orderApiRequest(`/api/orders/${orderId}/invoice`);
+  return orderApiRequest(`/api/orders/${orderId}/invoice${operationId ? "?operation_id=" + operationId : ""}`);
 }
 
 export function updateOrderEditFields(

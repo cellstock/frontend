@@ -41,6 +41,10 @@ export function OrderFilters({
     searchParams.get("country_code") ?? "",
   );
 
+  const [marketplace, setMarketplace] = useState(searchParams.get("marketplace") ?? "");
+  const [status, setStatus] = useState(searchParams.get("status") ?? "");
+  const [perPage, setPerPage] = useState(searchParams.get("per_page") ?? "20");
+
   const queryString = searchParams.toString();
   const [previousQuery, setPreviousQuery] = useState(queryString);
 
@@ -48,6 +52,9 @@ export function OrderFilters({
     setPreviousQuery(queryString);
     setSearch(searchParams.get("search") ?? "");
     setCountryCode(searchParams.get("country_code") ?? "");
+    setMarketplace(searchParams.get("marketplace") ?? "");
+    setStatus(searchParams.get("status") ?? "");
+    setPerPage(searchParams.get("per_page") ?? "20");
   }
 
   function navigateWithParameters(updates: Record<string, string | null>) {
@@ -77,12 +84,18 @@ export function OrderFilters({
     navigateWithParameters({
       search,
       country_code: countryCode.toUpperCase(),
+      marketplace,
+      status,
+      per_page: perPage,
     });
   }
 
   function handleReset() {
     setSearch("");
     setCountryCode("");
+    setMarketplace("");
+    setStatus("");
+    setPerPage("20");
 
     if (window.location.search) {
       window.history.pushState(null, "", publicPath(pathname));
@@ -173,13 +186,9 @@ export function OrderFilters({
 
           <select
             id="order-marketplace"
-            value={searchParams.get("marketplace") ?? ""}
+            value={marketplace}
             disabled={isDisabled}
-            onChange={(event) =>
-              navigateWithParameters({
-                marketplace: event.target.value,
-              })
-            }
+            onChange={(event) => setMarketplace(event.target.value)}
             className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition hover:border-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           >
             <option value="">{t("All marketplaces")}</option>
@@ -202,13 +211,9 @@ export function OrderFilters({
 
           <select
             id="order-status"
-            value={searchParams.get("status") ?? ""}
+            value={status}
             disabled={isDisabled}
-            onChange={(event) =>
-              navigateWithParameters({
-                status: event.target.value,
-              })
-            }
+            onChange={(event) => setStatus(event.target.value)}
             className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition hover:border-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           >
             <option value="">{t("All statuses")}</option>
@@ -251,13 +256,9 @@ export function OrderFilters({
 
           <select
             id="orders-per-page"
-            value={searchParams.get("per_page") ?? "20"}
+            value={perPage}
             disabled={isDisabled}
-            onChange={(event) =>
-              navigateWithParameters({
-                per_page: event.target.value,
-              })
-            }
+            onChange={(event) => setPerPage(event.target.value)}
             className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none transition hover:border-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           >
             {pageSizeOptions.map((pageSize) => (

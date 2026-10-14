@@ -2,10 +2,16 @@
 import { useI18n } from "@/components/i18n/language-provider";
 import { ArrowRight, Store } from "lucide-react";
 import Link from "@/components/ui/AppLink";
+import Image from "@/components/ui/AppImage";
 import type {
   MarketplaceConnectionStatus,
   MarketplaceSummary,
 } from "@/types/dashboard";
+
+const marketplaceLogos: Record<string, string> = {
+  "back-market": "/images/marketplaces/back-market.png",
+  refurbed: "/images/marketplaces/refurbed.png",
+};
 
 const connectionStyles: Record<
   MarketplaceConnectionStatus,
@@ -59,7 +65,17 @@ export function MarketplaceStatus({
                 className="flex items-center gap-3 rounded-xl border border-slate-100 p-3.5 transition hover:border-blue-200 hover:bg-blue-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                  <Store className="h-5 w-5" />
+                  {marketplaceLogos[marketplace.slug] ? (
+                    <Image
+                      src={marketplaceLogos[marketplace.slug]}
+                      alt={marketplace.name + " logo"}
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 object-contain"
+                    />
+                  ) : (
+                    <Store className="h-5 w-5" />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-slate-800">

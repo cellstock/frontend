@@ -92,6 +92,7 @@ $routes = [
     '~^/shipping-profiles/carriers$~' => ['GET'],
     '~^/shipping-profiles/sync$~' => ['POST'],
     '~^/shipping-profiles/[^/]+$~' => ['PATCH', 'DELETE'],
+    '~^/merchant-addresses/sync$~' => ['POST'],
     '~^/merchant-addresses$~' => ['GET', 'POST'],
     '~^/merchant-addresses/[0-9]+$~' => ['PATCH', 'DELETE'],
     '~^/synchronization-issues$~' => ['GET'],
@@ -206,6 +207,15 @@ http_response_code($status ?: 502);
 // Only the authenticated avatar route may return a binary response.
 if ($endpoint === '/auth/profile/avatar' && $method === 'GET' && str_starts_with($contentType, 'image/')) {
     header('Content-Type: ' . $contentType);
+    echo $body;
+    exit;
+}
+// Uploaded invoices must pass through the cookie-authenticated gateway.
+if ($method === 'GET' && $status === 200 &&
+    preg_match('~^/orders/[0-9]+/invoice/custom$~', $endpoint) &&
+    str_starts_with(strtolower($contentType), 'application/pdf')) {
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: inline; filename="invoice.pdf"');
     echo $body;
     exit;
 }

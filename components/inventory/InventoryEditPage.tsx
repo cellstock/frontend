@@ -117,7 +117,7 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
 
   const marketplaceLogo =
     offer.marketplace.slug === "back-market"
-      ? "/images/marketplaces/back-market.jpg"
+      ? "/images/marketplaces/back-market.png"
       : "/images/marketplaces/refurbed.png";
   const offerMarkets = offer.markets.filter((market) =>
     offer.market_codes.includes(market.code),

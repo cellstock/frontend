@@ -60,6 +60,9 @@ test("PHP gateway preserves authentication, routes, uploads, and access checks a
           },
         }),
       );
+    } else if (req.url === "/api/orders/1/invoice/custom") {
+      res.setHeader("Content-Type", "application/pdf");
+      res.end("%PDF-1.4\ninvoice-test");
     } else if (req.url === "/api/auth/profile/avatar" && req.method === "GET") {
       res.setHeader("Content-Type", "image/png");
       res.end(Buffer.from([137, 80, 78, 71]));
@@ -218,6 +221,15 @@ test("PHP gateway preserves authentication, routes, uploads, and access checks a
     assert.match(requests.at(-1).body, /inventory.csv/);
     assert.match(requests.at(-1).body, /phone,3/);
     assert.match(requests.at(-1).body, /refurbed/);
+  });
+  await t.test("uploaded invoices remain authenticated PDFs", async () => {
+    const denied = await call("/orders/1/invoice/custom");
+    assert.equal(denied.status, 401);
+    const response = await call("/orders/1/invoice/custom", { headers: { Cookie: cookie } });
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("content-type"), "application/pdf");
+    assert.equal(await response.text(), "%PDF-1.4\ninvoice-test");
+    assert.equal(requests.at(-1).headers.authorization, "Bearer test-secret-token");
   });
   await t.test("authenticated avatars remain binary", async () => {
     const response = await call("/auth/profile/avatar", {
