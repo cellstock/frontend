@@ -199,7 +199,7 @@ export default function RefurbedCatalogPage() {
               Catalog records
             </p>
             <p className="mt-1 text-3xl font-bold text-slate-950">
-              {itemsCount.toLocaleString()}
+              {(itemsCount ?? 0).toLocaleString()}
             </p>
 
             {catalogImport && (
@@ -240,13 +240,13 @@ function ImportStatus({
         <div>
           <dt className="text-slate-500">Processed</dt>
           <dd className="font-semibold text-slate-900">
-            {catalogImport.total_rows.toLocaleString()}
+            {(catalogImport.total_rows ?? 0).toLocaleString()}
           </dd>
         </div>
         <div>
           <dt className="text-slate-500">Imported</dt>
           <dd className="font-semibold text-slate-900">
-            {catalogImport.imported_rows.toLocaleString()}
+            {(catalogImport.imported_rows ?? 0).toLocaleString()}
           </dd>
         </div>
       </dl>
