@@ -258,7 +258,6 @@ function ShippingLabelModal({
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [label, setLabel] = useState<ShippingLabel | null>(null);
   const [addressId, setAddressId] = useState("");
   const [parcelWeight, setParcelWeight] = useState("");
@@ -328,7 +327,6 @@ function ShippingLabelModal({
   async function createLabel() {
     setSaving(true);
     setError("");
-    setNotice("");
 
     try {
       const response = await createShippingLabel(order.id, {
@@ -339,8 +337,7 @@ function ShippingLabelModal({
 
       const shippingLabel = response.data.shipping_label;
       if (!shippingLabel) {
-        setNotice(response.message);
-        await onCreated?.();
+        setError("The server did not return a shipping label. Deploy the updated shipping-label endpoint, then check this order before trying again.");
         return;
       }
 
@@ -578,20 +575,15 @@ function ShippingLabelModal({
             </p>
           )}
 
-          {notice && (
-            <p className="rounded-xl bg-blue-50 p-4 text-sm text-blue-700">
-              {notice}
-            </p>
-          )}
 
           <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
             <button
               type="button"
               disabled={saving}
-              onClick={step === 1 || notice ? onClose : () => setStep(step - 1)}
+              onClick={step === 1 ? onClose : () => setStep(step - 1)}
               className="rounded-xl border border-slate-300 px-5 py-3 font-semibold"
             >
-              {step === 1 ? "Cancel" : notice ? "Close" : "Back"}
+              {step === 1 ? "Cancel" : "Back"}
             </button>
 
             {step === 1 && (
@@ -608,12 +600,12 @@ function ShippingLabelModal({
             {step === 2 && (
               <button
                 type="button"
-                disabled={saving || Boolean(notice) || !parcelWeight || Number(parcelWeight) <= 0}
+                disabled={saving || !parcelWeight || Number(parcelWeight) <= 0}
                 onClick={createLabel}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-bold text-white disabled:opacity-50"
               >
                 {saving && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                {notice ? "Queued" : "Create label"}
+                {saving ? "Creating label?" : "Create label"}
               </button>
             )}
 

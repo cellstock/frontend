@@ -61,6 +61,13 @@ export function MerchantAddressesPage() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") void load();
+    }, 15000);
+    return () => window.clearInterval(timer);
+  }, [load]);
+
   async function fetchAddresses() {
     setBusy(true);
     setError("");

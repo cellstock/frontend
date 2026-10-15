@@ -113,6 +113,13 @@ export function InventoryTablePage() {
   const allInStockSelected =
     inStockIds.length > 0 && inStockIds.every((id) => selected.includes(id));
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") setReload((value) => value + 1);
+    }, 15000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   function refresh() {
     setError(null);
     setReload((value) => value + 1);
@@ -825,7 +832,7 @@ function MarketplacePicker({
           <div
             role="listbox"
             aria-label="Marketplace"
-            className="absolute left-0 top-full z-40 mt-2 w-72 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl"
+            className="absolute left-0 top-full z-40 mt-2 max-h-[min(24rem,60vh)] w-72 overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl"
           >
             {markets.map((item) => {
               const selected = item.code === activeMarket?.code;

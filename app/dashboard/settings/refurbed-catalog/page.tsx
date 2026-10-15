@@ -74,6 +74,10 @@ export default function RefurbedCatalogPage() {
       return;
     }
 
+    if (file.size === 0) {
+      setError("The catalog file is empty. Select a file containing catalog rows.");
+      return;
+    }
     setUploading(true);
     setError("");
     setMessage("");

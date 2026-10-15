@@ -1,4 +1,4 @@
-import { Building2, Clock3, Database, Link2, Mail } from "lucide-react";
+import { Database } from "lucide-react";
 
 import Link from "@/components/ui/AppLink";
 
@@ -15,57 +15,6 @@ const cards = [
     href: "/dashboard/settings/refurbed-catalog",
     action: "Manage Refurbed catalog",
     icon: Database,
-  },
-  {
-    title: "Seller profile",
-    description:
-      "Manage the default information used by your marketplace accounts.",
-    points: [
-      "Upload your logo",
-      "Terms and conditions",
-      "Return policy",
-      "Business and contact information",
-      "Inventory and account preferences",
-    ],
-    href: "/dashboard/settings/seller-profile",
-    action: "See your seller profile",
-    icon: Building2,
-  },
-  {
-    title: "Order preferences",
-    description: "Manage your orders effectively and configure your documents.",
-    points: [
-      "Personalized email templates",
-      "Feedback templates",
-      "Packing slips and labels",
-    ],
-    href: "/dashboard/settings/orders",
-    action: "See your order preferences",
-    icon: Mail,
-  },
-  {
-    title: "Push preferences",
-    description: "Set up a synchronization schedule for your marketplaces.",
-    points: [
-      "Synchronization frequency",
-      "Enabled data types",
-      "Marketplace schedules",
-    ],
-    href: "/dashboard/settings/push",
-    action: "See your push preferences",
-    icon: Clock3,
-  },
-  {
-    title: "Marketplace links",
-    description: "Manage your connections to marketplaces in detail.",
-    points: [
-      "Connection status",
-      "Credentials and markets",
-      "Synchronization settings",
-    ],
-    href: "/dashboard/marketplaces",
-    action: "Update marketplace connections",
-    icon: Link2,
   },
 ];
 

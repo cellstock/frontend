@@ -5,7 +5,6 @@ import { useI18n } from "@/components/i18n/language-provider";
 
 import {
   // BarChart3,
-  AlertTriangle,
   Bell,
   ChevronDown,
   CircleUserRound,
@@ -130,17 +129,7 @@ const navigation = [
         name: "Importing your inventory",
         href: "/dashboard/inventory/import",
       },
-      {
-        name: "Diagnosing errors in your offers",
-        href: "/dashboard/inventory/diagnostics",
-      },
     ],
-  },
-  {
-    name: "Synchronization issues",
-    href: "/dashboard/synchronization-issues",
-    icon: AlertTriangle,
-    adminOnly: true,
   },
   /* Analytics menu temporarily hidden.
   {

@@ -55,6 +55,8 @@ export function InventoryFilesPage() {
     setError("");
     setMessage("");
     setReport(null);
+    setFile(null);
+    setPreview([]);
 
     if (!selectedFile.name.toLowerCase().match(/\.(csv|txt)$/)) {
       setError("Select a CSV file.");
@@ -102,7 +104,7 @@ export function InventoryFilesPage() {
       });
       setMessage(
         response.data.failed
-          ? `${response.data.successful} updates succeeded and ${response.data.failed} rows failed.`
+          ? `${response.data.successful} updates queued and ${response.data.failed} rows failed.`
           : response.message,
       );
       setFile(null);
@@ -191,8 +193,8 @@ export function InventoryFilesPage() {
             </select>
           </label>
           <p className="text-sm leading-6 text-slate-500">
-            Only SKUs available in the selected locale can be updated. Stock is
-            sent to Refurbed in batches of 50 and saved locally after success.
+            Only SKUs available in the selected locale can be updated. Stock updates are
+            queued for Refurbed after validation.
           </p>
         </div>
       </section>
