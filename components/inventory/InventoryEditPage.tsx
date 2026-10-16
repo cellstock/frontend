@@ -6,13 +6,17 @@ import {
   CircleAlert,
   Package,
   RefreshCw,
-  Store,
 } from "lucide-react";
 import Image from "@/components/ui/AppImage";
 import { useRouter } from "next/navigation";
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 
-import { ShippingProfileSelect } from "@/components/inventory/ShippingProfileSelect";
+import {
+  MarketplaceListingPanel,
+  extractMarketplaceListingValues,
+  type MarketplaceListingDefaults,
+} from "@/components/inventory/MarketplaceListingPanel";
+import { MarketplaceSelectorRow } from "@/components/inventory/MarketplaceSelectorRow";
 import AppLink from "@/components/ui/AppLink";
 import { ContentLoading } from "@/components/ui/ContentLoading";
 import {
@@ -20,7 +24,9 @@ import {
   InventoryApiError,
   updateInventoryOffer,
 } from "@/lib/api/inventory";
+import { getMarketplaces } from "@/lib/api/marketplaces";
 import type { InventoryOfferDetails } from "@/types/inventory";
+import type { Marketplace } from "@/types/marketplace";
 
 const controlClass =
   "mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition";
@@ -30,20 +36,25 @@ const readOnlyInputClass = `${controlClass} cursor-default bg-slate-100 text-sla
 export function InventoryEditPage({ offerId }: { offerId: string }) {
   const router = useRouter();
   const [offer, setOffer] = useState<InventoryOfferDetails | null>(null);
+  const [marketplaces, setMarketplaces] = useState<Marketplace[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [marketCode, setMarketCode] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [marketplaceView, setMarketplaceView] = useState(false);
 
   useEffect(() => {
     let active = true;
 
-    getInventoryOffer(offerId)
-      .then((response) => {
+    Promise.all([getInventoryOffer(offerId), getMarketplaces()])
+      .then(([offerResponse, mpResponse]) => {
         if (active) {
-          setOffer(response.data.offer);
-          setMarketCode(response.data.offer.market_codes[0] || "");
+          setOffer(offerResponse.data.offer);
+          setMarketplaces([
+            ...mpResponse.data.connected,
+            ...mpResponse.data.available,
+          ]);
         }
       })
       .catch((caught) => {
@@ -68,27 +79,110 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
     event.preventDefault();
     if (!offer) return;
 
-    const values = Object.fromEntries(new FormData(event.currentTarget));
+    const form = new FormData(event.currentTarget);
+    const values = Object.fromEntries(form);
+
+    // ── Client-side validation ────────────────────────────────────────────
+    const clientErrors: Record<string, string> = {};
+    const shippingId = String(form.get("mp_refurbed_shipping_profile_id") ?? "").trim();
+    if (!shippingId) {
+      clientErrors["mp_refurbed_shipping_profile_id"] =
+        "Please enter the Refurbed Shipping Profile Id.";
+    }
+    const topPrice = String(form.get("mp_refurbed_top_price") ?? "").trim();
+    if (!topPrice || Number(topPrice) <= 0) {
+      clientErrors["mp_refurbed_top_price"] =
+        "Enter a top price of at least 0.01.";
+    }
+    if (Object.keys(clientErrors).length > 0) {
+      setFieldErrors(clientErrors);
+      setMarketplaceView(true); // these fields live in the panel
+      return;
+    }
+
+    // Derive the offer's active markets inside submit so it's always available
+    const submitOfferMarkets = offer.markets.filter((market) =>
+      offer.market_codes.includes(market.code),
+    );
+
+    // Extract marketplace panel values
+    const mpValues = extractMarketplaceListingValues(form, submitOfferMarkets);
+    const refurbed = mpValues.mp_refurbed;
+
+    // Panel fields drive the top-level Refurbed API fields
+    const referencePrice = refurbed.top_price || String(values.reference_price || "0");
+    const referenceMinPrice = refurbed.block_price
+      ? referencePrice
+      : refurbed.bottom_price || (values.reference_min_price ? String(values.reference_min_price) : null);
+
+    // Build listing_details with both ui-metadata keys and the backend-behaviour keys
+    const mergedListingDetails: Record<string, string> = {
+      ...((offer.listing_details ?? {}) as Record<string, string>),
+      // ui metadata
+      mp_refurbed_activate: refurbed.activate ? "1" : "0",
+      mp_refurbed_ean: refurbed.ean,
+      mp_refurbed_battery_condition: refurbed.battery_condition,
+      mp_refurbed_id: refurbed.refurbed_id,
+      // detail section fields
+      ...Object.fromEntries(
+        detailSections.flatMap((section) =>
+          section.fields.map(([key]) => [
+            key,
+            String(values["detail_" + key] ?? ""),
+          ]),
+        ),
+      ),
+    };
+
+    // Per-locale: write BOTH the backend-readable keys AND the ui-seed keys
+    for (const market of submitOfferMarkets) {
+      const locale = refurbed.locales[market.code];
+      // Backend-readable keys (InventoryService reads these)
+      mergedListingDetails[`dont_send_quantity_${market.code}`] =
+        locale?.dont_send_quantity ? "1" : "0";
+      mergedListingDetails[`dont_send_price_${market.code}`] =
+        locale?.dont_send_price ? "1" : "0";
+      mergedListingDetails[`block_price_${market.code}`] =
+        locale?.block_price ? "1" : "0";
+      // UI-seed keys (for re-populating the panel on next load)
+      mergedListingDetails[`mp_locale_${market.code}_price`] = locale?.price ?? "";
+      mergedListingDetails[`mp_locale_${market.code}_min_price`] = locale?.min_price ?? "";
+    }
+
+    // market_prices: use panel per-locale overrides, apply block_price logic
+    const marketPrices = submitOfferMarkets.map((market) => {
+      const locale = refurbed.locales[market.code];
+      const existingPrice = offer.market_prices?.find(
+        (p) => p.market_code === market.code,
+      );
+      const price = locale?.price || existingPrice?.price || referencePrice;
+      const minPrice = locale?.block_price
+        ? price
+        : locale?.min_price || existingPrice?.min_price || null;
+      return { market_code: market.code, price, min_price: minPrice };
+    });
+
     const update = {
       grading: String(values.grading),
-      taxation: String(values.taxation),
+      taxation: refurbed.taxation || String(values.taxation),
       stock: Number(values.stock),
-      shipping_profile_id: String(values.shipping_profile_id),
-      reference_price: String(values.reference_price),
-      reference_min_price: values.reference_min_price
-        ? String(values.reference_min_price)
-        : null,
-      market_code: String(values.market_code),
+      shipping_profile_id: refurbed.shipping_profile_id || String(values.shipping_profile_id),
+      reference_price: referencePrice,
+      reference_min_price: referenceMinPrice,
+      listing_details: mergedListingDetails,
+      market_prices: marketPrices,
     };
 
     setSaving(true);
     setError("");
+    setFieldErrors({});
     setMessage("");
 
     try {
-      await updateInventoryOffer(offer.id, update);
-      setOffer({ ...offer, ...update });
-      setMessage("Offer saved successfully.");
+      const response = await updateInventoryOffer(offer.id, update);
+      const saved = await getInventoryOffer(offer.id);
+      setOffer(saved.data.offer);
+      setMessage(response.message);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (caught) {
       setError(
@@ -122,11 +216,7 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
   const offerMarkets = offer.markets.filter((market) =>
     offer.market_codes.includes(market.code),
   );
-  const activeMarket =
-    offerMarkets.find((market) => market.code === marketCode) ??
-    offerMarkets[0];
-  const currency =
-    activeMarket?.currency_code || offer.reference_currency_code || "EUR";
+  const currency = offer.reference_currency_code || "EUR";
 
   return (
     <PageFrame>
@@ -193,7 +283,6 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
               <div>
                 <p className="font-bold text-slate-900">
                   On {offer.marketplace.name}
-                  {activeMarket ? ` ${activeMarket.code}` : ""}
                 </p>
                 <p className="mt-1 text-sm text-slate-500">
                   Connected marketplace
@@ -221,111 +310,173 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
 
         <form
           onSubmit={submit}
+          onInvalidCapture={() => setMarketplaceView(false)}
           className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
         >
           <h2 className="border-b border-slate-200 p-6 text-2xl font-bold text-slate-900">
-            Listing information
+            {marketplaceView
+              ? "Listing information by marketplaces"
+              : "Listing information"}
           </h2>
-          <Section title="Sell on the following marketplaces" open>
-            <div className="rounded-2xl bg-slate-50 p-4 md:col-span-2">
-              <div className="flex items-center gap-3">
-                <Store className="h-5 w-5 text-blue-600" />
-                <b>{offer.marketplace.name}</b>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                  Active
-                </span>
-              </div>
-              <label className="mt-4 block text-sm font-semibold text-slate-700">
-                Marketplace locale
+          <div hidden={marketplaceView}>
+            <Section title="Sell on the following marketplaces" open>
+              <MarketplaceSelectorRow
+                marketplaces={marketplaces}
+                markets={offerMarkets}
+                defaultEnabledSlug={offer.marketplace.slug}
+              />
+            </Section>
+            <Section title="Product information" open>
+              <ReadOnlyField
+                label="Product instance name"
+                value={offer.instance_name}
+              />
+              <ReadOnlyField label="Instance ID" value={offer.instance_id} />
+              <ReadOnlyField label="SKU" value={offer.sku} />
+              <Field label="Grade" required>
                 <select
-                  name="market_code"
-                  value={activeMarket?.code || ""}
-                  onChange={(event) => setMarketCode(event.target.value)}
+                  name="grading"
                   required
+                  defaultValue={offer.grading}
                   className={inputClass}
                 >
-                  {offerMarkets.map((market) => (
-                    <option key={market.code} value={market.code}>
-                      Refurbed {market.code} · {market.name}
-                    </option>
-                  ))}
+                  <option value="AA">Premium</option>
+                  <option value="A">Very Good</option>
+                  <option value="B">Good</option>
+                  <option value="C">Acceptable</option>
                 </select>
-              </label>
-              {offerMarkets.length === 0 && (
-                <p className="mt-3 text-sm text-amber-700">
-                  Synchronize inventory to load this offer&apos;s marketplace
-                  locales.
-                </p>
-              )}
-            </div>
-          </Section>
-          <Section title="Product information" open>
-            <ReadOnlyField
-              label="Product instance name"
-              value={offer.instance_name}
-            />
-            <ReadOnlyField label="Instance ID" value={offer.instance_id} />
-            <ReadOnlyField label="SKU" value={offer.sku} />
-            <Field label="Grade" required>
-              <select
-                name="grading"
-                required
-                defaultValue={offer.grading}
-                className={inputClass}
-              >
-                <option value="AA">Premium</option>
-                <option value="A">Very Good</option>
-                <option value="B">Good</option>
-                <option value="C">Acceptable</option>
-              </select>
-            </Field>
-            <ReadOnlyField
-              label="Warranty"
-              value={offer.warranty === "M12" ? "12 Months" : offer.warranty}
-            />
-            <Field label="Stock" required>
-              <input
-                name="stock"
-                type="number"
-                min="0"
-                required
-                defaultValue={offer.stock}
-                className={inputClass}
+              </Field>
+              <ReadOnlyField
+                label="Warranty"
+                value={offer.warranty === "M12" ? "12 Months" : offer.warranty}
               />
-            </Field>
-            <Field label="Shipping profile" required>
-              <ShippingProfileSelect defaultValue={offer.shipping_profile_id} />
-            </Field>
-          </Section>
-          <Section title="Pricing" open>
-            <Field label="Taxation" required>
-              <select
-                name="taxation"
-                required
-                defaultValue={offer.taxation || "GROSS"}
-                className={inputClass}
-              >
-                <option value="GROSS">Gross taxation</option>
-                <option value="MARGINAL">Marginal taxation</option>
-              </select>
-            </Field>
-            <ReadOnlyField label="Reference currency" value={currency} />
-            <Field label="Minimum reference price">
-              <MoneyInput
-                name="reference_min_price"
-                defaultValue={offer.reference_min_price || ""}
-                currency={currency}
-              />
-            </Field>
-            <Field label="Reference price" required>
-              <MoneyInput
-                name="reference_price"
-                defaultValue={offer.reference_price}
-                currency={currency}
-                required
-              />
-            </Field>
-          </Section>
+              <Field label="Stock" required>
+                <input
+                  name="stock"
+                  type="number"
+                  min="0"
+                  required
+                  defaultValue={offer.stock}
+                  className={inputClass}
+                />
+              </Field>
+            </Section>
+            <Section title="Pricing" open>
+              <Field label="Taxation" required>
+                <select
+                  name="taxation"
+                  required
+                  defaultValue={offer.taxation || "GROSS"}
+                  className={inputClass}
+                >
+                  <option value="GROSS">Gross taxation</option>
+                  <option value="MARGINAL">Marginal taxation</option>
+                </select>
+              </Field>
+              <ReadOnlyField label="Reference currency" value={currency} />
+              <Field label="Minimum reference price">
+                <MoneyInput
+                  name="reference_min_price"
+                  defaultValue={offer.reference_min_price || ""}
+                  currency={currency}
+                />
+              </Field>
+              <Field label="Reference price" required>
+                <MoneyInput
+                  name="reference_price"
+                  defaultValue={offer.reference_price}
+                  currency={currency}
+                  required
+                />
+              </Field>
+            </Section>
+            <p className="px-6 py-4 text-sm text-slate-500">
+              Supplementary listing, logistics and GPSR details are saved in
+              CelleXa. Grade, taxation, stock, shipping profile and prices are
+              synchronized with Refurbed.
+            </p>
+            {detailSections.map((section) => (
+              <Section key={section.title} title={section.title}>
+                {section.fields.map(([key, label]) => (
+                  <Field key={key} label={label}>
+                    <input
+                      name={"detail_" + key}
+                      defaultValue={
+                        offer.listing_details?.[key] ||
+                        (key === "title" ? offer.instance_name : "")
+                      }
+                      maxLength={2000}
+                      className={inputClass}
+                    />
+                  </Field>
+                ))}
+              </Section>
+            ))}
+          </div>
+          <div hidden={!marketplaceView}>
+            {(() => {
+              // Build defaults from the existing offer's listing_details
+              const ld = offer.listing_details ?? {};
+              const panelDefaults: MarketplaceListingDefaults = {
+                activate: ld.mp_refurbed_activate !== "0",
+                ean: ld.mp_refurbed_ean ?? offer.ean ?? "",
+                // Seed prices from the offer's current reference prices (panel overwrites on submit)
+                top_price: offer.reference_price ?? "",
+                bottom_price: offer.reference_min_price ?? "",
+                block_price: ld.mp_refurbed_block_price === "1",
+                battery_condition: ld.mp_refurbed_battery_condition ?? "OPTIMAL",
+                taxation: ld.mp_refurbed_taxation ?? offer.taxation ?? "GROSS",
+                warranty_delay: ld.mp_refurbed_warranty_delay ?? "12",
+                shipping_profile_id:
+                  ld.mp_refurbed_shipping_profile_id ?? offer.shipping_profile_id ?? "",
+                refurbed_id: ld.mp_refurbed_id ?? "",
+                locales: Object.fromEntries(
+                  offerMarkets.map((market) => {
+                    const prices = offer.market_prices?.find(
+                      (p) => p.market_code === market.code,
+                    );
+                    return [
+                      market.code,
+                      {
+                        // Read from ui-seed keys first, then backend-behaviour keys as fallback
+                        price: ld[`mp_locale_${market.code}_price`] ?? prices?.price ?? "",
+                        min_price: ld[`mp_locale_${market.code}_min_price`] ?? prices?.min_price ?? "",
+                        block_price:
+                          ld[`mp_locale_${market.code}_block_price`] === "1" ||
+                          ld[`block_price_${market.code}`] === "1",
+                        dont_send_quantity:
+                          ld[`mp_locale_${market.code}_dont_send_quantity`] === "1" ||
+                          ld[`dont_send_quantity_${market.code}`] === "1",
+                        dont_send_price:
+                          ld[`mp_locale_${market.code}_dont_send_price`] === "1" ||
+                          ld[`dont_send_price_${market.code}`] === "1",
+                      },
+                    ];
+                  }),
+                ),
+              };
+              return (
+                <MarketplaceListingPanel
+                  markets={offerMarkets}
+                  marketplaces={marketplaces}
+                  currency={currency}
+                  defaults={panelDefaults}
+                  fieldErrors={fieldErrors}
+                />
+              );
+            })()}
+          </div>
+          <div className="flex justify-end px-6 py-4">
+            <button
+              type="button"
+              onClick={() => setMarketplaceView((current) => !current)}
+              className="font-semibold text-blue-600 hover:underline"
+            >
+              {marketplaceView
+                ? "Back to default listing information"
+                : "Listing information by marketplaces ?"}
+            </button>
+          </div>
           <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 p-6 sm:flex-row sm:justify-end">
             <button
               type="button"
@@ -347,6 +498,56 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
     </PageFrame>
   );
 }
+
+const detailSections = [
+  {
+    title: "General information",
+    fields: [
+      ["title", "Title"],
+      ["description", "Offer description"],
+      ["item_cost", "Item cost"],
+      ["smart_chain_id", "Smart Chain ID"],
+      ["offer_tag", "Offer tag"],
+      ["vat_rate", "VAT rate (%)"],
+      ["category", "Category"],
+      ["subcategory", "Subcategory"],
+      ["custom_field", "Custom field"],
+    ],
+  },
+  {
+    title: "Logistics information",
+    fields: [
+      ["shipment_country", "Shipment country"],
+      ["location", "Location"],
+      ["logistic_weight", "Logistic weight (kg)"],
+    ],
+  },
+  {
+    title: "Product dimensions",
+    fields: [
+      ["product_weight", "Product weight (kg)"],
+      ["product_width", "Product width (cm)"],
+      ["product_length", "Product length (cm)"],
+      ["product_height", "Product height (cm)"],
+    ],
+  },
+  {
+    title: "General Product Safety Regulation (GPSR)",
+    fields: [
+      ["gpsr_name", "Name"],
+      ["gpsr_address", "Address"],
+      ["gpsr_address_details", "Address details"],
+      ["gpsr_city", "City"],
+      ["gpsr_region", "Region"],
+      ["gpsr_country", "Country"],
+      ["gpsr_zip", "Zip code"],
+      ["gpsr_phone", "Telephone number"],
+      ["gpsr_email", "Email address"],
+      ["gpsr_safety_url", "Product safety warning URL"],
+      ["gpsr_european_manufacturer", "European manufacturer"],
+    ],
+  },
+];
 
 function PageFrame({ children }: { children: ReactNode }) {
   return (

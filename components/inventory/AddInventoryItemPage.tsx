@@ -2,140 +2,106 @@
 
 import {
   ChevronDown,
-  FolderSearch,
+  ChevronRight,
+  CirclePlus,
+  Loader2,
   Package,
   RefreshCw,
   Search,
-  Store,
+  ScanBarcode,
+  Type,
 } from "lucide-react";
 import Image from "@/components/ui/AppImage";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, ReactNode, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  FormEvent,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  MarketplaceListingPanel,
+  extractMarketplaceListingValues,
+} from "@/components/inventory/MarketplaceListingPanel";
+import { MarketplaceSelectorRow } from "@/components/inventory/MarketplaceSelectorRow";
 
 import { InventoryShell } from "@/components/inventory/InventoryTablePage";
 import { ShippingProfileSelect } from "@/components/inventory/ShippingProfileSelect";
 import {
   createInventoryOffer,
+  findInventoryInstance,
   getInventory,
-  InventoryApiError,
 } from "@/lib/api/inventory";
 import {
   getRefurbedCatalog,
   searchRefurbedCatalog,
   type RefurbedCatalogItem,
 } from "@/lib/api/refurbed-catalog";
+import { getMarketplaces } from "@/lib/api/marketplaces";
+import type { Marketplace } from "@/types/marketplace";
 import type { InventoryInstance, InventoryMarket } from "@/types/inventory";
+
+const ValidationContext = createContext<Record<string, string>>({});
+function FieldError({ name }: { name: string }) {
+  const errors = useContext(ValidationContext);
+  return errors[name] ? (
+    <span
+      id={"error-" + name}
+      role="alert"
+      className="mt-1 block text-xs font-medium text-red-600"
+    >
+      <b className="mr-1 rounded bg-red-600 px-1 text-white">ERROR</b>
+      {errors[name]}
+    </span>
+  ) : null;
+}
 
 const controlClass =
   "mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:bg-slate-100";
 
-const listingDetailFields = [
-  "title",
-  "description",
-  "condition_label",
-  "item_cost",
-  "asin",
-  "smart_chain_id",
-  "offer_tag",
-  "vat_rate",
-  "category",
-  "subcategory",
-  "custom_field",
-  "shipment_country",
-  "location",
-  "logistic_weight",
-  "product_weight",
-  "product_width",
-  "product_length",
-  "product_height",
-  "gpsr_name",
-  "gpsr_address",
-  "gpsr_address_details",
-  "gpsr_city",
-  "gpsr_region",
-  "gpsr_country",
-  "gpsr_zip",
-  "gpsr_phone",
-  "gpsr_email",
-  "gpsr_safety_url",
-  "gpsr_european_manufacturer",
-];
-
 export function AddInventoryItemPage() {
   const router = useRouter();
-  const [catalogSearch, setCatalogSearch] = useState("");
-  const [category, setCategory] = useState("");
+
+  // ── shared state loaded once on mount ───────────────────────────────────
   const [categories, setCategories] = useState<string[]>([]);
-  const [catalogCount, setCatalogCount] = useState(0);
-  const [catalogPage, setCatalogPage] = useState(1);
-  const [catalogLastPage, setCatalogLastPage] = useState(1);
-  const [catalogResultCount, setCatalogResultCount] = useState(0);
-  const [catalogLoading, setCatalogLoading] = useState(false);
-  const [instance, setInstance] = useState<InventoryInstance | null>(null);
-  const [manualEntry, setManualEntry] = useState(false);
-  const [results, setResults] = useState<RefurbedCatalogItem[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [error, setError] = useState("");
   const [markets, setMarkets] = useState<InventoryMarket[]>([]);
+  const [marketplaces, setMarketplaces] = useState<Marketplace[]>([]);
+  const [initError, setInitError] = useState("");
 
   useEffect(() => {
-    Promise.all([getInventory({ limit: 1 }), getRefurbedCatalog()])
-      .then(([inventoryResponse, catalogResponse]) => {
+    Promise.all([
+      getInventory({ limit: 1 }),
+      getRefurbedCatalog(),
+      getMarketplaces(),
+    ])
+      .then(([inventoryResponse, catalogResponse, marketplaceResponse]) => {
+        setMarketplaces([
+          ...marketplaceResponse.data.connected,
+          ...marketplaceResponse.data.available,
+        ]);
         setMarkets(inventoryResponse.data.markets);
         setCategories(catalogResponse.data.categories);
-        setCatalogCount(catalogResponse.data.items_count);
       })
       .catch((caught) =>
-        setError(
+        setInitError(
           caught instanceof Error
             ? caught.message
-            : "Unable to load offer markets.",
+            : "Unable to load marketplace data.",
         ),
       );
   }, []);
 
-  useEffect(() => {
-    if (!catalogSearch.trim() && !category) {
-      return;
-    }
+  // ── navigation state ────────────────────────────────────────────────────
+  const [instance, setInstance] = useState<InventoryInstance | null>(null);
+  const [manualEntry, setManualEntry] = useState(false);
 
-    let active = true;
-    const timer = window.setTimeout(() => {
-      setCatalogLoading(true);
-      setError("");
-
-      searchRefurbedCatalog({
-        search: catalogSearch.trim() || undefined,
-        category: category || undefined,
-        page: catalogPage,
-        limit: 25,
-      })
-        .then((response) => {
-          if (!active) return;
-          setResults(response.data.items);
-          setCatalogPage(response.data.pagination.current_page);
-          setCatalogLastPage(response.data.pagination.last_page);
-          setCatalogResultCount(response.data.pagination.total);
-        })
-        .catch((caught) => {
-          if (active) {
-            setError(
-              caught instanceof Error ? caught.message : "Search failed.",
-            );
-          }
-        })
-        .finally(() => {
-          if (active) setCatalogLoading(false);
-        });
-    }, 300);
-
-    return () => {
-      active = false;
-      window.clearTimeout(timer);
-    };
-  }, [catalogSearch, category, catalogPage]);
+  // ── listing form state ──────────────────────────────────────────────────
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [formError, setFormError] = useState("");
 
   function selectCatalogItem(item: RefurbedCatalogItem) {
     setInstance({
@@ -147,52 +113,109 @@ export function AddInventoryItemPage() {
       attributes_de: item.attributes_de || undefined,
     });
     setManualEntry(false);
-    setResults([]);
   }
 
   async function createListing(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
-    setError("");
-    const values = Object.fromEntries(new FormData(event.currentTarget));
+    setFormError("");
+    const form = new FormData(event.currentTarget);
+    const values = Object.fromEntries(form);
     try {
       const condition = String(values.condition_label);
-      const listingDetails = Object.fromEntries(
-        listingDetailFields.map((field) => [
-          field,
-          String(values[field] ?? "").trim(),
-        ]),
+
+      // ── Marketplace panel values ────────────────────────────────────────
+      const mpValues = extractMarketplaceListingValues(form, markets);
+      const refurbed = mpValues.mp_refurbed;
+
+      // Panel fields override the general form fields where applicable
+      const taxation = refurbed.taxation || String(values.taxation || "GROSS");
+      const warrantyMonths = refurbed.warranty_delay || "12";
+      const shippingProfileId =
+        refurbed.shipping_profile_id || String(values.shipping_profile_id || "");
+      const referencePrice =
+        refurbed.top_price || String(values.reference_price || "0");
+      const referenceMinPrice = refurbed.block_price
+        ? referencePrice // block price → floor = ceiling
+        : refurbed.bottom_price || String(values.reference_min_price || "") || null;
+      const referenceCurrency = markets[0]?.currency_code || "EUR";
+      const marketCode = markets[0]?.code || "";
+
+      // ── listing_details: backend-compatible keys ─────────────────────────
+      // Backend reads: dont_send_quantity_XX, dont_send_price_XX, block_price_XX
+      const listingDetailFields2 = [
+        "title", "description", "condition_label", "item_cost", "asin",
+        "smart_chain_id", "offer_tag", "vat_rate", "category", "subcategory",
+        "custom_field", "shipment_country", "location", "logistic_weight",
+        "product_weight", "product_width", "product_length", "product_height",
+        "gpsr_name", "gpsr_address", "gpsr_address_details", "gpsr_city",
+        "gpsr_region", "gpsr_country", "gpsr_zip", "gpsr_phone", "gpsr_email",
+        "gpsr_safety_url", "gpsr_european_manufacturer",
+      ];
+      const listingDetails: Record<string, string> = Object.fromEntries(
+        listingDetailFields2.map((field) => [field, String(values[field] ?? "").trim()])
       );
+
+      // Panel storage keys (ui metadata + backend behaviour keys)
+      listingDetails["mp_refurbed_activate"] = refurbed.activate ? "1" : "0";
+      listingDetails["mp_refurbed_ean"] = refurbed.ean;
+      listingDetails["mp_refurbed_battery_condition"] = refurbed.battery_condition;
+      listingDetails["mp_refurbed_id"] = refurbed.refurbed_id;
+
+      // Per-locale backend keys (the names the backend actually reads)
+      for (const market of markets) {
+        const locale = refurbed.locales[market.code];
+        listingDetails[`dont_send_quantity_${market.code}`] =
+          locale?.dont_send_quantity ? "1" : "0";
+        listingDetails[`dont_send_price_${market.code}`] =
+          locale?.dont_send_price ? "1" : "0";
+        listingDetails[`block_price_${market.code}`] =
+          locale?.block_price ? "1" : "0";
+        // Also store the ui prefixed keys for seeding the panel on next load
+        listingDetails[`mp_locale_${market.code}_price`] = locale?.price ?? "";
+        listingDetails[`mp_locale_${market.code}_min_price`] = locale?.min_price ?? "";
+      }
+
+      // ── market_prices: use panel per-locale prices when set ─────────────
+      const marketPrices = markets.map((market) => {
+        const locale = refurbed.locales[market.code];
+        const price = locale?.price || referencePrice;
+        const minPrice = locale?.block_price
+          ? price
+          : locale?.min_price || referenceMinPrice || price;
+        return { market_code: market.code, price, min_price: minPrice };
+      });
+
       const payload: Record<string, unknown> = {
         sku: values.sku,
         grading: conditionGrade[condition] || "A",
-        taxation: String(values.taxation || "GROSS"),
-        warranty: "M12",
+        taxation,
+        warranty: `M${warrantyMonths}` as "M12",
         stock: Number(values.stock),
-        shipping_profile_id: values.shipping_profile_id,
-        reference_currency_code: values.currency,
-        reference_price: values.reference_price,
-        reference_min_price: values.reference_min_price
-          ? String(values.reference_min_price)
-          : null,
-        market_code: values.market_code,
+        shipping_profile_id: shippingProfileId,
+        reference_currency_code: referenceCurrency,
+        reference_price: referencePrice,
+        reference_min_price: referenceMinPrice || null,
+        market_code: marketCode,
+        market_prices: marketPrices,
         listing_details: listingDetails,
       };
+
       if (instance?.id) payload.instance_id = instance.id;
-      else payload.gtin = values.gtin;
+      else payload.gtin = values.gtin || refurbed.ean;
       const response = await createInventoryOffer(payload);
       setNotice(response.message);
       setTimeout(() => router.push("/dashboard/inventory"), 800);
     } catch (caught) {
-      setError(
-        caught instanceof InventoryApiError
-          ? caught.message
-          : "Unable to create listing.",
+      setFormError(
+        caught instanceof Error ? caught.message : "Unable to create listing.",
       );
     } finally {
       setBusy(false);
     }
   }
+
+  // ── render: listing form (step 2) ────────────────────────────────────────
   if (instance || manualEntry)
     return (
       <Listing
@@ -200,211 +223,348 @@ export function AddInventoryItemPage() {
         manual={manualEntry}
         busy={busy}
         notice={notice}
-        error={error}
+        error={formError}
         markets={markets}
+        marketplaces={marketplaces}
+        categories={categories}
         cancel={() => {
           setInstance(null);
           setManualEntry(false);
-          setError("");
+          setFormError("");
         }}
         submit={createListing}
       />
     );
+
+  // ── render: find-item screen (step 1) ────────────────────────────────────
   return (
     <InventoryShell
       title="Find the item you want to sell"
-      subtitle="Search the Refurbed catalog before creating your listing."
+      subtitle="Dashboard / Inventory / Add an item to your inventory"
     >
-      {error && <Alert kind="error">{error}</Alert>}
-      {notice && <Alert>{notice}</Alert>}
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 p-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="rounded-xl bg-blue-50 p-2 text-blue-600">
-                  <FolderSearch className="h-6 w-6" />
-                </span>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-950">
-                    Choose a product from the Refurbed catalog
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {catalogCount.toLocaleString()} products available
-                  </p>
-                </div>
-              </div>
-            </div>
-            {catalogCount === 0 && (
-              <Link
-                href="/dashboard/settings/refurbed-catalog"
-                className="text-sm font-semibold text-blue-600 hover:text-blue-700"
-              >
-                Import the Refurbed catalog
-              </Link>
-            )}
-          </div>
+      {initError && <Alert kind="error">{initError}</Alert>}
 
-          <div className="mt-6 grid gap-3 md:grid-cols-[280px_minmax(0,1fr)]">
-            <label>
-              <span className="sr-only">Filter by category</span>
-              <select
-                value={category}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setCategory(value);
-                  setCatalogPage(1);
-                  if (!value && !catalogSearch.trim()) {
-                    setResults([]);
-                    setCatalogResultCount(0);
-                    setCatalogLastPage(1);
-                  }
-                }}
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              >
-                <option value="">All categories</option>
-                {categories.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="relative block">
-              <span className="sr-only">Search the catalog</span>
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-              <input
-                value={catalogSearch}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setCatalogSearch(value);
-                  setCatalogPage(1);
-                  if (!value.trim() && !category) {
-                    setResults([]);
-                    setCatalogResultCount(0);
-                    setCatalogLastPage(1);
-                  }
-                }}
-                placeholder="Search by product name or instance ID"
-                className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
-            </label>
-          </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* ── Panel 1: Search by EAN or SKU ── */}
+        <EanAsinPanel onFound={(found) => setInstance(found)} />
+
+        {/* ── Panel 2: Search by title / keyword ── */}
+        <KeywordPanel
+          categories={categories}
+          onSelect={selectCatalogItem}
+          onManualEntry={() => setManualEntry(true)}
+        />
+      </div>
+    </InventoryShell>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EAN / SKU panel
+// ─────────────────────────────────────────────────────────────────────────────
+
+function EanAsinPanel({
+  onFound,
+}: {
+  onFound: (instance: InventoryInstance) => void;
+}) {
+  const [value, setValue] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const identifier = value.trim();
+    if (!identifier) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const identifierType = "ean_or_sku";
+      const response = await findInventoryInstance(identifier, identifierType);
+      onFound(response.data.instance);
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "No product found for that identifier.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+          <ScanBarcode className="h-5 w-5" />
+        </span>
+        <h2 className="text-lg font-bold text-slate-900">
+          Search by EAN or SKU
+        </h2>
+      </div>
+
+      <p className="mt-3 text-sm text-slate-500">
+        For multi-site sales, give preference to search by EAN
+      </p>
+
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+        <label className="block text-sm font-semibold text-slate-700">
+          Search by EAN or SKU :
+          <input
+            ref={inputRef}
+            value={value}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setError("");
+            }}
+            placeholder="e.g. 0194252670477 or IPHONE-128-BLACK"
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+          />
+        </label>
+
+        {error && (
+          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+
+        <div>
+          <button
+            type="submit"
+            disabled={loading || !value.trim()}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            Validate
+          </button>
         </div>
+      </form>
+    </div>
+  );
+}
 
-        <div className="p-6">
-          {catalogLoading && (
-            <div className="flex min-h-48 items-center justify-center text-sm text-slate-500">
-              <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-              Loading catalog products...
-            </div>
-          )}
+// ─────────────────────────────────────────────────────────────────────────────
+// Keyword / title panel
+// ─────────────────────────────────────────────────────────────────────────────
 
-          {!catalogLoading &&
-            results.length === 0 &&
-            !catalogSearch.trim() &&
-            !category && (
-              <div className="rounded-2xl bg-slate-50 px-6 py-12 text-center">
-                <FolderSearch className="mx-auto h-8 w-8 text-slate-400" />
-                <p className="mt-3 font-semibold text-slate-800">
-                  Select a category or search the catalog
+function KeywordPanel({
+  categories,
+  onSelect,
+  onManualEntry,
+}: {
+  categories: string[];
+  onSelect: (item: RefurbedCatalogItem) => void;
+  onManualEntry: () => void;
+}) {
+  const [keyword, setKeyword] = useState("");
+  const [category, setCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [results, setResults] = useState<RefurbedCatalogItem[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState({ keyword: "", category: "" });
+  const [searchVersion, setSearchVersion] = useState(0);
+
+  // Run search whenever keyword/category/page changes after first submit
+  useEffect(() => {
+    if (!submitted) return;
+    if (!searchQuery.keyword && !searchQuery.category) return;
+
+    let active = true;
+    const timer = window.setTimeout(() => {
+      setLoading(true);
+      setError("");
+
+      searchRefurbedCatalog({
+        search: searchQuery.keyword || undefined,
+        category: searchQuery.category || undefined,
+        page,
+        limit: 10,
+      })
+        .then((response) => {
+          if (!active) return;
+          setResults(response.data.items);
+          setPage(response.data.pagination.current_page);
+          setLastPage(response.data.pagination.last_page);
+          setTotal(response.data.pagination.total);
+        })
+        .catch((caught) => {
+          if (active)
+            setError(
+              caught instanceof Error ? caught.message : "Search failed.",
+            );
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
+    }, 0);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [searchQuery, page, submitted, searchVersion]);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPage(1);
+    setSearchQuery({ keyword: keyword.trim(), category });
+    setSearchVersion((current) => current + 1);
+    setSubmitted(true);
+  }
+
+  return (
+    <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+          <Type className="h-5 w-5" />
+        </span>
+        <h2 className="text-lg font-bold text-slate-900">
+          Search by title or keyword(s):
+        </h2>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+        <label className="block text-sm font-semibold text-slate-700">
+          Search by title or keyword(s):
+          <div className="relative mt-2">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setError("");
+                if (!e.target.value.trim() && !category) {
+                  setSubmitted(false);
+                  setResults([]);
+                }
+              }}
+              placeholder="iPhone 14, Samsung Galaxy…"
+              className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
+        </label>
+
+        {categories.length > 0 && (
+          <label className="block text-sm font-semibold text-slate-700">
+            Category
+            <select
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setPage(1);
+              }}
+              className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            >
+              <option value="">All categories</option>
+              {categories.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {error && (
+          <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="submit"
+            disabled={loading || (!keyword.trim() && !category)}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            Validate
+          </button>
+
+          <button
+            type="button"
+            onClick={onManualEntry}
+            className="inline-flex items-center gap-2 rounded-xl border border-blue-500 px-4 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50"
+          >
+            <CirclePlus className="h-4 w-4" />
+            Create a catalog entry
+          </button>
+        </div>
+      </form>
+
+      {/* Results list */}
+      {submitted &&
+        !loading &&
+        results.length === 0 &&
+        (keyword.trim() || category) && (
+          <div className="mt-6 rounded-2xl bg-slate-50 px-6 py-10 text-center">
+            <Package className="mx-auto h-7 w-7 text-slate-400" />
+            <p className="mt-3 font-semibold text-slate-700">
+              No products found
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Try different keywords or{" "}
+              <button
+                type="button"
+                onClick={onManualEntry}
+                className="font-semibold text-blue-600 hover:underline"
+              >
+                create a catalog entry
+              </button>
+              .
+            </p>
+          </div>
+        )}
+
+      {!loading && results.length > 0 && (
+        <div className="mt-6 flex flex-col gap-2">
+          {results.map((item) => (
+            <button
+              key={item.instance_id}
+              type="button"
+              onClick={() => onSelect(item)}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-left transition hover:border-blue-300 hover:bg-blue-50/40"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-slate-900">
+                  {item.name || item.name_de || `Instance ${item.instance_id}`}
                 </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Products will load based on your selection.
+                <p className="mt-0.5 truncate text-xs text-slate-500">
+                  {item.main_category ? `${item.main_category} · ` : ""}
+                  ID {item.instance_id}
                 </p>
               </div>
-            )}
+              <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
+            </button>
+          ))}
 
-          {!catalogLoading &&
-            results.length === 0 &&
-            (catalogSearch.trim() || category) && (
-              <div className="rounded-2xl bg-slate-50 px-6 py-12 text-center">
-                <Package className="mx-auto h-8 w-8 text-slate-400" />
-                <p className="mt-3 font-semibold text-slate-800">
-                  No matching products found
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Try a different search or category.
-                </p>
-              </div>
-            )}
-
-          {!catalogLoading && results.length > 0 && (
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Instance ID</th>
-                      <th className="px-4 py-3 font-semibold">Product name</th>
-                      <th className="px-4 py-3 font-semibold">Name DE</th>
-                      <th className="px-4 py-3 font-semibold">Category</th>
-                      <th className="px-4 py-3 font-semibold">Attributes</th>
-                      <th className="px-4 py-3 text-right font-semibold">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {results.map((item) => (
-                      <tr
-                        key={item.instance_id}
-                        className="hover:bg-blue-50/40"
-                      >
-                        <td className="whitespace-nowrap px-4 py-4 font-semibold text-blue-600">
-                          {item.instance_id}
-                        </td>
-                        <td className="max-w-xs px-4 py-4 font-medium text-slate-900">
-                          {item.name || "—"}
-                        </td>
-                        <td className="max-w-xs px-4 py-4 text-slate-600">
-                          {item.name_de || "—"}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-4 text-slate-600">
-                          {item.main_category || "Uncategorized"}
-                        </td>
-                        <td className="max-w-sm px-4 py-4 text-slate-500">
-                          <span className="line-clamp-2">
-                            {item.attributes || "—"}
-                          </span>
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => selectCatalogItem(item)}
-                            className="rounded-lg border border-blue-500 px-3 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50"
-                          >
-                            Select
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {!catalogLoading && results.length > 0 && (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-slate-500">
-                {catalogResultCount.toLocaleString()} matching products · Page{" "}
-                {catalogPage} of {catalogLastPage}
+          {/* Pagination */}
+          {lastPage > 1 && (
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">
+                {total.toLocaleString()} results · page {page}/{lastPage}
               </p>
               <div className="flex gap-2">
                 <button
                   type="button"
-                  disabled={catalogPage <= 1}
-                  onClick={() => setCatalogPage((current) => current - 1)}
-                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-40"
                 >
-                  Previous
+                  Prev
                 </button>
                 <button
                   type="button"
-                  disabled={catalogPage >= catalogLastPage}
-                  onClick={() => setCatalogPage((current) => current + 1)}
-                  className="rounded-xl border border-blue-500 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-40"
+                  disabled={page >= lastPage}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="rounded-xl border border-blue-500 px-3 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-40"
                 >
                   Next
                 </button>
@@ -412,8 +572,15 @@ export function AddInventoryItemPage() {
             </div>
           )}
         </div>
-      </section>
-    </InventoryShell>
+      )}
+
+      {loading && (
+        <div className="mt-6 flex items-center justify-center gap-2 py-8 text-sm text-slate-500">
+          <RefreshCw className="h-4 w-4 animate-spin" />
+          Searching catalog…
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -424,6 +591,8 @@ function Listing({
   notice,
   error,
   markets,
+  marketplaces,
+  categories,
   cancel,
   submit,
 }: {
@@ -433,18 +602,16 @@ function Listing({
   notice: string;
   error: string;
   markets: InventoryMarket[];
+  marketplaces: Marketplace[];
+  categories: string[];
   cancel: () => void;
   submit: (e: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
-  const [marketCode, setMarketCode] = useState(markets[0]?.code ?? "");
-  const selectedMarket =
-    markets.find((market) => market.code === marketCode) ?? markets[0];
-  const [selectedCurrency, setSelectedCurrency] = useState(
-    selectedMarket?.currency_code || "EUR",
-  );
-  const currency = marketCode
-    ? selectedCurrency
-    : selectedMarket?.currency_code || "EUR";
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [marketplaceView, setMarketplaceView] = useState(false);
+  // Currency is derived from the first available market; the marketplace panel
+  // handles per-locale price overrides so no user-facing currency picker needed.
+  const currency = markets[0]?.currency_code || "EUR";
 
   return (
     <InventoryShell
@@ -473,9 +640,7 @@ function Listing({
                 />
               </span>
               <div>
-                <b className="text-slate-900">
-                  On Refurbed{selectedMarket ? ` ${selectedMarket.code}` : ""}
-                </b>
+                <b className="text-slate-900">On Refurbed</b>
                 <p className="mt-1 text-sm text-slate-500">
                   {instance?.name || "New catalog entry"}
                 </p>
@@ -489,300 +654,387 @@ function Listing({
             )}
           </div>
         </aside>
-        <form
-          onSubmit={(e) => void submit(e)}
-          className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
-        >
-          <h2 className="border-b border-slate-200 p-6 text-2xl font-bold text-slate-900">
-            Listing information
-          </h2>
-          <Section title="Sell on the following marketplaces" open>
-            <div className="rounded-2xl bg-slate-50 p-4 md:col-span-2">
-              <div className="flex items-center gap-3">
-                <Store className="h-5 w-5 text-blue-600" />
-                <b>Refurbed</b>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                  Connected
-                </span>
-              </div>
-              <label className="mt-4 block text-sm font-semibold text-slate-700">
-                Store this offer in
-                <select
-                  name="market_code"
-                  required
-                  value={selectedMarket?.code || ""}
-                  onChange={(event) => {
-                    const code = event.target.value;
-                    const selected = markets.find(
-                      (market) => market.code === code,
+        <ValidationContext.Provider value={fieldErrors}>
+          <form
+            noValidate
+            onChangeCapture={(event) => {
+              const control = event.target;
+              if (!(
+                control instanceof HTMLInputElement ||
+                control instanceof HTMLSelectElement ||
+                control instanceof HTMLTextAreaElement
+              ))
+                return;
+              if (control.name)
+                setFieldErrors((current) => {
+                  const next = { ...current };
+                  delete next[control.name];
+                  return next;
+                });
+              control.removeAttribute("aria-invalid");
+            }}
+            onSubmit={(event) => {
+              event.preventDefault();
+              const controls = Array.from(event.currentTarget.elements).filter(
+                (
+                  element,
+                ): element is
+                  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement =>
+                  element instanceof HTMLInputElement ||
+                  element instanceof HTMLSelectElement ||
+                  element instanceof HTMLTextAreaElement,
+              );
+              const errors: Record<string, string> = {};
+              let first: (typeof controls)[number] | undefined;
+              for (const control of controls) {
+                if (!control.willValidate) continue;
+                const invalid = !control.validity.valid;
+                control.setAttribute("aria-invalid", String(invalid));
+                if (invalid) {
+                  first ??= control;
+                  errors[control.name] = control.validity.valueMissing
+                    ? {
+                        condition_label: "Please select the item's condition.",
+                        sku: "Please enter a SKU.",
+                        stock: "Quantity must not be blank.",
+                        reference_price: "Enter a price of at least 0.01.",
+                        shipping_profile_id:
+                          "Please select a shipping profile.",
+                      }[control.name] || "This field is required."
+                    : control.validationMessage;
+                  control.setAttribute(
+                    "aria-describedby",
+                    "error-" + control.name,
+                  );
+                }
+              }
+
+              // ── Manual checks for fields outside native validation ───────
+              // Hidden inputs (type="hidden") are skipped by willValidate.
+              // The ShippingProfileSelect uses a hidden input, so check it here.
+              const shippingInput = event.currentTarget.elements.namedItem(
+                "shipping_profile_id",
+              ) as HTMLInputElement | null;
+              if (shippingInput && !shippingInput.value.trim()) {
+                errors["shipping_profile_id"] =
+                  "Please select a shipping profile.";
+                // Scroll to the shipping profile field label
+                if (!first) {
+                  const shippingField =
+                    event.currentTarget.querySelector<HTMLElement>(
+                      "[data-field='shipping_profile_id']",
                     );
-                    setMarketCode(code);
-                    setSelectedCurrency(selected?.currency_code || "EUR");
-                  }}
-                  className={controlClass}
-                >
-                  <option value="" disabled>
-                    Select a marketplace locale
-                  </option>
-                  {markets.map((market) => (
-                    <option key={market.code} value={market.code}>
-                      Refurbed {market.code} · {market.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {markets.length === 0 && (
-                <p className="mt-3 text-sm text-amber-700">
-                  Enable at least one Refurbed market for offer management in
-                  the marketplace connection settings.
-                </p>
-              )}
-            </div>
-          </Section>
-          {instance && (
-            <>
-              <Section title="Product information" open>
-                <Input
-                  name="instance_name"
-                  label="Product instance name"
-                  defaultValue={instance.name}
-                  readOnly
+                  if (shippingField)
+                    shippingField.scrollIntoView({
+                      block: "center",
+                      behavior: "smooth",
+                    });
+                }
+              }
+
+              // The panel's top price drives reference_price; if the
+              // marketplace panel view is open and its top price is blank, flag it.
+              const panelTopPrice = event.currentTarget.elements.namedItem(
+                "mp_refurbed_top_price",
+              ) as HTMLInputElement | null;
+              if (panelTopPrice && !panelTopPrice.value.trim()) {
+                errors["mp_refurbed_top_price"] =
+                  "Enter a top price of at least 0.01.";
+              }
+              setFieldErrors(errors);
+              if (first || Object.keys(errors).length > 0) {
+                // If the only errors are in the marketplace panel, switch to it
+                const panelOnlyErrors =
+                  !first &&
+                  Object.keys(errors).every((k) =>
+                    k.startsWith("mp_refurbed_") || k.startsWith("mp_locale_"),
+                  );
+                if (panelOnlyErrors) setMarketplaceView(true);
+                else if (first) {
+                  setMarketplaceView(
+                    first.name.startsWith("price_") ||
+                      first.name.startsWith("min_price_") ||
+                      first.name.startsWith("mp_refurbed_"),
+                  );
+                  for (
+                    let parent = first.parentElement;
+                    parent;
+                    parent = parent.parentElement
+                  )
+                    if (parent instanceof HTMLDetailsElement) parent.open = true;
+                  const target = first;
+                  window.setTimeout(() => {
+                    target.focus();
+                    target.scrollIntoView({
+                      block: "center",
+                      behavior: "smooth",
+                    });
+                  }, 0);
+                }
+                return;
+              }
+              void submit(event);
+            }}
+            className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm [&_[aria-invalid=true]]:border-red-500 [&_[aria-invalid=true]]:ring-1 [&_[aria-invalid=true]]:ring-red-500"
+          >
+            <h2 className="border-b border-slate-200 p-6 text-2xl font-bold text-slate-900">
+              {marketplaceView
+                ? "Listing information by marketplaces"
+                : "Listing information"}
+            </h2>
+            <div hidden={marketplaceView}>
+              <Section title="Sell on the following marketplaces" open>
+                <MarketplaceSelectorRow
+                  marketplaces={marketplaces}
+                  markets={markets}
                 />
-                <Input
-                  name="instance_id_display"
-                  label="Instance ID"
-                  defaultValue={instance.id}
-                  readOnly
-                />
-                {instance.category && (
-                  <Input
-                    name="instance_category"
-                    label="Main category"
-                    defaultValue={instance.category}
-                    readOnly
-                  />
-                )}
-                {instance.name_de && (
-                  <Input
-                    name="instance_name_de"
-                    label="Product name (German)"
-                    defaultValue={instance.name_de}
-                    readOnly
-                  />
-                )}
-                {instance.attributes && (
-                  <Field label="Attributes">
-                    <textarea
+              </Section>
+              {instance && (
+                <>
+                  <Section title="Product information" open>
+                    <Input
+                      name="instance_name"
+                      label="Product instance name"
+                      defaultValue={instance.name}
                       readOnly
-                      value={instance.attributes}
-                      className={`${controlClass} read-only:bg-slate-100 read-only:text-slate-600`}
-                      rows={3}
+                    />
+                    <Input
+                      name="instance_id_display"
+                      label="Instance ID"
+                      defaultValue={instance.id}
+                      readOnly
+                    />
+                    {instance.category && (
+                      <Input
+                        name="instance_category"
+                        label="Main category"
+                        defaultValue={instance.category}
+                        readOnly
+                      />
+                    )}
+                    {instance.name_de && (
+                      <Input
+                        name="instance_name_de"
+                        label="Product name (German)"
+                        defaultValue={instance.name_de}
+                        readOnly
+                      />
+                    )}
+                    {instance.attributes && (
+                      <Field label="Attributes">
+                        <textarea
+                          readOnly
+                          value={instance.attributes}
+                          className={`${controlClass} read-only:bg-slate-100 read-only:text-slate-600`}
+                          rows={3}
+                        />
+                      </Field>
+                    )}
+                  </Section>
+                </>
+              )}
+              {
+                <Section title="General information" open>
+                  <Field label="Title">
+                    <textarea
+                      name="title"
+                      maxLength={500}
+                      defaultValue={instance?.name}
+
+                      className={`${controlClass} read-only:bg-slate-100 read-only:text-slate-500`}
+                      rows={2}
                     />
                   </Field>
-                )}
-                <Input name="sku" label="SKU" required />
-                <GradeSelect />
-                <Input
-                  name="warranty_display"
-                  label="Warranty"
-                  defaultValue="12 Months"
-                  readOnly
-                />
-                <Input name="stock" label="Stock" type="number" required />
-                <Field label="Shipping profile" required>
-                  <ShippingProfileSelect />
-                </Field>
-              </Section>
-              <Section title="Pricing" open>
-                <label className="text-sm font-semibold text-slate-700">
-                  * Taxation
-                  <select
-                    name="taxation"
-                    required
-                    defaultValue="GROSS"
-                    className={controlClass}
-                  >
-                    <option value="GROSS">Gross taxation</option>
-                    <option value="MARGINAL">Marginal taxation</option>
-                  </select>
-                </label>
-                <Select
-                  name="currency"
-                  label="Reference currency"
-                  values={["EUR", "CHF", "GBP"]}
-                  value={currency}
-                  change={setSelectedCurrency}
-                  required
-                />
-                <Field label="Minimum reference price">
-                  <MoneyInput name="reference_min_price" currency={currency} />
-                </Field>
-                <Field label="Reference price" required>
-                  <MoneyInput
-                    name="reference_price"
-                    currency={currency}
-                    required
+                  {
+                    <Field label="Item cost">
+                      <MoneyInput name="item_cost" currency={currency} />
+                    </Field>
+                  }
+                  <GradeSelect />
+                  <Input name="sku" label="SKU" required />
+                  <Input
+                    name="gtin"
+                    label="EAN all marketplaces"
+                    defaultValue={instance?.gtin}
+                    required={manual}
+                    disabled={!manual}
                   />
-                </Field>
-              </Section>
-            </>
-          )}
-          {manual && (
-            <Section title="General information" open>
-              <Field label="Title">
-                <textarea
-                  name="title"
-                  maxLength={500}
-                  defaultValue={instance?.name}
-                  readOnly={Boolean(instance)}
-                  className={`${controlClass} read-only:bg-slate-100 read-only:text-slate-500`}
-                  rows={2}
-                />
-              </Field>
-              {manual && (
-                <Field label="Item cost">
-                  <MoneyInput name="item_cost" currency={currency} />
-                </Field>
-              )}
-              <ConditionSelect />
-              <Input name="sku" label="SKU" required />
-              <Input
-                name="gtin"
-                label="EAN all marketplaces"
-                defaultValue={instance?.gtin}
-                required={manual}
-                disabled={!manual}
-              />
-              {manual && <Input name="asin" label="ASIN all Amazon" />}
-              <Input name="stock" label="Quantity" type="number" required />
-              {manual && (
-                <Field label="Offer description">
-                  <textarea
-                    name="description"
-                    maxLength={1000}
-                    className={controlClass}
-                    rows={3}
-                  />
-                </Field>
-              )}
-              <Field label="Top price" required>
-                <MoneyInput
-                  name="reference_price"
-                  currency={currency}
-                  required
-                />
-              </Field>
-              {manual && (
-                <>
-                  <Field label="Minimum price">
+
+                  <Input name="stock" label="Quantity" type="number" required />
+                  {
+                    <Field label="Offer description">
+                      <textarea
+                        name="description"
+                        maxLength={1000}
+                        className={controlClass}
+                        rows={3}
+                      />
+                    </Field>
+                  }
+                  <Field label="Top price" required>
                     <MoneyInput
-                      name="reference_min_price"
+                      name="reference_price"
                       currency={currency}
                     />
                   </Field>
-                  <Input name="smart_chain_id" label="Smart Chain (Chain id)" />
-                  <Input name="offer_tag" label="Offer tag" />
-                  <Field label="VAT rate">
-                    <UnitInput name="vat_rate" unit="%" />
+                  {
+                    <>
+                      <Field label="Minimum price">
+                        <MoneyInput
+                          name="reference_min_price"
+                          currency={currency}
+                        />
+                      </Field>
+                      <Input
+                        name="smart_chain_id"
+                        label="Smart Chain (Chain id)"
+                      />
+                      <Input name="offer_tag" label="Offer tag" />
+                      <Field label="VAT rate">
+                        <UnitInput name="vat_rate" unit="%" />
+                      </Field>
+                      <Field label="Category">
+                        <input
+                          name="category"
+                          defaultValue={instance?.category}
+                          list="listing-categories"
+                          className={controlClass}
+                        />
+                        <datalist id="listing-categories">
+                          {categories.map((item) => (
+                            <option key={item} value={item} />
+                          ))}
+                        </datalist>
+                      </Field>
+                      <Input name="subcategory" label="Subcategory" />
+                      <Field label="Custom field">
+                        <textarea
+                          name="custom_field"
+                          maxLength={500}
+                          className={controlClass}
+                          rows={2}
+                        />
+                      </Field>
+                    </>
+                  }
+                  <Select
+                    name="taxation"
+                    label="Taxation"
+                    values={["GROSS", "MARGINAL"]}
+                    required
+                  />
+                  <p className="text-xs text-slate-500 md:col-span-2">
+                    Refurbed uses the selected catalog product, grade, SKU,
+                    quantity, shipping profile and prices. Supplementary
+                    product, logistics and GPSR details are saved in CelleXa.
+                  </p>
+                  <Field label="Shipping profile" required>
+                    <div data-field="shipping_profile_id">
+                      <ShippingProfileSelect />
+                    </div>
+                    <FieldError name="shipping_profile_id" />
                   </Field>
-                  <Input name="category" label="Category" />
-                  <Input name="subcategory" label="Subcategory" />
-                  <Field label="Custom field">
+                </Section>
+              }
+              {
+                <Section title="Logistics information">
+                  <Field label="Shipment country">
+                    <CountrySelect name="shipment_country" />
+                  </Field>
+                  <Input name="location" label="Location" />
+                  <Field label="Logistic weight">
+                    <UnitInput name="logistic_weight" unit="kg" />
+                  </Field>
+                </Section>
+              }
+              {
+                <Section title="Product dimensions">
+                  <Field label="Product weight">
+                    <UnitInput name="product_weight" unit="kg" />
+                  </Field>
+                  <Field label="Product width">
+                    <UnitInput name="product_width" unit="cm" />
+                  </Field>
+                  <Field label="Product length">
+                    <UnitInput name="product_length" unit="cm" />
+                  </Field>
+                  <Field label="Product height">
+                    <UnitInput name="product_height" unit="cm" />
+                  </Field>
+                </Section>
+              }
+              {
+                <Section title="General Product Safety Regulation (GPSR)">
+                  <Input name="gpsr_name" label="Name" />
+                  <Input name="gpsr_address" label="Address" />
+                  <Field label="Address details">
                     <textarea
-                      name="custom_field"
-                      maxLength={500}
+                      name="gpsr_address_details"
                       className={controlClass}
                       rows={2}
                     />
                   </Field>
-                </>
-              )}
-              <Field label="Shipping profile" required>
-                <ShippingProfileSelect />
-              </Field>
-              <Select
-                name="currency"
-                label="Currency"
-                values={["EUR", "CHF", "GBP"]}
-                value={currency}
-                change={setSelectedCurrency}
+                  <Input name="gpsr_city" label="City" />
+                  <Input name="gpsr_region" label="Region" />
+                  <Field label="Country">
+                    <CountrySelect name="gpsr_country" />
+                  </Field>
+                  <Input name="gpsr_zip" label="Zip code" />
+                  <Input
+                    name="gpsr_phone"
+                    label="Telephone number"
+                    type="tel"
+                  />
+                  <Input name="gpsr_email" label="Email address" type="email" />
+                  <Input
+                    name="gpsr_safety_url"
+                    label="Product safety warning URL"
+                    type="url"
+                  />
+                  <Select
+                    name="gpsr_european_manufacturer"
+                    label="European manufacturer"
+                    values={["", "yes", "no"]}
+                  />
+                </Section>
+              }
+            </div>
+            <div hidden={!marketplaceView}>
+              <MarketplaceListingPanel
+                markets={markets}
+                marketplaces={marketplaces}
+                currency={currency}
+                fieldErrors={fieldErrors}
               />
-            </Section>
-          )}
-          {manual && (
-            <Section title="Logistics information">
-              <Field label="Shipment country">
-                <CountrySelect name="shipment_country" />
-              </Field>
-              <Input name="location" label="Location" />
-              <Field label="Logistic weight">
-                <UnitInput name="logistic_weight" unit="kg" />
-              </Field>
-            </Section>
-          )}
-          {manual && (
-            <Section title="Product dimensions">
-              <Field label="Product weight">
-                <UnitInput name="product_weight" unit="kg" />
-              </Field>
-              <Field label="Product width">
-                <UnitInput name="product_width" unit="cm" />
-              </Field>
-              <Field label="Product length">
-                <UnitInput name="product_length" unit="cm" />
-              </Field>
-              <Field label="Product height">
-                <UnitInput name="product_height" unit="cm" />
-              </Field>
-            </Section>
-          )}
-          {manual && (
-            <Section title="General Product Safety Regulation (GPSR)">
-              <Input name="gpsr_name" label="Name" />
-              <Input name="gpsr_address" label="Address" />
-              <Field label="Address details">
-                <textarea
-                  name="gpsr_address_details"
-                  className={controlClass}
-                  rows={2}
-                />
-              </Field>
-              <Input name="gpsr_city" label="City" />
-              <Input name="gpsr_region" label="Region" />
-              <Field label="Country">
-                <CountrySelect name="gpsr_country" />
-              </Field>
-              <Input name="gpsr_zip" label="Zip code" />
-              <Input name="gpsr_phone" label="Telephone number" type="tel" />
-              <Input name="gpsr_email" label="Email address" type="email" />
-              <Input
-                name="gpsr_safety_url"
-                label="Product safety warning URL"
-                type="url"
-              />
-              <Select
-                name="gpsr_european_manufacturer"
-                label="European manufacturer"
-                values={["", "yes", "no"]}
-              />
-            </Section>
-          )}
-          <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 p-6 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={cancel}
-              className="rounded-xl border border-slate-300 bg-white px-6 py-3 font-semibold text-slate-700 hover:bg-slate-100"
-            >
-              Cancel
-            </button>
-            <button
-              disabled={busy}
-              className="rounded-xl bg-blue-600 px-7 py-3 font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
-            >
-              {busy ? "Creating…" : "Validate"}
-            </button>
-          </div>
-        </form>
+            </div>
+            <div className="flex justify-end border-t border-slate-200 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setMarketplaceView((current) => !current)}
+                className="text-sm font-semibold text-blue-600 hover:underline"
+              >
+                {marketplaceView
+                  ? "Back to default listing information"
+                  : "Listing information by marketplaces ?"}
+              </button>
+            </div>
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 p-6 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={cancel}
+                className="rounded-xl border border-slate-300 bg-white px-6 py-3 font-semibold text-slate-700 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={busy}
+                className="rounded-xl bg-blue-600 px-7 py-3 font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
+              >
+                {busy ? "Creating…" : "Validate"}
+              </button>
+            </div>
+          </form>
+        </ValidationContext.Provider>
       </div>
     </InventoryShell>
   );
@@ -848,6 +1100,7 @@ function Input({
         onChange={change ? (e) => change(e.target.value) : undefined}
         className={`${controlClass} read-only:bg-slate-100 read-only:text-slate-500`}
       />
+      <FieldError name={name} />
     </label>
   );
 }
@@ -882,19 +1135,26 @@ function MoneyInput({
   required?: boolean;
 }) {
   return (
-    <div className="mt-2 flex overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
-      <span className="grid place-items-center border-r border-slate-300 px-3 text-sm font-bold text-slate-500">
-        {currency}
-      </span>
-      <input
-        name={name}
-        type="number"
-        min="0"
-        step="0.01"
-        required={required}
-        className="min-w-0 flex-1 px-4 py-3 text-sm outline-none"
-      />
-    </div>
+    <>
+      <div className="mt-2 flex overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-100">
+        <span className="grid place-items-center border-r border-slate-300 px-3 text-sm font-bold text-slate-500">
+          {currency}
+        </span>
+        <input
+          name={name}
+          type="number"
+          min={
+            name === "reference_price" || name.startsWith("price_")
+              ? "0.01"
+              : "0"
+          }
+          step="0.01"
+          required={required}
+          className="min-w-0 flex-1 px-4 py-3 text-sm outline-none"
+        />
+      </div>
+      <FieldError name={name} />
+    </>
   );
 }
 
@@ -972,23 +1232,6 @@ function Select({
     </label>
   );
 }
-const conditions = [
-  "New",
-  "Used - Like New",
-  "Used - Very Good",
-  "Used - Good",
-  "Acceptable",
-  "Refurbished - Premium",
-  "Refurbished - New",
-  "Refurbished - Like New",
-  "Refurbished - Very Good",
-  "Refurbished - Good",
-  "Refurbished - Acceptable",
-  "Collectible - Like New",
-  "Collectible - Very Good",
-  "Collectible - Good",
-  "Collectible - Acceptable",
-];
 const conditionGrade: Record<string, string> = {
   New: "AA",
   "Used - Like New": "AA",
@@ -1024,28 +1267,7 @@ function GradeSelect() {
         <option value="Refurbished - Good">Good</option>
         <option value="Refurbished - Acceptable">Acceptable</option>
       </select>
-    </label>
-  );
-}
-function ConditionSelect() {
-  return (
-    <label className="text-sm font-semibold text-slate-700">
-      * Condition
-      <select
-        name="condition_label"
-        required
-        defaultValue=""
-        className={controlClass}
-      >
-        <option value="" disabled>
-          - Select one -
-        </option>
-        {conditions.map((value) => (
-          <option key={value} value={value}>
-            {value}
-          </option>
-        ))}
-      </select>
+      <FieldError name="condition_label" />
     </label>
   );
 }

@@ -28,6 +28,12 @@ export interface InventoryOffer {
 
 export interface InventoryOfferDetails extends InventoryOffer {
   listing_details: Record<string, string>;
+  market_prices?: Array<{
+    market_code: string;
+    currency_code: string;
+    price: string;
+    min_price?: string;
+  }>;
   market_codes: string[];
   markets: InventoryMarket[];
   marketplace: {

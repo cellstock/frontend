@@ -107,7 +107,7 @@ export function getInventoryDiagnostics(): Promise<InventoryDiagnosticsResponse>
 
 export function findInventoryInstance(
   identifier: string,
-  identifierType: "gtin" | "id" | "mpn",
+  identifierType: "gtin" | "id" | "mpn" | "ean_or_sku",
 ): Promise<{ success: boolean; data: { instance: InventoryInstance } }> {
   const query = new URLSearchParams({
     identifier,

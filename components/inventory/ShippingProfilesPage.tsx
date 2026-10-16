@@ -105,13 +105,6 @@ export function ShippingProfilesPage() {
     };
   }, [loadProfiles, search]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") void loadProfiles(controller.signal);
-    }, 15000);
-    return () => { window.clearInterval(timer); controller.abort(); };
-  }, [loadProfiles]);
 
   function resetFilters() {
     setSearch("");

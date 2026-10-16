@@ -323,8 +323,7 @@ export function MarketplaceDetails({
               onClick={() => setIsConnectModalOpen(true)}
               className="mt-6 inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
             >
-              {t("Connect")}
-              {marketplace.name}
+              {t("Connect")} {marketplace.name}
             </button>
           </div>
         ) : (

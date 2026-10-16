@@ -115,8 +115,7 @@ export function ConnectMarketplaceModal({
                 id={titleId}
                 className="truncate text-xl font-bold tracking-tight text-slate-950"
               >
-                {t("Connect")}
-                {marketplace.name}
+                {t("Connect")} {marketplace.name}
               </h2>
 
               <p
