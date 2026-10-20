@@ -476,13 +476,17 @@ export function MarketplaceListingPanel({
   defaults,
   fieldErrors,
 }: MarketplaceListingPanelProps) {
-  // The left nav lets users switch between connected marketplaces.
-  // Currently only Refurbed supports listing creation; others show a
-  // "Coming soon" placeholder.
-  const [activeSlug, setActiveSlug] = useState("refurbed");
+  const supported = marketplaces.filter((mp) =>
+    ["refurbed", "back-market"].includes(mp.slug),
+  );
+  const defaultSlug =
+    supported.find((mp) => mp.slug === "refurbed")?.slug ||
+    supported[0]?.slug ||
+    "refurbed";
+  const [activeSlug, setActiveSlug] = useState(defaultSlug);
 
   const otherMarketplaces = marketplaces.filter(
-    (mp) => mp.slug !== "refurbed",
+    (mp) => !["refurbed", "back-market"].includes(mp.slug),
   );
 
   const logoFor = (slug: string) => {
@@ -498,29 +502,40 @@ export function MarketplaceListingPanel({
         aria-label="Marketplace selection"
         className="space-y-1 p-4"
       >
-        {/* Refurbed row */}
-        <button
-          type="button"
-          onClick={() => setActiveSlug("refurbed")}
-          className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-            activeSlug === "refurbed"
-              ? "border-l-4 border-blue-600 bg-blue-50 text-blue-700"
-              : "text-slate-700 hover:bg-slate-50"
-          }`}
-        >
-          <span className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white">
-            <Image
-              src="/images/marketplaces/refurbed.png"
-              alt="Refurbed"
-              width={20}
-              height={20}
-              className="h-full w-full object-contain"
-            />
-          </span>
-          Refurbed
-        </button>
+        {(["refurbed", "back-market"] as const).map((slug) => {
+          const mp = marketplaces.find((item) => item.slug === slug);
+          if (!mp && slug === "back-market") return null;
+          const label = slug === "refurbed" ? "Refurbed" : "Back Market";
+          const logo = logoFor(slug);
+          return (
+            <button
+              key={slug}
+              type="button"
+              onClick={() => setActiveSlug(slug)}
+              className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                activeSlug === slug
+                  ? "border-l-4 border-blue-600 bg-blue-50 text-blue-700"
+                  : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <span className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white">
+                {logo ? (
+                  <Image
+                    src={logo}
+                    alt={label}
+                    width={20}
+                    height={20}
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  label.charAt(0)
+                )}
+              </span>
+              {label}
+            </button>
+          );
+        })}
 
-        {/* Other marketplaces */}
         {otherMarketplaces.map((mp) => {
           const logo = logoFor(mp.slug);
           return (
@@ -529,7 +544,7 @@ export function MarketplaceListingPanel({
               type="button"
               disabled
               title="Listing management for this marketplace is not yet available."
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-slate-400 opacity-70 cursor-not-allowed"
+              className="flex w-full cursor-not-allowed items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-slate-400 opacity-70"
             >
               {logo ? (
                 <span className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white">
@@ -553,13 +568,6 @@ export function MarketplaceListingPanel({
             </button>
           );
         })}
-
-        {/* Show a placeholder row if no other marketplaces are connected */}
-        {otherMarketplaces.length === 0 && (
-          <p className="px-3 pt-2 text-xs text-slate-400">
-            Connect more marketplaces to manage listings here.
-          </p>
-        )}
       </nav>
 
       {/* ── Right panel ── */}
@@ -572,9 +580,146 @@ export function MarketplaceListingPanel({
             fieldErrors={fieldErrors}
           />
         )}
+        {activeSlug === "back-market" && (
+          <BackMarketPanel
+            currency={currency}
+            defaults={defaults}
+            fieldErrors={fieldErrors}
+          />
+        )}
       </div>
     </div>
   );
+}
+
+function BackMarketPanel({
+  currency,
+  defaults,
+  fieldErrors,
+}: {
+  currency: string;
+  defaults?: MarketplaceListingDefaults;
+  fieldErrors?: Record<string, string>;
+}) {
+  return (
+    <div className="space-y-1">
+      <p className="mb-4 text-sm text-slate-500">
+        Back Market listings use the product ID from the Back Market catalog,
+        SKU, grade, quantity and price. Sync inventory after creating listings
+        to pull live listing IDs from preprod/production.
+      </p>
+      <CheckboxRow
+        label="Activate on marketplace"
+        name="mp_backmarket_activate"
+        defaultChecked={defaults?.activate ?? true}
+      />
+      <FieldRow label="EAN" hint="Optional product barcode.">
+        <input
+          name="mp_backmarket_ean"
+          type="text"
+          defaultValue={defaults?.ean ?? ""}
+          className={inputClass}
+        />
+      </FieldRow>
+      <MoneyFieldRow
+        label="Top price"
+        name="mp_backmarket_top_price"
+        currency={currency}
+        defaultValue={defaults?.top_price}
+        error={fieldErrors?.["mp_backmarket_top_price"]}
+      />
+      <MoneyFieldRow
+        label="Bottom price"
+        name="mp_backmarket_bottom_price"
+        currency={currency}
+        defaultValue={defaults?.bottom_price}
+      />
+      <FieldRow
+        label="Back Market product ID"
+        hint="Required numeric product/backmarket ID from the Back Market catalog."
+        required
+      >
+        <input
+          name="mp_backmarket_product_id"
+          type="text"
+          defaultValue={defaults?.refurbed_id ?? ""}
+          className={`${inputClass}${fieldErrors?.["mp_backmarket_product_id"] ? " border-red-500" : ""}`}
+        />
+        {fieldErrors?.["mp_backmarket_product_id"] && (
+          <p className="mt-1 text-xs font-medium text-red-600">
+            {fieldErrors["mp_backmarket_product_id"]}
+          </p>
+        )}
+      </FieldRow>
+    </div>
+  );
+}
+
+/**
+ * Copy prices / shipping / taxation between the main "Listing information"
+ * fields and the "Listing information by marketplaces" panel.
+ * Only fills empty targets so explicit overrides are preserved.
+ */
+export function syncListingAndMarketplaceFields(
+  form: HTMLFormElement,
+  direction: "main-to-panel" | "panel-to-main",
+): void {
+  const input = (name: string) =>
+    form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null;
+
+  const mainTop = input("reference_price");
+  const mainMin = input("reference_min_price");
+  const mainShip = input("shipping_profile_id");
+  const mainTax = input("taxation");
+  const panelTop = input("mp_refurbed_top_price");
+  const panelMin = input("mp_refurbed_bottom_price");
+  const panelShip = input("mp_refurbed_shipping_profile_id");
+  const panelTax = input("mp_refurbed_taxation");
+
+  const fill = (
+    target: HTMLInputElement | HTMLSelectElement | null,
+    source: HTMLInputElement | HTMLSelectElement | null,
+  ) => {
+    if (!target || !source) return;
+    if (String(target.value ?? "").trim()) return;
+    const next = String(source.value ?? "").trim();
+    if (next) target.value = next;
+  };
+
+  if (direction === "main-to-panel") {
+    fill(panelTop, mainTop);
+    fill(panelMin, mainMin);
+    fill(panelShip, mainShip);
+    fill(panelTax, mainTax);
+  } else {
+    fill(mainTop, panelTop);
+    fill(mainMin, panelMin);
+    fill(mainShip, panelShip);
+    fill(mainTax, panelTax);
+  }
+}
+
+/** Effective top price from either listing view (panel overrides main when set). */
+export function getEffectiveTopPrice(form: HTMLFormElement): {
+  value: string;
+  source: "panel" | "main" | "none";
+} {
+  const panel =
+    (
+      form.elements.namedItem("mp_refurbed_top_price") as HTMLInputElement | null
+    )?.value.trim() ?? "";
+  const main =
+    (
+      form.elements.namedItem("reference_price") as HTMLInputElement | null
+    )?.value.trim() ?? "";
+
+  if (panel !== "" && Number(panel) >= 0.01) {
+    return { value: panel, source: "panel" };
+  }
+  if (main !== "" && Number(main) >= 0.01) {
+    return { value: main, source: "main" };
+  }
+  return { value: "", source: "none" };
 }
 
 /**

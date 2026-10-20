@@ -14,6 +14,8 @@ import { FormEvent, ReactNode, useEffect, useState } from "react";
 import {
   MarketplaceListingPanel,
   extractMarketplaceListingValues,
+  getEffectiveTopPrice,
+  syncListingAndMarketplaceFields,
   type MarketplaceListingDefaults,
 } from "@/components/inventory/MarketplaceListingPanel";
 import { MarketplaceSelectorRow } from "@/components/inventory/MarketplaceSelectorRow";
@@ -83,20 +85,32 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
     const values = Object.fromEntries(form);
 
     // ── Client-side validation ────────────────────────────────────────────
+    // Shipping / top price may be set on either listing view.
     const clientErrors: Record<string, string> = {};
-    const shippingId = String(form.get("mp_refurbed_shipping_profile_id") ?? "").trim();
-    if (!shippingId) {
+    const panelShipping = String(
+      form.get("mp_refurbed_shipping_profile_id") ?? "",
+    ).trim();
+    const mainShipping = String(form.get("shipping_profile_id") ?? "").trim();
+    if (!panelShipping && !mainShipping) {
       clientErrors["mp_refurbed_shipping_profile_id"] =
         "Please enter the Refurbed Shipping Profile Id.";
     }
-    const topPrice = String(form.get("mp_refurbed_top_price") ?? "").trim();
-    if (!topPrice || Number(topPrice) <= 0) {
-      clientErrors["mp_refurbed_top_price"] =
-        "Enter a top price of at least 0.01.";
+    const topPrice = getEffectiveTopPrice(event.currentTarget);
+    if (topPrice.source === "none") {
+      clientErrors[
+        marketplaceView ? "mp_refurbed_top_price" : "reference_price"
+      ] = "Enter a top price of at least 0.01.";
     }
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
-      setMarketplaceView(true); // these fields live in the panel
+      if (
+        clientErrors["mp_refurbed_top_price"] ||
+        clientErrors["mp_refurbed_shipping_profile_id"]
+      ) {
+        setMarketplaceView(true);
+      } else {
+        setMarketplaceView(false);
+      }
       return;
     }
 
@@ -388,6 +402,11 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
                   currency={currency}
                   required
                 />
+                {fieldErrors.reference_price && (
+                  <p className="mt-1 text-xs font-medium text-red-600">
+                    {fieldErrors.reference_price}
+                  </p>
+                )}
               </Field>
             </Section>
             <p className="px-6 py-4 text-sm text-slate-500">
@@ -469,7 +488,23 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
           <div className="flex justify-end px-6 py-4">
             <button
               type="button"
-              onClick={() => setMarketplaceView((current) => !current)}
+              onClick={(event) => {
+                const form = event.currentTarget.closest("form");
+                if (form) {
+                  syncListingAndMarketplaceFields(
+                    form,
+                    marketplaceView ? "panel-to-main" : "main-to-panel",
+                  );
+                }
+                setMarketplaceView((current) => !current);
+                setFieldErrors((current) => {
+                  const next = { ...current };
+                  delete next.reference_price;
+                  delete next.mp_refurbed_top_price;
+                  return next;
+                });
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
               className="font-semibold text-blue-600 hover:underline"
             >
               {marketplaceView

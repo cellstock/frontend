@@ -70,6 +70,9 @@ export function ConnectMarketplaceModal({
         account_name: values.account_name,
         credentials: {
           api_key: values.api_key,
+          ...(values.country_code
+            ? { country_code: values.country_code }
+            : {}),
         },
         settings: values.settings,
       });

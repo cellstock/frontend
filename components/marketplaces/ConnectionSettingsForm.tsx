@@ -68,12 +68,17 @@ function FieldError({
   field: string;
 }) {
   const message = errors[field]?.[0];
-
-  if (!message) {
-    return null;
-  }
-
+  if (!message) return null;
   return <p className="mt-1.5 text-xs font-medium text-red-600">{message}</p>;
+}
+
+/** Returns true for any of the three Back Market platform slugs. */
+function isBackMarketSlug(slug: string): boolean {
+  return (
+    slug === "back-market-eu" ||
+    slug === "back-market-na" ||
+    slug === "back-market-ap"
+  );
 }
 
 export function ConnectionSettingsForm({
@@ -89,32 +94,31 @@ export function ConnectionSettingsForm({
   const { t } = useI18n();
   const formId = useId();
 
-  const [accountName, setAccountName] = useState(initialAccountName);
+  const isBackMarket = isBackMarketSlug(marketplaceSlug);
 
+  const [accountName, setAccountName] = useState(initialAccountName);
   const [apiKey, setApiKey] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingMarkets, setIsLoadingMarkets] = useState(false);
+  const [generalError, setGeneralError] = useState("");
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
   const [settings, setSettings] = useState<MarketplaceSettings>({
-    sync_orders: initialSettings.sync_orders ?? false,
-    sync_products: initialSettings.sync_products ?? false,
-    sync_inventory: initialSettings.sync_inventory ?? false,
+    sync_orders: initialSettings.sync_orders ?? true,
+    sync_products: initialSettings.sync_products ?? true,
+    sync_inventory: initialSettings.sync_inventory ?? true,
     markets: initialSettings.markets ?? [],
   });
 
-  const [isLoadingMarkets, setIsLoadingMarkets] = useState(false);
+  // ── Markets / locales ──────────────────────────────────────────────────────
 
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [generalError, setGeneralError] = useState("");
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
-    {},
-  );
-
-  async function loadRefurbedMarkets() {
+  async function loadMarkets() {
     const token = apiKey.trim();
 
     if (mode === "connect" && !token) {
       setValidationErrors({
-        "credentials.api_key": ["Enter the API key before loading markets."],
+        "credentials.api_key": ["Enter the API key before loading locales."],
       });
       return;
     }
@@ -124,10 +128,13 @@ export function ConnectionSettingsForm({
     setValidationErrors({});
 
     try {
+      // For Back Market no extra credentials are needed — the backend derives
+      // the platform from the marketplace slug.
       const response = await getMarketplaceConnectionOptions(
         marketplaceSlug,
         token || undefined,
       );
+
       const previous = new Map(
         (settings.markets ?? []).map((market) => [market.code, market]),
       );
@@ -143,7 +150,7 @@ export function ConnectionSettingsForm({
       setGeneralError(
         error instanceof MarketplaceApiError
           ? error.message
-          : "Unable to load Refurbed markets.",
+          : "Unable to load marketplace locales.",
       );
     } finally {
       setIsLoadingMarkets(false);
@@ -173,9 +180,7 @@ export function ConnectionSettingsForm({
 
   function updateMarket(
     code: string,
-    changes: Partial<
-      Pick<MarketplaceMarketSetting, "manage_orders" | "manage_offers">
-    >,
+    changes: Partial<Pick<MarketplaceMarketSetting, "manage_orders" | "manage_offers">>,
   ) {
     setSettings((current) => {
       const markets = (current.markets ?? []).map((market) =>
@@ -197,14 +202,13 @@ export function ConnectionSettingsForm({
     setSettings((current) => {
       const next = { ...current, [field]: checked };
 
-      if (marketplaceSlug === "refurbed" && current.markets) {
+      if ((marketplaceSlug === "refurbed" || isBackMarket) && current.markets) {
         if (field === "sync_orders") {
           next.markets = current.markets.map((market) => ({
             ...market,
             manage_orders: checked,
           }));
         }
-
         if (field === "sync_products") {
           next.markets = current.markets.map((market) => ({
             ...market,
@@ -217,19 +221,17 @@ export function ConnectionSettingsForm({
     });
   }
 
+  // ── Submit ─────────────────────────────────────────────────────────────────
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
-    if (isSubmitting) {
-      return;
-    }
+    if (isSubmitting) return;
 
     setGeneralError("");
     setValidationErrors({});
 
     const trimmedAccountName = accountName.trim();
     const trimmedApiKey = apiKey.trim();
-
     const localErrors: ValidationErrors = {};
 
     if (!trimmedAccountName) {
@@ -237,23 +239,37 @@ export function ConnectionSettingsForm({
     }
 
     if (mode === "connect" && !trimmedApiKey) {
-      localErrors["credentials.api_key"] = ["The API key is required."];
+      localErrors["credentials.api_key"] = [
+        isBackMarket
+          ? "The Back Market API token is required."
+          : "The API key is required.",
+      ];
     }
 
-    if (
-      marketplaceSlug === "refurbed" &&
-      (settings.markets ?? []).length === 0
-    ) {
-      localErrors.markets = [
-        "Load the available Refurbed markets before connecting.",
-      ];
-    } else if (
-      marketplaceSlug === "refurbed" &&
-      !(settings.markets ?? []).some(
-        (market) => market.manage_orders || market.manage_offers,
-      )
-    ) {
-      localErrors.markets = ["Select at least one Refurbed market function."];
+    // Refurbed: markets must be loaded and at least one selected
+    if (marketplaceSlug === "refurbed") {
+      if ((settings.markets ?? []).length === 0) {
+        localErrors.markets = ["Load the available Refurbed markets before connecting."];
+      } else if (
+        !(settings.markets ?? []).some(
+          (market) => market.manage_orders || market.manage_offers,
+        )
+      ) {
+        localErrors.markets = ["Select at least one Refurbed market function."];
+      }
+    }
+
+    // Back Market: locales must be loaded and at least one selected
+    if (isBackMarket) {
+      if ((settings.markets ?? []).length === 0) {
+        localErrors.markets = ["Load the available Back Market locales before connecting."];
+      } else if (
+        !(settings.markets ?? []).some(
+          (market) => market.manage_orders || market.manage_offers,
+        )
+      ) {
+        localErrors.markets = ["Select at least one Back Market locale."];
+      }
     }
 
     if (Object.keys(localErrors).length > 0) {
@@ -264,9 +280,20 @@ export function ConnectionSettingsForm({
     setIsSubmitting(true);
 
     try {
+      // For Back Market derive country_code from the first selected locale so
+      // the backend has a valid Accept-Language for API requests.
+      const firstSelectedLocale = isBackMarket
+        ? (settings.markets ?? []).find(
+            (market) => market.manage_orders || market.manage_offers,
+          )?.code
+        : undefined;
+
       await onSubmit({
         account_name: trimmedAccountName,
         api_key: trimmedApiKey,
+        ...(isBackMarket && firstSelectedLocale
+          ? { country_code: firstSelectedLocale }
+          : {}),
         settings,
       });
 
@@ -284,10 +311,17 @@ export function ConnectionSettingsForm({
     }
   }
 
-  const apiKeyHelpText =
-    mode === "connect"
+  const apiKeyHelpText = isBackMarket
+    ? mode === "connect"
+      ? "Paste the token from Back Market Back Office → Options → Integrations."
+      : "Leave blank to keep the saved token."
+    : mode === "connect"
       ? "Enter the API key provided by the marketplace."
       : "Leave this blank to keep the currently saved credential.";
+
+  const showMarketsSection = marketplaceSlug === "refurbed" || isBackMarket;
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -302,6 +336,7 @@ export function ConnectionSettingsForm({
         </div>
       )}
 
+      {/* Account name */}
       <div>
         <label
           htmlFor={`${formId}-account-name`}
@@ -326,12 +361,13 @@ export function ConnectionSettingsForm({
         <FieldError errors={validationErrors} field="account_name" />
       </div>
 
+      {/* API key / token */}
       <div>
         <label
           htmlFor={`${formId}-api-key`}
           className="mb-2 block text-sm font-semibold text-slate-700"
         >
-          {t("API key")}
+          {isBackMarket ? "API token" : t("API key")}
           {mode === "update" && (
             <span className="ml-1 font-normal text-slate-400">
               {t("(optional)")}
@@ -385,15 +421,14 @@ export function ConnectionSettingsForm({
         <FieldError errors={validationErrors} field="credentials.api_key" />
       </div>
 
+      {/* Synchronization settings */}
       <fieldset>
         <legend className="text-sm font-semibold text-slate-700">
           {t("Synchronization settings")}
         </legend>
 
         <p className="mt-1 text-xs leading-5 text-slate-500">
-          {t(
-            "Choose the data CelleXa should synchronize for this marketplace.",
-          )}
+          {t("Choose the data CelleXa should synchronize for this marketplace.")}
         </p>
 
         <div className="mt-3 space-y-3">
@@ -427,12 +462,13 @@ export function ConnectionSettingsForm({
         </div>
       </fieldset>
 
-      {marketplaceSlug === "refurbed" && (
+      {/* Markets / locales — Refurbed and Back Market */}
+      {showMarketsSection && (
         <fieldset>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <legend className="text-sm font-semibold text-slate-700">
-                {t("Refurbed markets")}
+                {isBackMarket ? t("Back Market locales") : t("Refurbed markets")}
               </legend>
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 {t("Choose the countries and functions CelleXa may manage.")}
@@ -445,7 +481,7 @@ export function ConnectionSettingsForm({
                 isLoadingMarkets ||
                 (mode === "connect" && !apiKey.trim())
               }
-              onClick={loadRefurbedMarkets}
+              onClick={loadMarkets}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoadingMarkets ? (
@@ -453,7 +489,11 @@ export function ConnectionSettingsForm({
               ) : (
                 <RefreshCw className="h-4 w-4" />
               )}
-              {isLoadingMarkets ? t("Loading markets...") : t("Load markets")}
+              {isLoadingMarkets
+                ? t("Loading...")
+                : isBackMarket
+                  ? t("Load locales")
+                  : t("Load markets")}
             </button>
           </div>
 
@@ -464,7 +504,8 @@ export function ConnectionSettingsForm({
                 checked={allMarketsSelected}
                 ref={(input) => {
                   if (input) {
-                    input.indeterminate = !allMarketsSelected &&
+                    input.indeterminate =
+                      !allMarketsSelected &&
                       (settings.markets ?? []).some(
                         (market) => market.manage_orders || market.manage_offers,
                       );
@@ -484,10 +525,19 @@ export function ConnectionSettingsForm({
             <div className="mt-4 max-h-[28rem] space-y-2 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-2">
               {(settings.markets ?? []).map((market) => {
                 const selected = market.manage_orders || market.manage_offers;
+                // Back Market codes are locales like "fr-fr" — extract the
+                // country part for the flag. Refurbed codes are "AT", "DE" etc.
+                const flagCode = market.code.includes("-")
+                  ? market.code.split("-")[1]
+                  : market.code;
                 return (
                   <div
                     key={market.code}
-                    className={`rounded-xl border p-3 transition ${selected ? "border-blue-200 bg-white shadow-sm" : "border-transparent bg-white/60"}`}
+                    className={`rounded-xl border p-3 transition ${
+                      selected
+                        ? "border-blue-200 bg-white shadow-sm"
+                        : "border-transparent bg-white/60"
+                    }`}
                   >
                     <label className="flex cursor-pointer items-center gap-3">
                       <input
@@ -506,18 +556,16 @@ export function ConnectionSettingsForm({
                         className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-lg"
                         aria-hidden="true"
                       >
-                        {countryFlag(market.code)}
+                        {countryFlag(flagCode)}
                       </span>
                       <span className="font-semibold text-slate-800">
-                        Refurbed {market.code}
+                        {market.name}
                       </span>
                       <span className="ml-auto text-xs text-slate-400">
-                        {market.name}
-                        {market.currency_code
-                          ? ` · ${market.currency_code}`
-                          : ""}
+                        {market.currency_code ?? ""}
                       </span>
                     </label>
+
                     {selected && (
                       <div className="ml-8 mt-3 flex flex-wrap gap-x-6 gap-y-2 pl-8">
                         <label className="flex items-center gap-2 text-sm text-slate-600">
@@ -556,6 +604,7 @@ export function ConnectionSettingsForm({
         </fieldset>
       )}
 
+      {/* Form actions */}
       <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
         {onCancel && (
           <button

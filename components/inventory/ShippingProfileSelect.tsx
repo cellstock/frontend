@@ -10,8 +10,12 @@ import {
 
 export function ShippingProfileSelect({
   defaultValue = "",
+  name = "shipping_profile_id",
+  error: externalError,
 }: {
   defaultValue?: string;
+  name?: string;
+  error?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -110,14 +114,14 @@ export function ShippingProfileSelect({
 
   return (
     <div ref={containerRef} className="relative mt-2">
-      <input type="hidden" name="shipping_profile_id" value={selected} />
+      <input type="hidden" name={name} value={selected} />
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
         disabled={loading || profiles.length === 0}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-left text-sm text-slate-900 outline-none transition hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-wait disabled:bg-slate-100 disabled:text-slate-500"
+        className={`flex w-full items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 text-left text-sm text-slate-900 outline-none transition hover:border-blue-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-wait disabled:bg-slate-100 disabled:text-slate-500 ${externalError ? "border-red-500 ring-1 ring-red-500" : "border-slate-300"}`}
       >
         <span className="truncate">
           {loading

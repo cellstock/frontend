@@ -62,7 +62,10 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
-      <body className="flex min-h-full flex-col bg-slate-50 font-sans text-slate-900 antialiased">
+      <body
+        suppressHydrationWarning
+        className="flex min-h-full flex-col bg-slate-50 font-sans text-slate-900 antialiased"
+      >
         <LanguageProvider initialLocale={locale}>{children}</LanguageProvider>
       </body>
     </html>

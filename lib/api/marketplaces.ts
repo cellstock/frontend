@@ -173,12 +173,16 @@ export function connectMarketplace(
 export function getMarketplaceConnectionOptions(
   slug: string,
   apiKey?: string,
+  extraCredentials?: Record<string, string>,
 ): Promise<MarketplaceConnectionOptionsResponse> {
+  const credentials: Record<string, string> = {};
+  if (apiKey) credentials.api_key = apiKey;
+  if (extraCredentials) Object.assign(credentials, extraCredentials);
   return apiRequest<MarketplaceConnectionOptionsResponse>(
     `/api/marketplaces/${encodeURIComponent(slug)}/connection/options`,
     {
       method: "POST",
-      body: apiKey ? { credentials: { api_key: apiKey } } : {},
+      body: Object.keys(credentials).length > 0 ? { credentials } : {},
     },
   );
 }

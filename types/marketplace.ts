@@ -107,7 +107,11 @@ export interface MarketplaceResponse {
 }
 
 export interface MarketplaceCredentials {
-  api_key: string;
+  api_key?: string;
+  access_token?: string;
+  platform?: "eu" | "na" | "ap";
+  country_code?: string;
+  environment?: "preproduction" | "production";
 }
 
 export interface ConnectMarketplaceRequest {
@@ -168,6 +172,8 @@ export interface MarketplaceActionResponse extends ApiSuccessResponse {
 
 export interface MarketplaceFormValues {
   account_name: string;
-  api_key: string;
+  api_key?: string;
+  /** Accept-Language locale code, e.g. "fr-fr". Used by Back Market. */
+  country_code?: string;
   settings: MarketplaceSettings;
 }

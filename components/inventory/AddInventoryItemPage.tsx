@@ -25,6 +25,8 @@ import {
 import {
   MarketplaceListingPanel,
   extractMarketplaceListingValues,
+  getEffectiveTopPrice,
+  syncListingAndMarketplaceFields,
 } from "@/components/inventory/MarketplaceListingPanel";
 import { MarketplaceSelectorRow } from "@/components/inventory/MarketplaceSelectorRow";
 
@@ -103,16 +105,39 @@ export function AddInventoryItemPage() {
   const [notice, setNotice] = useState("");
   const [formError, setFormError] = useState("");
 
-  function selectCatalogItem(item: RefurbedCatalogItem) {
-    setInstance({
-      id: item.instance_id,
-      name: item.name || item.name_de || `Instance ${item.instance_id}`,
-      name_de: item.name_de || undefined,
-      category: item.main_category || undefined,
-      attributes: item.attributes || undefined,
-      attributes_de: item.attributes_de || undefined,
-    });
-    setManualEntry(false);
+  async function selectCatalogItem(item: RefurbedCatalogItem) {
+    setFormError("");
+    setBusy(true);
+    try {
+      // Confirm the catalog ID still exists on Refurbed before opening the form.
+      const response = await findInventoryInstance(
+        String(item.instance_id).trim(),
+        "id",
+      );
+      const remote = response.data.instance;
+      setInstance({
+        id: String(remote.id || item.instance_id),
+        name:
+          remote.name ||
+          item.name ||
+          item.name_de ||
+          `Instance ${item.instance_id}`,
+        name_de: item.name_de || undefined,
+        category: item.main_category || undefined,
+        attributes: item.attributes || undefined,
+        attributes_de: item.attributes_de || undefined,
+        gtin: remote.gtin || undefined,
+      });
+      setManualEntry(false);
+    } catch (caught) {
+      setFormError(
+        caught instanceof Error
+          ? caught.message
+          : "This catalog product was not found on Refurbed. Search by EAN instead.",
+      );
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function createListing(event: FormEvent<HTMLFormElement>) {
@@ -130,7 +155,7 @@ export function AddInventoryItemPage() {
 
       // Panel fields override the general form fields where applicable
       const taxation = refurbed.taxation || String(values.taxation || "GROSS");
-      const warrantyMonths = refurbed.warranty_delay || "12";
+      // Refurbed CreateOffer only accepts M12 for new offers.
       const shippingProfileId =
         refurbed.shipping_profile_id || String(values.shipping_profile_id || "");
       const referencePrice =
@@ -140,6 +165,15 @@ export function AddInventoryItemPage() {
         : refurbed.bottom_price || String(values.reference_min_price || "") || null;
       const referenceCurrency = markets[0]?.currency_code || "EUR";
       const marketCode = markets[0]?.code || "";
+
+      if (!marketCode) {
+        throw new Error(
+          "No Refurbed market is enabled for offer management. Check marketplace settings.",
+        );
+      }
+      if (!shippingProfileId.trim()) {
+        throw new Error("Select a shipping profile before creating the offer.");
+      }
 
       // ── listing_details: backend-compatible keys ─────────────────────────
       // Backend reads: dont_send_quantity_XX, dont_send_price_XX, block_price_XX
@@ -187,12 +221,12 @@ export function AddInventoryItemPage() {
       });
 
       const payload: Record<string, unknown> = {
-        sku: values.sku,
+        sku: String(values.sku ?? "").trim(),
         grading: conditionGrade[condition] || "A",
         taxation,
-        warranty: `M${warrantyMonths}` as "M12",
+        warranty: "M12",
         stock: Number(values.stock),
-        shipping_profile_id: shippingProfileId,
+        shipping_profile_id: shippingProfileId.trim(),
         reference_currency_code: referenceCurrency,
         reference_price: referencePrice,
         reference_min_price: referenceMinPrice || null,
@@ -201,8 +235,40 @@ export function AddInventoryItemPage() {
         listing_details: listingDetails,
       };
 
-      if (instance?.id) payload.instance_id = instance.id;
-      else payload.gtin = values.gtin || refurbed.ean;
+      const backmarketProductId = String(
+        values.mp_backmarket_product_id || "",
+      ).trim();
+      const useBackMarket = Boolean(backmarketProductId);
+
+      if (useBackMarket) {
+        payload.marketplace = "back-market";
+        payload.product_id = backmarketProductId;
+        payload.backmarket_id = backmarketProductId;
+        payload.instance_id = backmarketProductId;
+        if (values.mp_backmarket_top_price) {
+          payload.reference_price = String(values.mp_backmarket_top_price);
+        }
+        if (values.mp_backmarket_ean) {
+          payload.gtin = String(values.mp_backmarket_ean).replace(/\D+/g, "");
+        }
+      } else {
+        const instanceId = String(
+          refurbed.refurbed_id || instance?.id || "",
+        ).replace(/\D+/g, "");
+        const gtin = String(
+          values.gtin || refurbed.ean || instance?.gtin || "",
+        ).replace(/\D+/g, "");
+
+        if (instanceId) payload.instance_id = instanceId;
+        else if (gtin) payload.gtin = gtin;
+        else {
+          throw new Error(
+            "A Refurbed instance ID, Back Market product ID, or recognized GTIN/EAN is required.",
+          );
+        }
+        payload.marketplace = "refurbed";
+      }
+
       const response = await createInventoryOffer(payload);
       setNotice(response.message);
       setTimeout(() => router.push("/dashboard/inventory"), 800);
@@ -243,16 +309,33 @@ export function AddInventoryItemPage() {
       subtitle="Dashboard / Inventory / Add an item to your inventory"
     >
       {initError && <Alert kind="error">{initError}</Alert>}
+      {formError && <Alert kind="error">{formError}</Alert>}
+      {busy && (
+        <p className="mb-4 flex items-center gap-2 text-sm text-slate-600">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Checking product on Refurbed…
+        </p>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── Panel 1: Search by EAN or SKU ── */}
-        <EanAsinPanel onFound={(found) => setInstance(found)} />
+        <EanAsinPanel
+          onFound={(found) => {
+            setFormError("");
+            setInstance({
+              ...found,
+              id: String(found.id ?? ""),
+              gtin: found.gtin ? String(found.gtin) : undefined,
+            });
+          }}
+        />
 
         {/* ── Panel 2: Search by title / keyword ── */}
         <KeywordPanel
           categories={categories}
           onSelect={selectCatalogItem}
           onManualEntry={() => setManualEntry(true)}
+          disabled={busy}
         />
       </div>
     </InventoryShell>
@@ -355,10 +438,12 @@ function KeywordPanel({
   categories,
   onSelect,
   onManualEntry,
+  disabled = false,
 }: {
   categories: string[];
-  onSelect: (item: RefurbedCatalogItem) => void;
+  onSelect: (item: RefurbedCatalogItem) => void | Promise<void>;
   onManualEntry: () => void;
+  disabled?: boolean;
 }) {
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("");
@@ -481,7 +566,7 @@ function KeywordPanel({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button
             type="submit"
-            disabled={loading || (!keyword.trim() && !category)}
+            disabled={disabled || loading || (!keyword.trim() && !category)}
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -491,7 +576,8 @@ function KeywordPanel({
           <button
             type="button"
             onClick={onManualEntry}
-            className="inline-flex items-center gap-2 rounded-xl border border-blue-500 px-4 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50"
+            disabled={disabled}
+            className="inline-flex items-center gap-2 rounded-xl border border-blue-500 px-4 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-50"
           >
             <CirclePlus className="h-4 w-4" />
             Create a catalog entry
@@ -529,8 +615,9 @@ function KeywordPanel({
             <button
               key={item.instance_id}
               type="button"
-              onClick={() => onSelect(item)}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-left transition hover:border-blue-300 hover:bg-blue-50/40"
+              disabled={disabled}
+              onClick={() => void onSelect(item)}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-left transition hover:border-blue-300 hover:bg-blue-50/40 disabled:opacity-50"
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-slate-900">
@@ -732,14 +819,17 @@ function Listing({
                 }
               }
 
-              // The panel's top price drives reference_price; if the
-              // marketplace panel view is open and its top price is blank, flag it.
-              const panelTopPrice = event.currentTarget.elements.namedItem(
-                "mp_refurbed_top_price",
-              ) as HTMLInputElement | null;
-              if (panelTopPrice && !panelTopPrice.value.trim()) {
-                errors["mp_refurbed_top_price"] =
-                  "Enter a top price of at least 0.01.";
+              // Top price may be set on either Listing information OR the
+              // marketplace panel — only one valid value (≥ 0.01) is required.
+              const topPrice = getEffectiveTopPrice(event.currentTarget);
+              if (topPrice.source === "none") {
+                if (marketplaceView) {
+                  errors["mp_refurbed_top_price"] =
+                    "Enter a top price of at least 0.01.";
+                } else {
+                  errors["reference_price"] =
+                    "Enter a price of at least 0.01.";
+                }
               }
               setFieldErrors(errors);
               if (first || Object.keys(errors).length > 0) {
@@ -749,8 +839,11 @@ function Listing({
                   Object.keys(errors).every((k) =>
                     k.startsWith("mp_refurbed_") || k.startsWith("mp_locale_"),
                   );
-                if (panelOnlyErrors) setMarketplaceView(true);
-                else if (first) {
+                if (panelOnlyErrors || errors["mp_refurbed_top_price"]) {
+                  setMarketplaceView(true);
+                } else if (errors["reference_price"] && !first) {
+                  setMarketplaceView(false);
+                } else if (first) {
                   setMarketplaceView(
                     first.name.startsWith("price_") ||
                       first.name.startsWith("min_price_") ||
@@ -857,7 +950,7 @@ function Listing({
                     label="EAN all marketplaces"
                     defaultValue={instance?.gtin}
                     required={manual}
-                    disabled={!manual}
+                    disabled={Boolean(instance?.id) && !manual}
                   />
 
                   <Input name="stock" label="Quantity" type="number" required />
@@ -1005,12 +1098,32 @@ function Listing({
                 marketplaces={marketplaces}
                 currency={currency}
                 fieldErrors={fieldErrors}
+                defaults={{
+                  ean: instance?.gtin ?? "",
+                  refurbed_id: instance?.id ?? "",
+                }}
               />
             </div>
             <div className="flex justify-end border-t border-slate-200 px-6 py-4">
               <button
                 type="button"
-                onClick={() => setMarketplaceView((current) => !current)}
+                onClick={(event) => {
+                  const form = event.currentTarget.closest("form");
+                  if (form) {
+                    syncListingAndMarketplaceFields(
+                      form,
+                      marketplaceView ? "panel-to-main" : "main-to-panel",
+                    );
+                  }
+                  setMarketplaceView((current) => !current);
+                  setFieldErrors((current) => {
+                    const next = { ...current };
+                    delete next.reference_price;
+                    delete next.mp_refurbed_top_price;
+                    return next;
+                  });
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
                 className="text-sm font-semibold text-blue-600 hover:underline"
               >
                 {marketplaceView

@@ -105,6 +105,11 @@ export function MarketplaceDetails({
 }: MarketplaceDetailsProps) {
   const { t, locale } = useI18n();
   const connection = marketplace.connection;
+  const isBackMarket =
+    marketplace.slug === "back-market-eu" ||
+    marketplace.slug === "back-market-na" ||
+    marketplace.slug === "back-market-ap";
+
   const supportedSyncCapabilities: MarketplaceCapability[] =
     marketplace.slug === "refurbed" ? ["orders"] : marketplace.capabilities;
 
@@ -133,13 +138,20 @@ export function MarketplaceDetails({
       return;
     }
 
+    const hasCredentialUpdates =
+      Boolean(values.api_key) ||
+      Boolean(values.country_code);
+
     const input: UpdateMarketplaceConnectionRequest = {
       account_name: values.account_name,
       settings: values.settings,
-      ...(values.api_key
+      ...(hasCredentialUpdates
         ? {
             credentials: {
-              api_key: values.api_key,
+              ...(values.api_key ? { api_key: values.api_key } : {}),
+              ...(values.country_code
+                ? { country_code: values.country_code }
+                : {}),
             },
           }
         : {}),
