@@ -1108,6 +1108,62 @@ function Listing({
               <button
                 type="button"
                 onClick={(event) => {
+                  // Going forward → validate the main listing view first
+                  if (!marketplaceView) {
+                    const form = event.currentTarget.closest("form");
+                    if (form) {
+                      const mainErrors: Record<string, string> = {};
+
+                      // Native constraint validation on visible controls
+                      const controls = Array.from(form.elements).filter(
+                        (el): el is HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement =>
+                          el instanceof HTMLInputElement ||
+                          el instanceof HTMLSelectElement ||
+                          el instanceof HTMLTextAreaElement,
+                      );
+                      for (const control of controls) {
+                        if (!control.willValidate) continue;
+                        if (!control.validity.valid) {
+                          mainErrors[control.name] = control.validity.valueMissing
+                            ? ({
+                                condition_label: "Please select the item's condition.",
+                                sku: "Please enter a SKU.",
+                                stock: "Quantity must not be blank.",
+                                reference_price: "Enter a top price of at least 0.01.",
+                                shipping_profile_id: "Please select a shipping profile.",
+                              } as Record<string, string>)[control.name] ||
+                              "This field is required."
+                            : control.validationMessage;
+                          control.setAttribute("aria-invalid", "true");
+                        }
+                      }
+
+                      // Hidden shipping profile check
+                      const shipHidden = form.elements.namedItem("shipping_profile_id") as HTMLInputElement | null;
+                      if (shipHidden && !shipHidden.value.trim()) {
+                        mainErrors["shipping_profile_id"] = "Please select a shipping profile.";
+                      }
+
+                      if (Object.keys(mainErrors).length > 0) {
+                        setFieldErrors(mainErrors);
+                        // Scroll to and open the first invalid section
+                        const firstInvalid = controls.find((c) => mainErrors[c.name]);
+                        if (firstInvalid) {
+                          for (let p = firstInvalid.parentElement; p; p = p.parentElement) {
+                            if (p instanceof HTMLDetailsElement) p.open = true;
+                          }
+                          firstInvalid.focus();
+                          firstInvalid.scrollIntoView({ block: "center", behavior: "smooth" });
+                        } else {
+                          // Shipping profile or other non-native field
+                          const shippingEl = form.querySelector<HTMLElement>("[data-field='shipping_profile_id']");
+                          shippingEl?.scrollIntoView({ block: "center", behavior: "smooth" });
+                        }
+                        return; // don't switch view
+                      }
+                    }
+                  }
+
                   const form = event.currentTarget.closest("form");
                   if (form) {
                     syncListingAndMarketplaceFields(

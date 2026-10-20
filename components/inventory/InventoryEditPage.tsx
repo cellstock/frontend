@@ -489,6 +489,50 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
             <button
               type="button"
               onClick={(event) => {
+                // Going forward → validate the main listing view first
+                if (!marketplaceView) {
+                  const form = event.currentTarget.closest("form");
+                  if (form) {
+                    const mainErrors: Record<string, string> = {};
+
+                    const controls = Array.from(form.elements).filter(
+                      (el): el is HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement =>
+                        el instanceof HTMLInputElement ||
+                        el instanceof HTMLSelectElement ||
+                        el instanceof HTMLTextAreaElement,
+                    );
+                    for (const control of controls) {
+                      if (!control.willValidate) continue;
+                      if (!control.validity.valid) {
+                        mainErrors[control.name] =
+                          control.validity.valueMissing
+                            ? "This field is required."
+                            : control.validationMessage;
+                        control.setAttribute("aria-invalid", "true");
+                      }
+                    }
+
+                    // Reference price: check effective top price
+                    const topPrice = getEffectiveTopPrice(form);
+                    if (topPrice.source === "none") {
+                      mainErrors["reference_price"] = "Enter a top price of at least 0.01.";
+                    }
+
+                    if (Object.keys(mainErrors).length > 0) {
+                      setFieldErrors(mainErrors);
+                      const firstInvalid = controls.find((c) => mainErrors[c.name]);
+                      if (firstInvalid) {
+                        for (let p = firstInvalid.parentElement; p; p = p.parentElement) {
+                          if (p instanceof HTMLDetailsElement) p.open = true;
+                        }
+                        firstInvalid.focus();
+                        firstInvalid.scrollIntoView({ block: "center", behavior: "smooth" });
+                      }
+                      return;
+                    }
+                  }
+                }
+
                 const form = event.currentTarget.closest("form");
                 if (form) {
                   syncListingAndMarketplaceFields(
