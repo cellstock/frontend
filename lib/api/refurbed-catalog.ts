@@ -14,6 +14,7 @@ export interface RefurbedCatalogImport {
 
 export interface RefurbedCatalogItem {
   instance_id: string;
+  sku: string | null;
   name: string | null;
   name_de: string | null;
   attributes: string | null;
@@ -32,10 +33,24 @@ async function catalogRequest<T>(url: string, options?: RequestInit) {
     },
   });
   const payload = (await response.json().catch(() => null)) as
-    (T & { message?: string }) | null;
+    | (T & {
+        message?: string;
+        errors?: Record<string, string[] | string>;
+      })
+    | null;
 
   if (!response.ok || !payload) {
-    throw new Error(payload?.message || "Unable to load the Refurbed catalog.");
+    const fieldErrors = payload?.errors;
+    const firstFieldMessage =
+      fieldErrors &&
+      Object.values(fieldErrors).flatMap((messages) =>
+        Array.isArray(messages) ? messages : [messages],
+      )[0];
+    throw new Error(
+      firstFieldMessage ||
+        payload?.message ||
+        "Unable to load the Refurbed catalog.",
+    );
   }
 
   return payload;

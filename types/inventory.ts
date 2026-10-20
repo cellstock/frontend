@@ -82,4 +82,5 @@ export interface InventoryInstance {
   attributes_de?: string;
   gtin?: string;
   mpn?: string;
+  sku?: string;
 }

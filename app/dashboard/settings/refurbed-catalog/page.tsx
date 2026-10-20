@@ -5,11 +5,12 @@ import {
   Database,
   FileSpreadsheet,
   LoaderCircle,
+  RefreshCw,
   Upload,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import {
   getRefurbedCatalog,
@@ -23,10 +24,12 @@ export default function RefurbedCatalogPage() {
   const [catalogImport, setCatalogImport] =
     useState<RefurbedCatalogImport | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getRefurbedCatalog()
@@ -57,7 +60,15 @@ export default function RefurbedCatalogPage() {
 
           if (updated.status === "completed") {
             setItemsCount(updated.imported_rows);
+            setError("");
             setMessage("Refurbed catalog imported successfully.");
+          }
+          if (updated.status === "failed") {
+            setMessage("");
+            setError(
+              updated.error_message ||
+                "Catalog import failed. Check the file columns and try again.",
+            );
           }
         })
         .catch(() => undefined);
@@ -86,7 +97,10 @@ export default function RefurbedCatalogPage() {
     try {
       const response = await uploadRefurbedCatalog(file, setUploadProgress);
       setCatalogImport(response.data.import);
-      setMessage(response.message);
+      // Upload only queues the job — import finishes asynchronously.
+      setMessage(
+        "File uploaded. Import is running in the queue — wait until status is completed.",
+      );
       setFile(null);
     } catch (caught) {
       setError(
@@ -99,6 +113,16 @@ export default function RefurbedCatalogPage() {
 
   const working =
     catalogImport && ["queued", "processing"].includes(catalogImport.status);
+  const failed = catalogImport?.status === "failed";
+
+  function resetForRetry() {
+    setError("");
+    setMessage("");
+    setFile(null);
+    setUploadProgress(0);
+    setFileInputKey((key) => key + 1);
+    window.setTimeout(() => fileInputRef.current?.click(), 0);
+  }
 
   return (
     <main className="min-h-[calc(100vh-5rem)] bg-sky-50/70 px-4 py-8 sm:px-6 lg:px-8">
@@ -158,10 +182,12 @@ export default function RefurbedCatalogPage() {
                 {file?.name || "Select the refurbed_catalog file"}
               </span>
               <span className="mt-1 block text-xs text-slate-500">
-                Expected columns: Instance ID, Name, Name DE, Attributes,
-                Attributes DE and Main Category.
+                Required: Instance ID, Name, Name DE, Attributes, Attributes DE,
+                Main Category. Optional: SKU.
               </span>
               <input
+                key={fileInputKey}
+                ref={fileInputRef}
                 type="file"
                 accept=".xlsx,.csv"
                 disabled={uploading || Boolean(working)}
@@ -170,18 +196,31 @@ export default function RefurbedCatalogPage() {
               />
             </label>
 
-            <button
-              type="submit"
-              disabled={!file || uploading || Boolean(working)}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {uploading ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-              ) : (
-                <Upload className="h-4 w-4" />
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <button
+                type="submit"
+                disabled={!file || uploading || Boolean(working)}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {uploading ? (
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
+                Upload and import
+              </button>
+              {failed && !working && (
+                <button
+                  type="button"
+                  onClick={resetForRetry}
+                  disabled={uploading}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Upload again
+                </button>
               )}
-              Upload and import
-            </button>
+            </div>
             {uploading && (
               <div className="mt-4">
                 <div className="h-2 overflow-hidden rounded-full bg-slate-100">
@@ -208,7 +247,12 @@ export default function RefurbedCatalogPage() {
 
             {catalogImport && (
               <div className="mt-6 border-t border-slate-200 pt-5">
-                <ImportStatus catalogImport={catalogImport} />
+                <ImportStatus
+                  catalogImport={catalogImport}
+                  onRetry={
+                    catalogImport.status === "failed" ? resetForRetry : undefined
+                  }
+                />
               </div>
             )}
           </section>
@@ -220,8 +264,10 @@ export default function RefurbedCatalogPage() {
 
 function ImportStatus({
   catalogImport,
+  onRetry,
 }: {
   catalogImport: RefurbedCatalogImport;
+  onRetry?: () => void;
 }) {
   const processing = ["queued", "processing"].includes(catalogImport.status);
   const failed = catalogImport.status === "failed";
@@ -258,6 +304,16 @@ function ImportStatus({
         <p className="mt-4 text-sm text-red-700">
           {catalogImport.error_message}
         </p>
+      )}
+      {failed && onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-4 inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Upload again
+        </button>
       )}
       {processing && (
         <p className="mt-4 text-xs text-slate-500">

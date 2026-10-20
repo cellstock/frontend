@@ -127,6 +127,7 @@ export function AddInventoryItemPage() {
         attributes: item.attributes || undefined,
         attributes_de: item.attributes_de || undefined,
         gtin: remote.gtin || undefined,
+        sku: item.sku || remote.sku || undefined,
       });
       setManualEntry(false);
     } catch (caught) {
@@ -624,6 +625,7 @@ function KeywordPanel({
                   {item.name || item.name_de || `Instance ${item.instance_id}`}
                 </p>
                 <p className="mt-0.5 truncate text-xs text-slate-500">
+                  {item.sku ? `SKU ${item.sku} · ` : ""}
                   {item.main_category ? `${item.main_category} · ` : ""}
                   ID {item.instance_id}
                 </p>
@@ -944,7 +946,12 @@ function Listing({
                     </Field>
                   }
                   <GradeSelect />
-                  <Input name="sku" label="SKU" required />
+                  <Input
+                    name="sku"
+                    label="SKU"
+                    required
+                    defaultValue={instance?.sku}
+                  />
                   <Input
                     name="gtin"
                     label="EAN all marketplaces"
