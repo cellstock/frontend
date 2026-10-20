@@ -679,9 +679,10 @@ export function syncListingAndMarketplaceFields(
   const fill = (
     target: HTMLInputElement | HTMLSelectElement | null,
     source: HTMLInputElement | HTMLSelectElement | null,
+    force = false,
   ) => {
     if (!target || !source) return;
-    if (String(target.value ?? "").trim()) return;
+    if (!force && String(target.value ?? "").trim()) return;
     const next = String(source.value ?? "").trim();
     if (next) target.value = next;
   };
@@ -692,10 +693,11 @@ export function syncListingAndMarketplaceFields(
     fill(panelShip, mainShip);
     fill(panelTax, mainTax);
   } else {
-    fill(mainTop, panelTop);
-    fill(mainMin, panelMin);
-    fill(mainShip, panelShip);
-    fill(mainTax, panelTax);
+    // Leaving marketplace view: panel Top/Bottom are authoritative.
+    fill(mainTop, panelTop, true);
+    fill(mainMin, panelMin, true);
+    fill(mainShip, panelShip, true);
+    fill(mainTax, panelTax, true);
   }
 }
 

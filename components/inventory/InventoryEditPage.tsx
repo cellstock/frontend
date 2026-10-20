@@ -81,6 +81,9 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
     event.preventDefault();
     if (!offer) return;
 
+    // Keep main listing money fields aligned with marketplace panel values.
+    syncListingAndMarketplaceFields(event.currentTarget, "panel-to-main");
+
     const form = new FormData(event.currentTarget);
     const values = Object.fromEntries(form);
 
@@ -114,30 +117,65 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
       return;
     }
 
-    // Derive the offer's active markets inside submit so it's always available
-    const submitOfferMarkets = offer.markets.filter((market) =>
-      offer.market_codes.includes(market.code),
+    // Prefer markets already on the offer; fall back to all enabled offer markets.
+    const codedMarkets = offer.markets.filter((market) =>
+      (offer.market_codes ?? []).some(
+        (code) => String(code).toUpperCase() === String(market.code).toUpperCase(),
+      ),
     );
+    const submitOfferMarkets =
+      codedMarkets.length > 0 ? codedMarkets : offer.markets;
 
     // Extract marketplace panel values
     const mpValues = extractMarketplaceListingValues(form, submitOfferMarkets);
     const refurbed = mpValues.mp_refurbed;
 
-    // Panel fields drive the top-level Refurbed API fields
-    const referencePrice = refurbed.top_price || String(values.reference_price || "0");
+    // Panel top/bottom prices drive Refurbed reference + per-market prices.
+    const referencePrice = String(
+      refurbed.top_price || values.reference_price || offer.reference_price || "0",
+    ).trim();
     const referenceMinPrice = refurbed.block_price
       ? referencePrice
-      : refurbed.bottom_price || (values.reference_min_price ? String(values.reference_min_price) : null);
+      : String(
+          refurbed.bottom_price ||
+            values.reference_min_price ||
+            offer.reference_min_price ||
+            "",
+        ).trim() || null;
 
-    // Build listing_details with both ui-metadata keys and the backend-behaviour keys
+    // Build listing_details with both ui-metadata keys and the backend-behaviour keys.
+    // Keep only string values; drop marketplace_prices (backend rebuilds it).
+    const previousDetails = Object.fromEntries(
+      Object.entries(offer.listing_details ?? {})
+        .filter(([key, value]) => key !== "marketplace_prices" && value != null)
+        .map(([key, value]) => [key, String(value)]),
+    );
+    const grading = ["A", "B", "C", "AA"].includes(String(values.grading))
+      ? String(values.grading)
+      : offer.grading && ["A", "B", "C", "AA"].includes(offer.grading)
+        ? offer.grading
+        : "A";
+    const taxation = ["GROSS", "MARGINAL"].includes(
+      refurbed.taxation || String(values.taxation || ""),
+    )
+      ? refurbed.taxation || String(values.taxation)
+      : offer.taxation || "GROSS";
+    const shippingProfileId = (
+      refurbed.shipping_profile_id ||
+      String(values.shipping_profile_id || offer.shipping_profile_id || "")
+    ).trim();
+
     const mergedListingDetails: Record<string, string> = {
-      ...((offer.listing_details ?? {}) as Record<string, string>),
-      // ui metadata
+      ...previousDetails,
       mp_refurbed_activate: refurbed.activate ? "1" : "0",
       mp_refurbed_ean: refurbed.ean,
       mp_refurbed_battery_condition: refurbed.battery_condition,
       mp_refurbed_id: refurbed.refurbed_id,
-      // detail section fields
+      mp_refurbed_top_price: referencePrice,
+      mp_refurbed_bottom_price: referenceMinPrice || "",
+      mp_refurbed_block_price: refurbed.block_price ? "1" : "0",
+      mp_refurbed_taxation: taxation,
+      mp_refurbed_shipping_profile_id: shippingProfileId,
       ...Object.fromEntries(
         detailSections.flatMap((section) =>
           section.fields.map(([key]) => [
@@ -148,44 +186,75 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
       ),
     };
 
-    // Per-locale: write BOTH the backend-readable keys AND the ui-seed keys
     for (const market of submitOfferMarkets) {
       const locale = refurbed.locales[market.code];
-      // Backend-readable keys (InventoryService reads these)
       mergedListingDetails[`dont_send_quantity_${market.code}`] =
         locale?.dont_send_quantity ? "1" : "0";
+      // Keep sending prices unless the locale explicitly opts out.
       mergedListingDetails[`dont_send_price_${market.code}`] =
         locale?.dont_send_price ? "1" : "0";
       mergedListingDetails[`block_price_${market.code}`] =
-        locale?.block_price ? "1" : "0";
-      // UI-seed keys (for re-populating the panel on next load)
-      mergedListingDetails[`mp_locale_${market.code}_price`] = locale?.price ?? "";
-      mergedListingDetails[`mp_locale_${market.code}_min_price`] = locale?.min_price ?? "";
+        locale?.block_price || refurbed.block_price ? "1" : "0";
+      // Persist locale prices only when they are true per-market overrides.
+      // Seeding them from the panel top/bottom made later panel edits ignore
+      // Top/Bottom and keep pushing the old locale values to Refurbed.
+      const localePrice = String(locale?.price ?? "").trim();
+      const localeMin = String(locale?.min_price ?? "").trim();
+      mergedListingDetails[`mp_locale_${market.code}_price`] =
+        localePrice && localePrice !== referencePrice ? localePrice : "";
+      const panelMin = referenceMinPrice || referencePrice;
+      mergedListingDetails[`mp_locale_${market.code}_min_price`] =
+        localeMin && localeMin !== panelMin ? localeMin : "";
     }
 
-    // market_prices: use panel per-locale overrides, apply block_price logic
-    const marketPrices = submitOfferMarkets.map((market) => {
-      const locale = refurbed.locales[market.code];
-      const existingPrice = offer.market_prices?.find(
-        (p) => p.market_code === market.code,
-      );
-      const price = locale?.price || existingPrice?.price || referencePrice;
-      const minPrice = locale?.block_price
-        ? price
-        : locale?.min_price || existingPrice?.min_price || null;
-      return { market_code: market.code, price, min_price: minPrice };
-    });
+    // Panel top/bottom drive Refurbed update_market_prices; locale fields
+    // only win when they differ from the panel (explicit override).
+    const marketPrices = submitOfferMarkets
+      .map((market) => {
+        const locale = refurbed.locales[market.code];
+        const existingPrice = offer.market_prices?.find(
+          (p) =>
+            String(p.market_code).toUpperCase() ===
+            String(market.code).toUpperCase(),
+        );
+        const localePrice = String(locale?.price ?? "").trim();
+        const price = String(
+          (localePrice && localePrice !== referencePrice
+            ? localePrice
+            : "") ||
+            referencePrice ||
+            existingPrice?.price ||
+            "",
+        ).trim();
+        if (!price || Number(price) <= 0) return null;
+        const localeMin = String(locale?.min_price ?? "").trim();
+        const panelMin = referenceMinPrice || referencePrice;
+        const rawMin =
+          locale?.block_price || refurbed.block_price
+            ? price
+            : (localeMin && localeMin !== panelMin ? localeMin : "") ||
+              panelMin ||
+              existingPrice?.min_price ||
+              price;
+        const minPrice = String(rawMin || price).trim();
+        return {
+          market_code: market.code,
+          price,
+          min_price: minPrice,
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => row !== null);
 
-    const update = {
-      grading: String(values.grading),
-      taxation: refurbed.taxation || String(values.taxation),
+    const update: Record<string, unknown> = {
+      grading,
+      taxation,
       stock: Number(values.stock),
-      shipping_profile_id: refurbed.shipping_profile_id || String(values.shipping_profile_id),
       reference_price: referencePrice,
-      reference_min_price: referenceMinPrice,
       listing_details: mergedListingDetails,
-      market_prices: marketPrices,
     };
+    if (shippingProfileId) update.shipping_profile_id = shippingProfileId;
+    if (referenceMinPrice) update.reference_min_price = referenceMinPrice;
+    if (marketPrices.length > 0) update.market_prices = marketPrices;
 
     setSaving(true);
     setError("");
@@ -351,7 +420,11 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
                 <select
                   name="grading"
                   required
-                  defaultValue={offer.grading}
+                  defaultValue={
+                    ["AA", "A", "B", "C"].includes(offer.grading)
+                      ? offer.grading
+                      : "A"
+                  }
                   className={inputClass}
                 >
                   <option value="AA">Premium</option>
@@ -439,9 +512,9 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
               const panelDefaults: MarketplaceListingDefaults = {
                 activate: ld.mp_refurbed_activate !== "0",
                 ean: ld.mp_refurbed_ean ?? offer.ean ?? "",
-                // Seed prices from the offer's current reference prices (panel overwrites on submit)
-                top_price: offer.reference_price ?? "",
-                bottom_price: offer.reference_min_price ?? "",
+                top_price: ld.mp_refurbed_top_price || offer.reference_price || "",
+                bottom_price:
+                  ld.mp_refurbed_bottom_price || offer.reference_min_price || "",
                 block_price: ld.mp_refurbed_block_price === "1",
                 battery_condition: ld.mp_refurbed_battery_condition ?? "OPTIMAL",
                 taxation: ld.mp_refurbed_taxation ?? offer.taxation ?? "GROSS",
@@ -451,15 +524,32 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
                 refurbed_id: ld.mp_refurbed_id ?? "",
                 locales: Object.fromEntries(
                   offerMarkets.map((market) => {
-                    const prices = offer.market_prices?.find(
-                      (p) => p.market_code === market.code,
-                    );
+                    const panelTop =
+                      ld.mp_refurbed_top_price || offer.reference_price || "";
+                    const panelBottom =
+                      ld.mp_refurbed_bottom_price ||
+                      offer.reference_min_price ||
+                      panelTop;
+                    const storedPrice = String(
+                      ld[`mp_locale_${market.code}_price`] ?? "",
+                    ).trim();
+                    const storedMin = String(
+                      ld[`mp_locale_${market.code}_min_price`] ?? "",
+                    ).trim();
+                    // Only surface locale fields when they are real overrides.
+                    // Previously we also fell back to offer.market_prices, which
+                    // pre-filled every locale and blocked panel Top/Bottom updates.
                     return [
                       market.code,
                       {
-                        // Read from ui-seed keys first, then backend-behaviour keys as fallback
-                        price: ld[`mp_locale_${market.code}_price`] ?? prices?.price ?? "",
-                        min_price: ld[`mp_locale_${market.code}_min_price`] ?? prices?.min_price ?? "",
+                        price:
+                          storedPrice && storedPrice !== panelTop
+                            ? storedPrice
+                            : "",
+                        min_price:
+                          storedMin && storedMin !== panelBottom
+                            ? storedMin
+                            : "",
                         block_price:
                           ld[`mp_locale_${market.code}_block_price`] === "1" ||
                           ld[`block_price_${market.code}`] === "1",

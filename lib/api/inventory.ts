@@ -54,14 +54,27 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
   const payload = (await response.json().catch(() => null)) as {
     message?: string;
-    errors?: { refurbed_code?: number };
+    errors?: Record<string, string[] | number> & { refurbed_code?: number };
   } | null;
-  if (!response.ok)
+  if (!response.ok) {
+    const fieldErrors = payload?.errors;
+    const firstFieldMessage =
+      fieldErrors &&
+      Object.entries(fieldErrors)
+        .filter(([key]) => key !== "refurbed_code")
+        .flatMap(([, messages]) =>
+          Array.isArray(messages) ? messages : [],
+        )[0];
     throw new InventoryApiError(
-      payload?.message || "Unable to complete the inventory request.",
+      firstFieldMessage ||
+        payload?.message ||
+        "Unable to complete the inventory request.",
       response.status,
-      payload?.errors?.refurbed_code,
+      typeof fieldErrors?.refurbed_code === "number"
+        ? fieldErrors.refurbed_code
+        : undefined,
     );
+  }
   return payload as T;
 }
 
