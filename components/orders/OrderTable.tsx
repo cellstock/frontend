@@ -44,6 +44,8 @@ const CARRIER_OPTIONS = [
   "Custom shipper",
 ] as const;
 
+type CarrierOption = (typeof CARRIER_OPTIONS)[number];
+
 interface OrderTableProps {
   orders: Order[];
   onUpdated?: () => Promise<void> | void;
@@ -294,7 +296,7 @@ function DeliverySummary({
   );
 
   const [editing, setEditing] = useState(false);
-  const [carrierChoice, setCarrierChoice] = useState(
+  const [carrierChoice, setCarrierChoice] = useState<CarrierOption>(
     knownCarrier || (initialCarrier ? "Custom shipper" : "DHL Express"),
   );
   const [customCarrier, setCustomCarrier] = useState(
@@ -399,7 +401,9 @@ function DeliverySummary({
           <div className="flex min-w-0 flex-col gap-1">
             <select
               value={carrierChoice}
-              onChange={(event) => setCarrierChoice(event.target.value)}
+              onChange={(event) =>
+                setCarrierChoice(event.target.value as CarrierOption)
+              }
               className={inputClass}
             >
               {CARRIER_OPTIONS.map((option) => (
