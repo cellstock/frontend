@@ -11,13 +11,19 @@ import { CirclePlus } from "lucide-react";
 import Image from "@/components/ui/AppImage";
 import AppLink from "@/components/ui/AppLink";
 import { useState } from "react";
+import {
+  isBackMarket,
+  isInventoryMarketplace,
+  isRefurbed,
+  marketplaceLogoPath,
+  sameMarketplaceFamily,
+} from "@/lib/marketplaces/slugs";
 import type { InventoryMarket } from "@/types/inventory";
 import type { Marketplace } from "@/types/marketplace";
 
 function logoFor(slug: string): string | null {
-  if (slug === "refurbed") return "/images/marketplaces/refurbed.png";
-  if (slug === "back-market") return "/images/marketplaces/back-market.png";
-  return null;
+  if (!isInventoryMarketplace(slug)) return null;
+  return marketplaceLogoPath(slug);
 }
 
 function MarketplaceIcon({
@@ -85,14 +91,15 @@ export function MarketplaceSelectorRow({
   markets: _markets,
   defaultEnabledSlug = "refurbed",
 }: MarketplaceSelectorRowProps) {
-  const connected = marketplaces.filter(
-    (mp) =>
-      mp.slug === "refurbed" ||
-      mp.slug === "back-market",
+  const connected = marketplaces.filter((mp) =>
+    isInventoryMarketplace(mp.slug),
   );
 
-  const initiallyEnabled = connected.some((mp) => mp.slug === defaultEnabledSlug)
-    ? [defaultEnabledSlug]
+  const defaultMatch = connected.find((mp) =>
+    sameMarketplaceFamily(mp.slug, defaultEnabledSlug),
+  );
+  const initiallyEnabled = defaultMatch
+    ? [defaultMatch.slug]
     : connected[0]
       ? [connected[0].slug]
       : [];
@@ -100,10 +107,7 @@ export function MarketplaceSelectorRow({
   const [enabledSlugs, setEnabledSlugs] = useState<string[]>(initiallyEnabled);
 
   function isAvailable(mp: Marketplace) {
-    return (
-      mp.is_connected &&
-      (mp.slug === "refurbed" || mp.slug === "back-market")
-    );
+    return mp.is_connected && isInventoryMarketplace(mp.slug);
   }
 
   function toggle(mp: Marketplace) {

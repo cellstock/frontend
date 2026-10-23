@@ -60,11 +60,10 @@ export function OrderActionsMenu({
   const [showShippingLabel, setShowShippingLabel] = useState(false);
 
   const availableStatuses = useMemo(() => {
-    if (
-      !["refurbed", "back-market"].includes(order.marketplace.slug) ||
-      order.items.length === 0
-    )
-      return [];
+    const slug = order.marketplace.slug ?? "";
+    const supported =
+      slug === "refurbed" || slug.startsWith("back-market");
+    if (!supported || order.items.length === 0) return [];
     const options = order.items.map(
       (item) => transitions[item.status.toUpperCase()] ?? [],
     );

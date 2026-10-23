@@ -28,6 +28,12 @@
 import { Info } from "lucide-react";
 import Image from "@/components/ui/AppImage";
 import { ReactNode, useState } from "react";
+import {
+  isBackMarket,
+  isInventoryMarketplace,
+  isRefurbed,
+  marketplaceLogoPath,
+} from "@/lib/marketplaces/slugs";
 import type { InventoryMarket } from "@/types/inventory";
 import type { Marketplace } from "@/types/marketplace";
 
@@ -477,23 +483,28 @@ export function MarketplaceListingPanel({
   fieldErrors,
 }: MarketplaceListingPanelProps) {
   const supported = marketplaces.filter((mp) =>
-    ["refurbed", "back-market"].includes(mp.slug),
+    isInventoryMarketplace(mp.slug),
   );
   const defaultSlug =
-    supported.find((mp) => mp.slug === "refurbed")?.slug ||
+    supported.find((mp) => isRefurbed(mp.slug))?.slug ||
     supported[0]?.slug ||
     "refurbed";
   const [activeSlug, setActiveSlug] = useState(defaultSlug);
 
   const otherMarketplaces = marketplaces.filter(
-    (mp) => !["refurbed", "back-market"].includes(mp.slug),
+    (mp) => !isInventoryMarketplace(mp.slug),
   );
 
-  const logoFor = (slug: string) => {
-    if (slug === "refurbed") return "/images/marketplaces/refurbed.png";
-    if (slug === "back-market") return "/images/marketplaces/back-market.png";
-    return null;
-  };
+  const refurbedMp = marketplaces.find((mp) => isRefurbed(mp.slug));
+  const backMarketMp = marketplaces.find((mp) => isBackMarket(mp.slug));
+  const familyTabs = [
+    { family: "refurbed" as const, mp: refurbedMp, label: "Refurbed" },
+    {
+      family: "back-market" as const,
+      mp: backMarketMp,
+      label: "Back Market",
+    },
+  ];
 
   return (
     <div className="grid min-h-[400px] gap-0 divide-x divide-slate-200 md:grid-cols-[200px_1fr]">
@@ -502,18 +513,21 @@ export function MarketplaceListingPanel({
         aria-label="Marketplace selection"
         className="space-y-1 p-4"
       >
-        {(["refurbed", "back-market"] as const).map((slug) => {
-          const mp = marketplaces.find((item) => item.slug === slug);
-          if (!mp && slug === "back-market") return null;
-          const label = slug === "refurbed" ? "Refurbed" : "Back Market";
-          const logo = logoFor(slug);
+        {familyTabs.map(({ family, mp, label }) => {
+          if (!mp && family === "back-market") return null;
+          const tabSlug = mp?.slug ?? family;
+          const logo = marketplaceLogoPath(tabSlug);
+          const isActive =
+            family === "refurbed"
+              ? isRefurbed(activeSlug)
+              : isBackMarket(activeSlug);
           return (
             <button
-              key={slug}
+              key={family}
               type="button"
-              onClick={() => setActiveSlug(slug)}
+              onClick={() => setActiveSlug(tabSlug)}
               className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                activeSlug === slug
+                isActive
                   ? "border-l-4 border-blue-600 bg-blue-50 text-blue-700"
                   : "text-slate-700 hover:bg-slate-50"
               }`}
@@ -537,7 +551,7 @@ export function MarketplaceListingPanel({
         })}
 
         {otherMarketplaces.map((mp) => {
-          const logo = logoFor(mp.slug);
+          const logo = marketplaceLogoPath(mp.slug);
           return (
             <button
               key={mp.id}
@@ -572,7 +586,7 @@ export function MarketplaceListingPanel({
 
       {/* ── Right panel ── */}
       <div className="overflow-y-auto p-6">
-        {activeSlug === "refurbed" && (
+        {isRefurbed(activeSlug) && (
           <RefurbedPanel
             markets={markets}
             currency={currency}
@@ -580,7 +594,7 @@ export function MarketplaceListingPanel({
             fieldErrors={fieldErrors}
           />
         )}
-        {activeSlug === "back-market" && (
+        {isBackMarket(activeSlug) && (
           <BackMarketPanel
             currency={currency}
             defaults={defaults}

@@ -126,7 +126,7 @@ export function InventoryDiagnosticsPage() {
   const marketplaceName =
     marketplace?.account_name || marketplace?.name || "Refurbed";
   const logo =
-    marketplace?.slug === "back-market"
+    marketplace?.slug?.startsWith("back-market")
       ? "/images/marketplaces/back-market.png"
       : "/images/marketplaces/refurbed.png";
   const impactedOffers = new Set(

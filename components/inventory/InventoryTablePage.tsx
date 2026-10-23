@@ -496,7 +496,7 @@ function InventoryDataTable({
       ? `${Number(value).toFixed(2)} ${currency}`
       : "—";
   const logo =
-    marketplace?.slug === "back-market"
+    marketplace?.slug?.startsWith("back-market")
       ? "/images/marketplaces/back-market.png"
       : "/images/marketplaces/refurbed.png";
   return (
@@ -1082,7 +1082,6 @@ function MarketplacePicker({
   const [open, setOpen] = useState(false);
   const [marketSearch, setMarketSearch] = useState("");
   const logo =
-    marketplace?.slug === "back-market" ||
     marketplace?.slug?.startsWith("back-market")
       ? "/images/marketplaces/back-market.png"
       : "/images/marketplaces/refurbed.png";

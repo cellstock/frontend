@@ -27,6 +27,7 @@ import {
 } from "@/lib/api/inventory";
 import { getMarketplaces } from "@/lib/api/marketplaces";
 import { getShippingProfiles } from "@/lib/api/shipping-profiles";
+import { isBackMarket, isRefurbed } from "@/lib/marketplaces/slugs";
 import type { Marketplace } from "@/types/marketplace";
 import type { InventoryInstance, InventoryMarket } from "@/types/inventory";
 
@@ -122,7 +123,8 @@ export function AddInventoryItemPage() {
       }));
 
       let shippingProfileId = "";
-      if (selectedSlugs.includes("refurbed")) {
+      const hasRefurbed = selectedSlugs.some((slug) => isRefurbed(slug));
+      if (hasRefurbed) {
         if (!marketCode) {
           throw new Error(
             "No Refurbed market is enabled for offer management. Check marketplace settings.",
@@ -154,7 +156,7 @@ export function AddInventoryItemPage() {
           marketplace: slug,
         };
 
-        if (slug === "refurbed") {
+        if (isRefurbed(slug)) {
           payload.shipping_profile_id = shippingProfileId;
           payload.market_code = marketCode;
           payload.market_prices = marketPrices;
@@ -165,7 +167,7 @@ export function AddInventoryItemPage() {
               "A Refurbed instance ID or recognized GTIN/EAN is required.",
             );
           }
-        } else if (slug === "back-market") {
+        } else if (isBackMarket(slug)) {
           // Back Market listings need a catalog product id; reuse Refurbed instance when present.
           const productId = instanceId || gtin;
           if (!productId) {
