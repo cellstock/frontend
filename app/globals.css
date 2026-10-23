@@ -41,6 +41,9 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Wider than 7xl so wide tables (orders) can scroll left–right */
+  --max-width-10xl: 100rem;
 }
 
 *,

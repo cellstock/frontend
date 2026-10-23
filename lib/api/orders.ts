@@ -169,6 +169,9 @@ export function updateOrderEditFields(
     payment_status?:
       "paid" | "refunded" | "partially_refunded" | "waiting_for_payment";
     vat_number?: string | null;
+    shipper?: string | null;
+    tracking_number?: string | null;
+    tracking_url?: string | null;
   },
 ): Promise<OrderResponse> {
   return orderApiRequest(`/api/orders/${orderId}/edit-fields`, undefined, {

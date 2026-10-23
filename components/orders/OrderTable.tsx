@@ -7,7 +7,6 @@ import {
   CreditCard,
   ExternalLink,
   Mail,
-  MapPin,
   Package,
   PackageOpen,
   Truck,
@@ -15,10 +14,15 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "@/components/ui/AppLink";
+import { useEffect, useMemo, useState } from "react";
 
 import { OrderMarketplaceBadge } from "@/components/orders/OrderMarketplaceBadge";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { OrderActionsMenu } from "@/components/orders/OrderActionsMenu";
+import {
+  OrdersApiError,
+  updateOrderEditFields,
+} from "@/lib/api/orders";
 import {
   formatCountryCode,
   formatOrderCurrency,
@@ -26,6 +30,19 @@ import {
   formatPaymentMethod,
 } from "@/lib/orders/formatters";
 import type { Order, OrderItem } from "@/types/order";
+
+const CARRIER_OPTIONS = [
+  "DHL Express",
+  "DHL",
+  "UPS",
+  "FedEx",
+  "DPD",
+  "GLS",
+  "PostNL",
+  "Chronopost",
+  "Colissimo",
+  "Custom shipper",
+] as const;
 
 interface OrderTableProps {
   orders: Order[];
@@ -64,13 +81,13 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
       </div>
 
       <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[1280px] table-fixed divide-y divide-slate-200">
+        <table className="w-full min-w-[1400px] table-fixed divide-y divide-slate-200">
           <thead className="bg-slate-50/90">
             <tr>
               <TableHeading className="w-[175px]">
                 {t("Date & site")}
               </TableHeading>
-              <TableHeading className="w-[335px]">
+              <TableHeading className="w-[380px]">
                 {t("Order & item details")}
               </TableHeading>
               <TableHeading className="w-[230px]">
@@ -79,7 +96,9 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
               <TableHeading className="w-[205px]">
                 {t("Status & payment")}
               </TableHeading>
-              <TableHeading className="w-[260px]">{t("Delivery")}</TableHeading>
+              <TableHeading className="w-[340px]">
+                {t("Delivery options")}
+              </TableHeading>
               <TableHeading className="sticky right-0 z-20 w-[130px] bg-slate-50 shadow-[-8px_0_12px_-12px_rgba(15,23,42,0.35)]">
                 {t("Actions")}
               </TableHeading>
@@ -123,12 +142,18 @@ function DesktopOrderRow({
         <p className="text-sm font-semibold leading-5 text-slate-800">
           {formatOrderDateTime(order.ordered_at, locale)}
         </p>
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-2">
           <OrderMarketplaceBadge marketplace={order.marketplace} compact />
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600"
+            title={`${order.marketplace.name} · ${formatCountryCode(order.country_code)}`}
+          >
+            <span className="text-base leading-none" aria-hidden="true">
+              {countryFlag(order.country_code)}
+            </span>
+            {formatCountryCode(order.country_code)}
+          </span>
         </div>
-        <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600">
-          <MapPin className="h-3 w-3" /> {formatCountryCode(order.country_code)}
-        </span>
       </td>
 
       <td className="px-5 py-5 sm:px-6">
@@ -204,7 +229,7 @@ function DesktopOrderRow({
       </td>
 
       <td className="px-5 py-5 sm:px-6">
-        <DeliverySummary order={order} />
+        <DeliverySummary order={order} onUpdated={onUpdated} />
       </td>
       <td className="sticky right-0 z-10 bg-white px-4 py-5 text-right shadow-[-8px_0_12px_-12px_rgba(15,23,42,0.35)] transition group-hover:bg-blue-50">
         <OrderActionsMenu order={order} onUpdated={onUpdated} />
@@ -216,55 +241,258 @@ function DesktopOrderRow({
 function ItemSummary({ item }: { item: OrderItem }) {
   const { t, locale } = useI18n();
   return (
-    <div className="mt-1.5 space-y-1 text-xs leading-4 text-slate-500">
-      <p className="line-clamp-2 font-semibold text-slate-800">
+    <div className="mt-1.5 space-y-1 text-xs leading-5 text-slate-500">
+      <p className="whitespace-normal break-words font-semibold text-blue-600">
         {item.title || t("Untitled item")}
       </p>
       <p>
-        {t("Qty")}: {item.quantity} ·{" "}
+        {t("Qty")}: {item.quantity} / {t("Item price")}:{" "}
         {formatOrderCurrency(item.unit_price, item.currency, locale)}
       </p>
-      {item.sku && (
-        <p>
-          {t("SKU")}:{" "}
-          <span className="font-medium text-slate-700">{item.sku}</span>
-        </p>
-      )}
-      {item.condition && (
-        <p>
-          {t("Condition")}: {item.condition}
-        </p>
-      )}
+      <p>
+        {t("Category")}:{" "}
+        <span className="font-medium text-slate-700">
+          {item.category?.trim() || t("Not available")}
+        </span>
+      </p>
+      <p>
+        {t("SKU")}:{" "}
+        <span className="break-all font-medium text-slate-700">
+          {item.sku?.trim() || t("Not available")}
+        </span>
+      </p>
+      <p>
+        {t("EAN")}:{" "}
+        <span className="break-all font-medium text-slate-700">
+          {item.ean?.trim() || t("Not available")}
+        </span>
+      </p>
     </div>
   );
 }
 
-function DeliverySummary({ order }: { order: Order }) {
+function DeliverySummary({
+  order,
+  onUpdated,
+}: {
+  order: Order;
+  onUpdated?: () => Promise<void> | void;
+}) {
   const { t } = useI18n();
   const trackingUrl = safeExternalUrl(order.tracking_url);
+  const shippingType = (() => {
+    const raw = order.shipping_type?.trim();
+    if (raw && raw.toLowerCase() !== "standard") return raw;
+    if (order.marketplace.slug.startsWith("back-market")) return "Backship";
+    return null;
+  })();
+  const initialCarrier = order.shipper?.trim() || "";
+  const knownCarrier = CARRIER_OPTIONS.find(
+    (option) =>
+      option !== "Custom shipper" &&
+      option.toLowerCase() === initialCarrier.toLowerCase(),
+  );
+
+  const [editing, setEditing] = useState(false);
+  const [carrierChoice, setCarrierChoice] = useState(
+    knownCarrier || (initialCarrier ? "Custom shipper" : "DHL Express"),
+  );
+  const [customCarrier, setCustomCarrier] = useState(
+    knownCarrier ? "" : initialCarrier,
+  );
+  const [trackingNumber, setTrackingNumber] = useState(
+    order.tracking_number?.trim() || "",
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (editing) return;
+    const nextCarrier = order.shipper?.trim() || "";
+    const known = CARRIER_OPTIONS.find(
+      (option) =>
+        option !== "Custom shipper" &&
+        option.toLowerCase() === nextCarrier.toLowerCase(),
+    );
+    setCarrierChoice(known || (nextCarrier ? "Custom shipper" : "DHL Express"));
+    setCustomCarrier(known ? "" : nextCarrier);
+    setTrackingNumber(order.tracking_number?.trim() || "");
+  }, [order.shipper, order.tracking_number, editing]);
+
+  const displayCarrier = useMemo(() => {
+    if (carrierChoice === "Custom shipper") {
+      return customCarrier.trim() || t("Not available");
+    }
+    return carrierChoice;
+  }, [carrierChoice, customCarrier, t]);
+
+  function startEdit() {
+    setError("");
+    setEditing(true);
+  }
+
+  function cancelEdit() {
+    const nextCarrier = order.shipper?.trim() || "";
+    const known = CARRIER_OPTIONS.find(
+      (option) =>
+        option !== "Custom shipper" &&
+        option.toLowerCase() === nextCarrier.toLowerCase(),
+    );
+    setCarrierChoice(known || (nextCarrier ? "Custom shipper" : "DHL Express"));
+    setCustomCarrier(known ? "" : nextCarrier);
+    setTrackingNumber(order.tracking_number?.trim() || "");
+    setError("");
+    setEditing(false);
+  }
+
+  async function saveDelivery() {
+    const shipper =
+      carrierChoice === "Custom shipper"
+        ? customCarrier.trim()
+        : carrierChoice;
+    if (!shipper) {
+      setError(t("Enter a shipping carrier."));
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+    try {
+      await updateOrderEditFields(order.id, {
+        shipper,
+        tracking_number: trackingNumber.trim() || null,
+      });
+      setEditing(false);
+      await onUpdated?.();
+    } catch (caught) {
+      setError(
+        caught instanceof OrdersApiError
+          ? caught.message
+          : t("Unable to save delivery options."),
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const fieldClass =
+    "block h-8 w-[7.5rem] truncate rounded-lg border border-slate-300 bg-slate-100 px-2 py-1.5 text-xs leading-4 text-slate-700";
+  const inputClass =
+    "block h-8 w-[7.5rem] rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs leading-4 text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+
   return (
-    <div className="space-y-2.5 text-xs">
-      <p className="flex items-center gap-2 font-semibold text-slate-800">
-        <Truck className="h-4 w-4 text-slate-400" />
-        {order.shipper || t("Carrier not assigned")}
-      </p>
-      <p className="text-slate-500">
-        <span className="font-medium text-slate-700">
-          {t("Tracking number")}:
-        </span>{" "}
-        {order.tracking_number || t("Not available")}
-      </p>
-      {trackingUrl ? (
-        <a
-          href={trackingUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1.5 font-semibold text-blue-600 transition hover:text-blue-700"
-        >
-          {t("Open tracking")} <ExternalLink className="h-3.5 w-3.5" />
-        </a>
+    <div className="space-y-2 text-xs text-slate-600">
+      {shippingType && (
+        <div className="flex items-center gap-2">
+          <p className="w-[7.25rem] shrink-0 font-medium text-slate-700">
+            {t("Shipping type")}
+          </p>
+          <p className="truncate text-slate-800">{shippingType}</p>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2">
+        <p className="w-[7.25rem] shrink-0 font-medium text-slate-700">
+          {t("Shipping carrier")}
+        </p>
+        {editing ? (
+          <div className="flex min-w-0 flex-col gap-1">
+            <select
+              value={carrierChoice}
+              onChange={(event) => setCarrierChoice(event.target.value)}
+              className={inputClass}
+            >
+              {CARRIER_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option === "Custom shipper"
+                    ? t("Custom shipper")
+                    : option}
+                </option>
+              ))}
+            </select>
+            {carrierChoice === "Custom shipper" && (
+              <input
+                value={customCarrier}
+                onChange={(event) => setCustomCarrier(event.target.value)}
+                placeholder={t("Carrier name")}
+                className={inputClass}
+              />
+            )}
+          </div>
+        ) : (
+          <p className={fieldClass} title={displayCarrier}>
+            {displayCarrier}
+          </p>
+        )}
+      </div>
+
+      <div className="flex items-start gap-2">
+        <p className="w-[7.25rem] shrink-0 pt-1.5 font-medium text-slate-700">
+          {t("Tracking number")}
+        </p>
+        <div className="min-w-0">
+          {editing ? (
+            <input
+              value={trackingNumber}
+              onChange={(event) => setTrackingNumber(event.target.value)}
+              placeholder={t("Tracking number")}
+              className={`${inputClass} break-all`}
+            />
+          ) : (
+            <p
+              className={fieldClass}
+              title={order.tracking_number?.trim() || undefined}
+            >
+              {order.tracking_number?.trim() || ""}
+            </p>
+          )}
+          {!editing &&
+            (trackingUrl ? (
+              <a
+                href={trackingUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 inline-flex items-center gap-1 font-semibold text-blue-600 transition hover:text-blue-700"
+              >
+                {t("Open tracking")} <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            ) : (
+              <p className="mt-1 text-slate-400">
+                {t("Tracking link unavailable")}
+              </p>
+            ))}
+        </div>
+      </div>
+
+      {error && <p className="text-xs font-medium text-red-600">{error}</p>}
+
+      {editing ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={saving}
+            onClick={cancelEdit}
+            className="rounded-full border border-blue-500 px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-60"
+          >
+            {t("Cancel")}
+          </button>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={saveDelivery}
+            className="rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+          >
+            {saving ? t("Saving…") : t("Save")}
+          </button>
+        </div>
       ) : (
-        <p className="text-slate-400">{t("Tracking link unavailable")}</p>
+        <button
+          type="button"
+          onClick={startEdit}
+          className="rounded-full border border-blue-500 px-3 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50"
+        >
+          {t("Modify")}
+        </button>
       )}
     </div>
   );
@@ -352,6 +580,17 @@ function safeExternalUrl(value: string | null): string | null {
   } catch {
     return null;
   }
+}
+
+function countryFlag(code: string | null | undefined): string {
+  const normalized = String(code ?? "")
+    .trim()
+    .toUpperCase()
+    .slice(0, 2);
+  if (!/^[A-Z]{2}$/.test(normalized)) return "•";
+  return String.fromCodePoint(
+    ...[...normalized].map((character) => 127397 + character.charCodeAt(0)),
+  );
 }
 
 function TableHeading({

@@ -4,9 +4,7 @@ import { Settings2 } from "lucide-react";
 import { useParams } from "next/navigation";
 
 const titles: Record<string, string> = {
-  "seller-profile": "Seller profile",
   orders: "Order preferences",
-  push: "Push preferences",
 };
 
 export default function SettingsSectionPage() {

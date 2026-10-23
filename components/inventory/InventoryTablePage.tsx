@@ -8,6 +8,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
   CircleOff,
   LockKeyhole,
   Package,
@@ -24,11 +26,13 @@ import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import AppLink from "@/components/ui/AppLink";
 import { ContentLoading } from "@/components/ui/ContentLoading";
+import { PushToMarketplacesPanel } from "@/components/inventory/PushToMarketplacesPanel";
 import {
   getInventory,
   InventoryApiError,
   syncInventory,
   updateInventoryBulk,
+  updateInventoryOffer,
 } from "@/lib/api/inventory";
 import type { InventoryOffer } from "@/types/inventory";
 
@@ -49,6 +53,7 @@ export function InventoryTablePage() {
   const [reload, setReload] = useState(0);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [searchBy, setSearchBy] = useState("sku");
   const [status, setStatus] = useState("all");
@@ -65,28 +70,52 @@ export function InventoryTablePage() {
   const [busySku, setBusySku] = useState("");
 
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const next = searchInput.trim();
+      setSearch((current) => {
+        if (current !== next) {
+          setPage(1);
+        }
+        return next;
+      });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
+
+  useEffect(() => {
     const controller = new AbortController();
+    setIsLoading(true);
+    setError(null);
     getInventory({
       page,
       limit: perPage,
-      search: search.trim() || undefined,
+      search: search || undefined,
       search_by: searchBy,
       status: status === "all" ? undefined : status,
       grade: grade === "all" ? undefined : grade,
       stock: stock === "all" ? undefined : stock,
       sort,
-      market: market || undefined,
+      market: market.trim() ? market.trim().toUpperCase() : undefined,
+      signal: controller.signal,
     })
       .then((result) => {
-        if (!controller.signal.aborted) setResponse(result);
+        if (!controller.signal.aborted) {
+          setResponse(result);
+          if (!market.trim() && result.data.selected_market) {
+            setMarket(String(result.data.selected_market).toUpperCase());
+          }
+        }
       })
       .catch((caught) => {
-        if (!controller.signal.aborted)
-          setError(
-            caught instanceof Error
-              ? caught
-              : new Error("Unable to load inventory."),
-          );
+        if (controller.signal.aborted) return;
+        if (caught instanceof DOMException && caught.name === "AbortError") {
+          return;
+        }
+        setError(
+          caught instanceof Error
+            ? caught
+            : new Error("Unable to load inventory."),
+        );
       })
       .finally(() => {
         if (!controller.signal.aborted) setIsLoading(false);
@@ -113,13 +142,6 @@ export function InventoryTablePage() {
   const allInStockSelected =
     inStockIds.length > 0 && inStockIds.every((id) => selected.includes(id));
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") setReload((value) => value + 1);
-    }, 15000);
-    return () => window.clearInterval(timer);
-  }, []);
-
   function refresh() {
     setError(null);
     setReload((value) => value + 1);
@@ -144,6 +166,7 @@ export function InventoryTablePage() {
     }
   }
   function clearFilters() {
+    setSearchInput("");
     setSearch("");
     setSearchBy("sku");
     setStatus("all");
@@ -214,6 +237,12 @@ export function InventoryTablePage() {
           {actionMessage}
         </p>
       )}
+      <PushToMarketplacesPanel
+        onMessage={(message) => {
+          setActionMessage(message);
+          refresh();
+        }}
+      />
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 p-5 lg:p-7">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
@@ -229,7 +258,9 @@ export function InventoryTablePage() {
                     market || response?.data.selected_market || ""
                   }
                   onChange={(code) => {
-                    setMarket(code);
+                    const next = code.trim().toUpperCase();
+                    if (next === market.toUpperCase()) return;
+                    setMarket(next);
                     setSelected([]);
                     setPage(1);
                   }}
@@ -266,17 +297,28 @@ export function InventoryTablePage() {
                 <option value="all">All</option>
               </select>
               <input
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setPage(1);
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    setSearch(searchInput.trim());
+                    setPage(1);
+                  }
                 }}
                 placeholder={`Search by ${searchBy.toUpperCase()}`}
                 className="min-w-0 flex-1 px-4 py-3 text-sm outline-none"
               />
-              <span className="grid w-14 place-items-center bg-blue-600 text-white">
+              <button
+                type="button"
+                aria-label="Search inventory"
+                onClick={() => {
+                  setSearch(searchInput.trim());
+                  setPage(1);
+                }}
+                className="grid w-14 place-items-center bg-blue-600 text-white transition hover:bg-blue-700"
+              >
                 <Search className="h-5 w-5" />
-              </span>
+              </button>
             </div>
           </div>
           <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -382,47 +424,36 @@ export function InventoryTablePage() {
             busySku={busySku}
             onToggle={toggleOffer}
             onOutOfStock={setOutOfStockOffer}
+            onStockSaved={(offerId, sku, stock) => {
+              setResponse((current) => {
+                if (!current) return current;
+                return {
+                  ...current,
+                  data: {
+                    ...current.data,
+                    offers: current.data.offers.map((offer) =>
+                      offer.id === offerId || (sku && offer.sku === sku)
+                        ? { ...offer, stock }
+                        : offer,
+                    ),
+                  },
+                };
+              });
+              setActionMessage("Quantity updated across marketplaces.");
+            }}
           />
         )}
-        <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            Rows per page
-            <select
-              value={perPage}
-              onChange={(event) => {
-                setPerPage(Number(event.target.value));
-                setPage(1);
-              }}
-              className="rounded-lg border border-slate-300 px-2 py-1.5"
-            >
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
-              <option>100</option>
-            </select>
-          </label>
-          <div className="flex items-center gap-3">
-            <button
-              disabled={page === 1 || isLoading}
-              onClick={() => setPage((value) => value - 1)}
-              className="rounded-lg border p-2 disabled:opacity-40"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-sm font-semibold text-slate-600">
-              Page {page} of {response?.data.pagination.last_page ?? 1}
-            </span>
-            <button
-              disabled={
-                page >= (response?.data.pagination.last_page ?? 1) || isLoading
-              }
-              onClick={() => setPage((value) => value + 1)}
-              className="rounded-lg border p-2 disabled:opacity-40"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        <InventoryPagination
+          page={page}
+          lastPage={response?.data.pagination.last_page ?? 1}
+          perPage={perPage}
+          disabled={isLoading}
+          onPageChange={setPage}
+          onPerPageChange={(value) => {
+            setPerPage(value);
+            setPage(1);
+          }}
+        />
       </section>
       {bulkDialog && (
         <BulkActionModal
@@ -450,6 +481,7 @@ function InventoryDataTable({
   busySku,
   onToggle,
   onOutOfStock,
+  onStockSaved,
 }: {
   offers: InventoryOffer[];
   marketplace?: { name: string; slug: string; logo?: string | null };
@@ -457,6 +489,7 @@ function InventoryDataTable({
   busySku: string;
   onToggle: (id: string) => void;
   onOutOfStock: (offer: InventoryOffer) => void;
+  onStockSaved: (offerId: string, sku: string, stock: number) => void;
 }) {
   const money = (value?: string | null, currency = "") =>
     value && Number(value) > 0
@@ -550,19 +583,38 @@ function InventoryDataTable({
                     : "—"}
                 </td>
                 <td className="px-4 py-5">
-                  <div className="flex min-w-72 items-center gap-3">
+                  <div className="flex min-w-80 items-start gap-3">
                     <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400">
                       <Package className="h-6 w-6" />
                     </div>
-                    <div>
-                      <p className="max-w-72 whitespace-normal font-bold text-slate-900">
+                    <div className="min-w-0 space-y-1 text-xs leading-5 text-slate-500">
+                      <p className="whitespace-normal break-words text-sm font-bold text-slate-900">
                         {offer.instance_name || "Unnamed offer"}
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        SKU: {offer.sku || "—"}
+                      <p>
+                        Qty: {offer.stock} / Item price:{" "}
+                        {money(
+                          offer.reference_price,
+                          offer.reference_currency_code,
+                        )}
                       </p>
-                      <p className="text-xs text-slate-500">
-                        EAN: {offer.ean || "—"}
+                      <p>
+                        Condition:{" "}
+                        <span className="font-medium text-slate-700">
+                          Refurbished {gradeLabel(offer.grading)}
+                        </span>
+                      </p>
+                      <p>
+                        SKU:{" "}
+                        <span className="break-all font-medium text-slate-700">
+                          {offer.sku || "—"}
+                        </span>
+                      </p>
+                      <p>
+                        EAN:{" "}
+                        <span className="break-all font-medium text-slate-700">
+                          {offer.ean || "—"}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -572,7 +624,11 @@ function InventoryDataTable({
                   <p className="font-semibold">{gradeLabel(offer.grading)}</p>
                 </td>
                 <td className="px-4 py-5 text-center font-bold">
-                  {offer.stock}
+                  <EditableQty
+                    offer={offer}
+                    disabled={busySku === offer.sku}
+                    onSaved={onStockSaved}
+                  />
                 </td>
                 <td className="px-4 py-5 text-center">
                   {money(offer.repriced_price, offer.reference_currency_code)}
@@ -643,6 +699,97 @@ function InventoryDataTable({
           No offers match the selected filters.
         </p>
       )}
+    </div>
+  );
+}
+
+function EditableQty({
+  offer,
+  disabled,
+  onSaved,
+}: {
+  offer: InventoryOffer;
+  disabled?: boolean;
+  onSaved: (offerId: string, sku: string, stock: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(String(offer.stock));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!editing) setValue(String(offer.stock));
+  }, [offer.stock, editing]);
+
+  async function save() {
+    const next = Number(value);
+    if (!Number.isInteger(next) || next < 0) {
+      setError("Enter a whole number ≥ 0");
+      return;
+    }
+    if (next === offer.stock) {
+      setEditing(false);
+      setError("");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await updateInventoryOffer(offer.id, { stock: next });
+      onSaved(offer.id, offer.sku, next);
+      setEditing(false);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Unable to update quantity.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        title="Double-click to edit quantity"
+        disabled={disabled}
+        onDoubleClick={() => {
+          if (disabled) return;
+          setEditing(true);
+          setError("");
+        }}
+        className="min-w-12 rounded-lg px-2 py-1 font-bold text-slate-900 hover:bg-blue-50 disabled:opacity-50"
+      >
+        {offer.stock}
+      </button>
+    );
+  }
+
+  return (
+    <div className="inline-flex flex-col items-center gap-1">
+      <input
+        autoFocus
+        type="number"
+        min={0}
+        step={1}
+        value={value}
+        disabled={saving}
+        onChange={(event) => setValue(event.target.value)}
+        onBlur={() => void save()}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            void save();
+          }
+          if (event.key === "Escape") {
+            setEditing(false);
+            setError("");
+            setValue(String(offer.stock));
+          }
+        }}
+        className="w-20 rounded-lg border border-blue-400 px-2 py-1 text-center text-sm font-bold outline-none focus:ring-2 focus:ring-blue-200"
+      />
+      {error && <span className="max-w-28 text-[10px] text-red-600">{error}</span>}
     </div>
   );
 }
@@ -761,6 +908,157 @@ function MenuButton({
   );
 }
 
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200, 300] as const;
+
+function InventoryPagination({
+  page,
+  lastPage,
+  perPage,
+  disabled,
+  onPageChange,
+  onPerPageChange,
+}: {
+  page: number;
+  lastPage: number;
+  perPage: number;
+  disabled?: boolean;
+  onPageChange: (page: number) => void;
+  onPerPageChange: (perPage: number) => void;
+}) {
+  const [draftPage, setDraftPage] = useState(String(page));
+  const totalPages = Math.max(1, lastPage);
+
+  useEffect(() => {
+    setDraftPage(String(page));
+  }, [page]);
+
+  const pageButtons = useMemo(() => {
+    const windowSize = Math.min(5, totalPages);
+    let start = Math.max(1, page - Math.floor(windowSize / 2));
+    const end = Math.min(totalPages, start + windowSize - 1);
+    start = Math.max(1, end - windowSize + 1);
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }, [page, totalPages]);
+
+  function goToPage(next: number) {
+    const clamped = Math.min(totalPages, Math.max(1, next));
+    if (clamped === page || disabled) return;
+    onPageChange(clamped);
+  }
+
+  function submitDraftPage() {
+    const parsed = Number.parseInt(draftPage, 10);
+    if (Number.isNaN(parsed)) {
+      setDraftPage(String(page));
+      return;
+    }
+    goToPage(parsed);
+  }
+
+  const navButtonClass =
+    "grid h-8 w-8 place-items-center rounded-md text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40";
+  const pageButtonClass = (active: boolean) =>
+    `min-w-8 rounded-md px-2.5 py-1.5 text-sm font-semibold transition ${
+      active
+        ? "bg-blue-600 text-white"
+        : "text-slate-700 hover:bg-slate-100"
+    } disabled:cursor-not-allowed disabled:opacity-40`;
+
+  return (
+    <div className="flex flex-col gap-4 border-t border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-sm text-slate-600">Go to page</span>
+        <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+          <button
+            type="button"
+            aria-label="First page"
+            disabled={disabled || page <= 1}
+            onClick={() => goToPage(1)}
+            className={navButtonClass}
+          >
+            <ChevronsLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            aria-label="Previous page"
+            disabled={disabled || page <= 1}
+            onClick={() => goToPage(page - 1)}
+            className={navButtonClass}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          {pageButtons.map((pageNumber) => (
+            <button
+              key={pageNumber}
+              type="button"
+              disabled={disabled}
+              onClick={() => goToPage(pageNumber)}
+              className={pageButtonClass(pageNumber === page)}
+            >
+              {pageNumber}
+            </button>
+          ))}
+          <button
+            type="button"
+            aria-label="Next page"
+            disabled={disabled || page >= totalPages}
+            onClick={() => goToPage(page + 1)}
+            className={navButtonClass}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            aria-label="Last page"
+            disabled={disabled || page >= totalPages}
+            onClick={() => goToPage(totalPages)}
+            className={navButtonClass}
+          >
+            <ChevronsRight className="h-4 w-4" />
+          </button>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          Go to page
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            value={draftPage}
+            disabled={disabled}
+            onChange={(event) => setDraftPage(event.target.value)}
+            onBlur={submitDraftPage}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                submitDraftPage();
+              }
+            }}
+            className="w-14 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-center text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          />
+          <span>on {totalPages}</span>
+        </label>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-slate-600">Items per page:</span>
+        <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+          {PAGE_SIZE_OPTIONS.map((option) => (
+            <button
+              key={option}
+              type="button"
+              disabled={disabled}
+              onClick={() => onPerPageChange(option)}
+              className={pageButtonClass(option === perPage)}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MarketplacePicker({
   marketplace,
   markets,
@@ -782,13 +1080,28 @@ function MarketplacePicker({
   onChange: (code: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [marketSearch, setMarketSearch] = useState("");
   const logo =
-    marketplace?.slug === "back-market"
+    marketplace?.slug === "back-market" ||
+    marketplace?.slug?.startsWith("back-market")
       ? "/images/marketplaces/back-market.png"
       : "/images/marketplaces/refurbed.png";
   const name = marketplace?.name || "Refurbed";
+  const selectedCode = selectedMarket.trim().toUpperCase();
   const activeMarket =
-    markets.find((item) => item.code === selectedMarket) ?? markets[0];
+    markets.find((item) => item.code.toUpperCase() === selectedCode) ??
+    markets[0];
+  const filteredMarkets = useMemo(() => {
+    const term = marketSearch.trim().toLowerCase();
+    if (!term) return markets;
+    return markets.filter(
+      (item) =>
+        item.code.toLowerCase().includes(term) ||
+        item.name.toLowerCase().includes(term) ||
+        `${name} ${item.code}`.toLowerCase().includes(term),
+    );
+  }, [markets, marketSearch, name]);
+
   return (
     <div className="relative">
       <button
@@ -811,11 +1124,9 @@ function MarketplacePicker({
           <span className="block truncate text-sm font-bold text-slate-900">
             {activeMarket ? `${name} ${activeMarket.code}` : name}
           </span>
-          {marketplace?.account_name && (
-            <span className="block truncate text-xs text-slate-500">
-              {activeMarket?.name || marketplace.account_name}
-            </span>
-          )}
+          <span className="block truncate text-xs text-slate-500">
+            {activeMarket?.name || marketplace?.account_name || "Select market"}
+          </span>
         </span>
         <ChevronDown
           className={`h-4 w-4 shrink-0 text-slate-500 transition ${open ? "rotate-180" : ""}`}
@@ -826,58 +1137,81 @@ function MarketplacePicker({
           <button
             type="button"
             aria-label="Close marketplace list"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              setMarketSearch("");
+            }}
             className="fixed inset-0 z-30 cursor-default"
           />
           <div
             role="listbox"
             aria-label="Marketplace"
-            className="absolute left-0 top-full z-40 mt-2 max-h-[min(24rem,60vh)] w-72 overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl"
+            className="absolute left-0 top-full z-40 mt-2 flex max-h-[min(24rem,60vh)] w-72 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
           >
-            {markets.map((item) => {
-              const selected = item.code === activeMarket?.code;
+            <div className="border-b border-slate-200 p-2">
+              <div className="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2">
+                <Search className="h-4 w-4 shrink-0 text-slate-400" />
+                <input
+                  autoFocus
+                  value={marketSearch}
+                  onChange={(event) => setMarketSearch(event.target.value)}
+                  placeholder="Search market…"
+                  className="min-w-0 flex-1 text-sm outline-none"
+                  onClick={(event) => event.stopPropagation()}
+                />
+              </div>
+            </div>
+            <div className="overflow-y-auto overscroll-contain p-2">
+              {filteredMarkets.map((item) => {
+                const selected =
+                  item.code.toUpperCase() ===
+                  (activeMarket?.code ?? "").toUpperCase();
 
-              return (
-                <button
-                  key={item.code}
-                  type="button"
-                  role="option"
-                  aria-selected={selected}
-                  onClick={() => {
-                    onChange(item.code);
-                    setOpen(false);
-                  }}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left ${selected ? "bg-blue-50" : "hover:bg-slate-50"}`}
-                >
-                  <span className="grid h-10 w-10 place-items-center rounded-xl border border-blue-100 bg-white p-1.5">
-                    <Image
-                      src={logo}
-                      alt=""
-                      width={30}
-                      height={30}
-                      className="h-full w-full object-contain"
-                    />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-semibold text-slate-900">
-                      {name} {item.code}
+                return (
+                  <button
+                    key={item.code}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => {
+                      onChange(item.code.toUpperCase());
+                      setOpen(false);
+                      setMarketSearch("");
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left ${selected ? "bg-blue-50" : "hover:bg-slate-50"}`}
+                  >
+                    <span className="grid h-10 w-10 place-items-center rounded-xl border border-blue-100 bg-white p-1.5">
+                      <Image
+                        src={logo}
+                        alt=""
+                        width={30}
+                        height={30}
+                        className="h-full w-full object-contain"
+                      />
                     </span>
-                    <span className="block truncate text-xs text-slate-500">
-                      {item.name}
-                      {item.currency_code ? ` · ${item.currency_code}` : ""}
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-semibold text-slate-900">
+                        {name} {item.code}
+                      </span>
+                      <span className="block truncate text-xs text-slate-500">
+                        {item.name}
+                        {item.currency_code ? ` · ${item.currency_code}` : ""}
+                      </span>
                     </span>
-                  </span>
-                  {selected && (
-                    <CheckCircle2 className="h-5 w-5 text-blue-600" />
-                  )}
-                </button>
-              );
-            })}
-            {markets.length === 0 && (
-              <p className="px-3 py-3 text-sm text-slate-500">
-                No markets are enabled for offer management.
-              </p>
-            )}
+                    {selected && (
+                      <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                    )}
+                  </button>
+                );
+              })}
+              {filteredMarkets.length === 0 && (
+                <p className="px-3 py-3 text-sm text-slate-500">
+                  {markets.length === 0
+                    ? "No markets are enabled for offer management."
+                    : "No markets match your search."}
+                </p>
+              )}
+            </div>
           </div>
         </>
       )}

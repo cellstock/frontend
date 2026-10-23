@@ -13,11 +13,15 @@ export function OrderMarketplaceBadge({
   compact = false,
 }: OrderMarketplaceBadgeProps) {
   return (
-    <div className="flex min-w-0 items-center gap-2.5">
+    <div
+      className="flex min-w-0 items-center gap-2.5"
+      title={marketplace.name}
+    >
       <div
         className={`flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white ${
           compact ? "h-8 w-8" : "h-10 w-10"
         }`}
+        aria-label={marketplace.name}
       >
         {marketplace.logo ? (
           <Image
@@ -34,17 +38,16 @@ export function OrderMarketplaceBadge({
         )}
       </div>
 
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-slate-800">
-          {marketplace.name}
-        </p>
-
-        {!compact && (
+      {!compact && (
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-800">
+            {marketplace.name}
+          </p>
           <p className="mt-0.5 truncate text-xs text-slate-400">
             {marketplace.slug}
           </p>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

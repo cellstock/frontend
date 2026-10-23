@@ -88,6 +88,11 @@ $routes = [
     '~^/inventory/offers/[^/]+$~' => ['GET', 'PATCH', 'DELETE'],
     '~^/refurbed-catalog(/items|/imports/[0-9]+)?$~' => ['GET'],
     '~^/refurbed-catalog/imports(/chunks)?$~' => ['POST'],
+    '~^/seller-profile$~' => ['GET', 'PATCH'],
+    '~^/seller-profile/logo$~' => ['GET', 'POST', 'DELETE'],
+    '~^/push-preferences$~' => ['GET'],
+    '~^/push-preferences/run$~' => ['POST'],
+    '~^/push-preferences/(refurbed|back-market-eu)$~' => ['PUT'],
     '~^/shipping-profiles$~' => ['GET', 'POST'],
     '~^/shipping-profiles/carriers$~' => ['GET'],
     '~^/shipping-profiles/sync$~' => ['POST'],
@@ -204,8 +209,12 @@ if ($endpoint === '/auth/me' && $status === 200 && !empty($result['success'])) {
     jsonResponse($result);
 }
 http_response_code($status ?: 502);
-// Only the authenticated avatar route may return a binary response.
-if ($endpoint === '/auth/profile/avatar' && $method === 'GET' && str_starts_with($contentType, 'image/')) {
+// Authenticated image routes may return a binary response.
+if (
+    in_array($endpoint, ['/auth/profile/avatar', '/seller-profile/logo'], true)
+    && $method === 'GET'
+    && str_starts_with($contentType, 'image/')
+) {
     header('Content-Type: ' . $contentType);
     echo $body;
     exit;

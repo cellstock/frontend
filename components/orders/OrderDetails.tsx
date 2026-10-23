@@ -279,7 +279,6 @@ function OrderItems({
                   <ItemHeading>Position</ItemHeading>
                   <ItemHeading>Title</ItemHeading>
                   <ItemHeading>References</ItemHeading>
-                  <ItemHeading>Condition / category</ItemHeading>
                   <ItemHeading align="right">Quantity</ItemHeading>
                   <ItemHeading align="right">Shipping costs</ItemHeading>
                   <ItemHeading align="right">Total</ItemHeading>
@@ -323,12 +322,6 @@ function OrderItems({
                     <td className="px-5 py-5 text-sm text-slate-800">
                       <p>SKU: {item.sku || "-"}</p>
                       <p className="mt-1">EAN: {item.ean || "-"}</p>
-                    </td>
-                    <td className="px-5 py-5 text-sm text-slate-800">
-                      <p className="capitalize">
-                        {item.condition || "Unreferenced"}
-                      </p>
-                      <p className="mt-1">Unreferenced</p>
                     </td>
                     <td className="px-5 py-5 text-right text-sm font-semibold">
                       {item.quantity}
@@ -506,11 +499,6 @@ function OrderItemCard({ item }: { item: OrderItem }) {
             item.currency,
             locale,
           )}
-        />
-
-        <SmallValue
-          label={t("Condition")}
-          value={item.condition || "Not available"}
         />
       </dl>
 

@@ -75,6 +75,7 @@ export interface OrderItem {
   }>;
   weight_kg: number | null;
   ean: string | null;
+  category?: string | null;
 }
 
 export interface Order {
@@ -98,6 +99,7 @@ export interface Order {
   tracking_number: string | null;
   tracking_url: string | null;
   shipper: string | null;
+  shipping_type?: string | null;
   ordered_at: string | null;
   modified_at: string | null;
   paid_at: string | null;

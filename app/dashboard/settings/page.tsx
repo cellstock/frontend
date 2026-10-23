@@ -1,8 +1,32 @@
-import { Database } from "lucide-react";
+import { Database, Upload, UserRound } from "lucide-react";
 
 import Link from "@/components/ui/AppLink";
 
 const cards = [
+  {
+    title: "See your seller profile",
+    description: "Enter your default preferences",
+    points: [
+      "Upload your logo",
+      "Describe your terms and conditions",
+      "Describe your return policy",
+      "Describe your business",
+      "Describe your contact information",
+      "Your inventory preferences",
+      "Your account preferences",
+    ],
+    href: "/dashboard/settings/seller-profile",
+    action: "See your seller profile",
+    icon: UserRound,
+  },
+  {
+    title: "See your push preferences",
+    description: "Set up a push schedule for marketplaces.",
+    points: [] as string[],
+    href: "/dashboard/settings/push-preferences",
+    action: "See your push preferences",
+    icon: Upload,
+  },
   {
     title: "Refurbed catalog",
     description:
@@ -47,14 +71,16 @@ export default function SettingsPage() {
                 <p className="mt-5 text-sm font-medium text-slate-700">
                   {description}
                 </p>
-                <ul className="mt-4 space-y-2 text-sm text-slate-600">
-                  {points.map((point) => (
-                    <li key={point} className="flex gap-2">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
-                      {point}
-                    </li>
-                  ))}
-                </ul>
+                {points.length > 0 && (
+                  <ul className="mt-4 space-y-2 text-sm text-slate-600">
+                    {points.map((point) => (
+                      <li key={point} className="flex gap-2">
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <div className="mt-auto flex justify-end pt-6">
                   <Link
                     href={href}

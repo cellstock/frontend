@@ -3,17 +3,8 @@
 /**
  * MarketplaceSelectorRow
  *
- * Renders a row of marketplace icon-toggle buttons matching the Sellermania
- * reference screenshot:
- *
- *   [BM icon]  [Refurbed icon]  [+]
- *
- * • Each icon is clickable: toggles the marketplace on/off.
- * • Hovering shows a tooltip: "Click to enable/disable <Name>".
- * • When a marketplace is enabled a locale <select> appears below.
- * • The [+] button links to the marketplace connection settings page.
- * • Disabled (unavailable/unconnected) marketplaces show at reduced opacity
- *   and cannot be toggled.
+ * Row of marketplace icon toggles. Connected marketplaces can be enabled so
+ * Validate creates/updates the listing with the same quantity on each.
  */
 
 import { CirclePlus } from "lucide-react";
@@ -23,15 +14,11 @@ import { useState } from "react";
 import type { InventoryMarket } from "@/types/inventory";
 import type { Marketplace } from "@/types/marketplace";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
 function logoFor(slug: string): string | null {
   if (slug === "refurbed") return "/images/marketplaces/refurbed.png";
   if (slug === "back-market") return "/images/marketplaces/back-market.png";
   return null;
 }
-
-// ── Single marketplace icon button ───────────────────────────────────────────
 
 function MarketplaceIcon({
   marketplace,
@@ -47,7 +34,7 @@ function MarketplaceIcon({
   const logo = logoFor(marketplace.slug);
   const tooltip = available
     ? `Click to ${enabled ? "disable" : "enable"} ${marketplace.name}`
-    : `${marketplace.name} — listing creation unavailable`;
+    : `${marketplace.name} — connect this marketplace first`;
 
   return (
     <button
@@ -80,8 +67,6 @@ function MarketplaceIcon({
           {marketplace.name.charAt(0)}
         </span>
       )}
-
-      {/* Green dot when enabled */}
       {enabled && (
         <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-white bg-emerald-500" />
       )}
@@ -89,41 +74,9 @@ function MarketplaceIcon({
   );
 }
 
-// ── Locale select ─────────────────────────────────────────────────────────────
-
-function ActiveBadge({ marketplace }: { marketplace: Marketplace }) {
-  return (
-    <div className="mt-4">
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        {marketplace.name} — Active
-      </span>
-      <p className="mt-2 text-xs text-slate-500">
-        Manage prices and locale settings in{" "}
-        <span className="font-semibold text-blue-600">
-          Listing information by marketplaces
-        </span>
-        .
-      </p>
-    </div>
-  );
-}
-
-// ── Public component ──────────────────────────────────────────────────────────
-
 export interface MarketplaceSelectorRowProps {
-  /**
-   * All connected + available marketplaces to show as icons.
-   */
   marketplaces: Marketplace[];
-  /**
-   * Refurbed market locales — kept for future use / availability checks.
-   */
   markets: InventoryMarket[];
-  /**
-   * Slug of the marketplace that is pre-enabled on mount.
-   * Defaults to "refurbed".
-   */
   defaultEnabledSlug?: string;
 }
 
@@ -132,42 +85,53 @@ export function MarketplaceSelectorRow({
   markets: _markets,
   defaultEnabledSlug = "refurbed",
 }: MarketplaceSelectorRowProps) {
-  // Only one marketplace is "active" at a time for listing creation.
-  // We store the slug of the currently enabled one.
-  const [enabledSlug, setEnabledSlug] = useState<string>(
-    defaultEnabledSlug,
+  const connected = marketplaces.filter(
+    (mp) =>
+      mp.slug === "refurbed" ||
+      mp.slug === "back-market",
   );
 
-  // The marketplace whose locale select is shown
-  const activeMarketplace = marketplaces.find(
-    (mp) => mp.slug === enabledSlug,
-  ) ?? marketplaces[0];
+  const initiallyEnabled = connected.some((mp) => mp.slug === defaultEnabledSlug)
+    ? [defaultEnabledSlug]
+    : connected[0]
+      ? [connected[0].slug]
+      : [];
 
-  // Currently only Refurbed supports listing creation
+  const [enabledSlugs, setEnabledSlugs] = useState<string[]>(initiallyEnabled);
+
   function isAvailable(mp: Marketplace) {
-    return mp.slug === "refurbed";
+    return (
+      mp.is_connected &&
+      (mp.slug === "refurbed" || mp.slug === "back-market")
+    );
   }
 
   function toggle(mp: Marketplace) {
     if (!isAvailable(mp)) return;
-    setEnabledSlug((current) => (current === mp.slug ? "" : mp.slug));
+    setEnabledSlugs((current) =>
+      current.includes(mp.slug)
+        ? current.filter((slug) => slug !== mp.slug)
+        : [...current, mp.slug],
+    );
   }
 
   return (
     <div className="md:col-span-2">
-      {/* ── Icon row ── */}
+      {enabledSlugs.map((slug) => (
+        <input key={slug} type="hidden" name="marketplace_slugs[]" value={slug} />
+      ))}
+
       <div className="flex items-center gap-2">
         {marketplaces.map((mp) => (
           <MarketplaceIcon
             key={mp.id}
             marketplace={mp}
-            enabled={enabledSlug === mp.slug}
+            enabled={enabledSlugs.includes(mp.slug)}
             available={isAvailable(mp)}
             onToggle={() => toggle(mp)}
           />
         ))}
 
-        {/* + button: link to add a new marketplace */}
         <AppLink
           href="/dashboard/marketplaces"
           title="Connect a new marketplace"
@@ -178,12 +142,20 @@ export function MarketplaceSelectorRow({
         </AppLink>
       </div>
 
-      {/* ── Active badge — shown when a marketplace is enabled ── */}
-      {enabledSlug && activeMarketplace && (
-        <ActiveBadge marketplace={activeMarketplace} />
-      )}
-
-      {!enabledSlug && (
+      {enabledSlugs.length > 0 ? (
+        <p className="mt-4 text-sm text-slate-600">
+          Selling on{" "}
+          <span className="font-semibold text-slate-800">
+            {enabledSlugs
+              .map(
+                (slug) =>
+                  marketplaces.find((mp) => mp.slug === slug)?.name || slug,
+              )
+              .join(", ")}
+          </span>
+          . The same quantity is shared across these marketplaces.
+        </p>
+      ) : (
         <p className="mt-3 text-sm text-amber-700">
           Click a marketplace icon above to enable it for this listing.
         </p>

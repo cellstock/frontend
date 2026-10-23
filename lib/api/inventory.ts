@@ -46,11 +46,12 @@ export class InventoryApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const { headers: optionHeaders, ...rest } = options;
   const response = await apiFetch(path, {
     credentials: "include",
     cache: "no-store",
-    headers: { Accept: "application/json", ...options.headers },
-    ...options,
+    ...rest,
+    headers: { Accept: "application/json", ...optionHeaders },
   });
   const payload = (await response.json().catch(() => null)) as {
     message?: string;
@@ -89,6 +90,7 @@ export function getInventory(
     stock?: string;
     sort?: string;
     market?: string;
+    signal?: AbortSignal;
   } = {},
 ): Promise<InventoryResponse> {
   const query = new URLSearchParams({ limit: String(options.limit ?? 25) });
@@ -103,7 +105,9 @@ export function getInventory(
     "market",
   ] as const)
     if (options[key]) query.set(key, options[key]);
-  return request<InventoryResponse>(`/api/inventory?${query.toString()}`);
+  return request<InventoryResponse>(`/api/inventory?${query.toString()}`, {
+    signal: options.signal,
+  });
 }
 
 export function syncInventory(): Promise<{
