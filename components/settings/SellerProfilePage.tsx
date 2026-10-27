@@ -28,7 +28,6 @@ const emptyProfile: SellerProfile = {
   contact_information: "",
   terms_and_conditions: "",
   return_policy: "",
-  push_after_upload: false,
   use_new_inventory_page: false,
   updated_at: null,
 };
@@ -67,7 +66,6 @@ export default function SellerProfilePage() {
         contact_information: profile.contact_information,
         terms_and_conditions: profile.terms_and_conditions,
         return_policy: profile.return_policy,
-        push_after_upload: profile.push_after_upload,
         use_new_inventory_page: profile.use_new_inventory_page,
       });
       setProfile(response.data.profile);
@@ -261,22 +259,6 @@ export default function SellerProfilePage() {
                   value={profile.return_policy}
                   onChange={(return_policy) =>
                     setProfile((current) => ({ ...current, return_policy }))
-                  }
-                />
-              </ProfileSection>
-
-              <ProfileSection
-                title="Push after an upload"
-                description="Check this box to send your inventory automatically to the marketplaces after each time you upload a file. (pre-requisite: You also set up your push preferences)"
-              >
-                <PreferenceRow
-                  label="Trigger a push after an upload"
-                  checked={profile.push_after_upload}
-                  onChange={(push_after_upload) =>
-                    setProfile((current) => ({
-                      ...current,
-                      push_after_upload,
-                    }))
                   }
                 />
               </ProfileSection>

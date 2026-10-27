@@ -1,4 +1,4 @@
-import { Database, Upload, UserRound } from "lucide-react";
+import { Database, UserRound } from "lucide-react";
 
 import Link from "@/components/ui/AppLink";
 
@@ -18,14 +18,6 @@ const cards = [
     href: "/dashboard/settings/seller-profile",
     action: "See your seller profile",
     icon: UserRound,
-  },
-  {
-    title: "See your push preferences",
-    description: "Set up a push schedule for marketplaces.",
-    points: [] as string[],
-    href: "/dashboard/settings/push-preferences",
-    action: "See your push preferences",
-    icon: Upload,
   },
   {
     title: "Refurbed catalog",

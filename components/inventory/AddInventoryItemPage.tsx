@@ -269,21 +269,14 @@ function EanAsinPanel({
     setError("");
 
     try {
-      // UI is "EAN or ASIN" — send Refurbed types only (gtin / mpn), never ean_or_sku.
-      const digits = identifier.replace(/\D+/g, "");
-      const isEan =
-        /^\d{8}$|^\d{12}$|^\d{13}$/.test(digits) && digits === identifier;
-      const identifierType = isEan ? "gtin" : "mpn";
-      const response = await findInventoryInstance(
-        isEan ? digits : identifier,
-        identifierType,
-      );
+      // Prefer ean_or_sku so EAN, ASIN/MPN, SKU, and Instance ID all resolve.
+      const response = await findInventoryInstance(identifier, "ean_or_sku");
       onFound(response.data.instance);
     } catch (caught) {
       setError(
         caught instanceof Error
           ? caught.message
-          : "No product found for that EAN or ASIN.",
+          : "No product found for that EAN, ASIN, or SKU.",
       );
     } finally {
       setLoading(false);
@@ -297,7 +290,7 @@ function EanAsinPanel({
           <ScanBarcode className="h-5 w-5" />
         </span>
         <h2 className="text-lg font-bold text-slate-900">
-          Search by EAN or ASIN
+          Search by EAN, ASIN or SKU
         </h2>
       </div>
 
@@ -307,7 +300,7 @@ function EanAsinPanel({
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <label className="block text-sm font-semibold text-slate-700">
-          Search by EAN or ASIN :
+          Search by EAN, ASIN or SKU :
           <input
             ref={inputRef}
             value={value}
@@ -315,7 +308,7 @@ function EanAsinPanel({
               setValue(e.target.value);
               setError("");
             }}
-            placeholder="e.g. 0194252670477"
+            placeholder="e.g. 0194252670477 or your SKU"
             className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
           />
         </label>

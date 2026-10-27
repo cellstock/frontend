@@ -8,7 +8,7 @@ export interface SellerProfile {
   contact_information: string;
   terms_and_conditions: string;
   return_policy: string;
-  push_after_upload: boolean;
+  push_after_upload?: boolean;
   use_new_inventory_page: boolean;
   updated_at: string | null;
 }
@@ -59,7 +59,6 @@ export function updateSellerProfile(
       | "contact_information"
       | "terms_and_conditions"
       | "return_policy"
-      | "push_after_upload"
       | "use_new_inventory_page"
     >
   >,

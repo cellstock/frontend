@@ -26,7 +26,6 @@ import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import AppLink from "@/components/ui/AppLink";
 import { ContentLoading } from "@/components/ui/ContentLoading";
-import { PushToMarketplacesPanel } from "@/components/inventory/PushToMarketplacesPanel";
 import {
   getInventory,
   InventoryApiError,
@@ -237,12 +236,6 @@ export function InventoryTablePage() {
           {actionMessage}
         </p>
       )}
-      <PushToMarketplacesPanel
-        onMessage={(message) => {
-          setActionMessage(message);
-          refresh();
-        }}
-      />
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 p-5 lg:p-7">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
