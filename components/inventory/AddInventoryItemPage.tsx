@@ -130,7 +130,7 @@ export function AddInventoryItemPage() {
             "No Refurbed market is enabled for offer management. Check marketplace settings.",
           );
         }
-        const profiles = await getShippingProfiles({ page: 1, per_page: 1 });
+        const profiles = await getShippingProfiles({ page: 1, per_page: 10 });
         shippingProfileId = String(profiles.data.profiles[0]?.id || "").trim();
         if (!shippingProfileId) {
           throw new Error(
