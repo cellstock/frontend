@@ -79,7 +79,7 @@ $routes = [
     '~^/marketplaces/[^/]+/sync$~' => ['POST'],
     '~^/marketplaces/[^/]+/sync/[0-9]+$~' => ['GET'],
     '~^/orders(/returns|/[0-9]+)?$~' => ['GET'],
-    '~^/orders/[0-9]+/(returns|merchant-addresses|invoice/custom)$~' => ['GET'],
+    '~^/orders/[0-9]+/(returns|merchant-addresses|invoice/custom|shipping-label/file)$~' => ['GET'],
     '~^/orders/[0-9]+/(status|edit-fields|address/(billing|shipping)|items/[0-9]+/shipping)$~' => ['PATCH'],
     '~^/orders/[0-9]+/(refresh|refund|refund/calculate|shipping-label|email)$~' => ['POST'],
     '~^/orders/[0-9]+/invoice$~' => ['GET', 'POST'],
@@ -218,10 +218,10 @@ if (
 }
 // Uploaded invoices must pass through the cookie-authenticated gateway.
 if ($method === 'GET' && $status === 200 &&
-    preg_match('~^/orders/[0-9]+/invoice/custom$~', $endpoint) &&
+    preg_match('~^/orders/[0-9]+/(invoice/custom|shipping-label/file)$~', $endpoint) &&
     str_starts_with(strtolower($contentType), 'application/pdf')) {
     header('Content-Type: application/pdf');
-    header('Content-Disposition: inline; filename="invoice.pdf"');
+    header('Content-Disposition: inline; filename="document.pdf"');
     echo $body;
     exit;
 }

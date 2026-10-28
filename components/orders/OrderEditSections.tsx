@@ -13,6 +13,7 @@ import {
   Printer,
   RefreshCw,
   Save,
+  ScanBarcode,
   Settings,
   Truck,
   Upload,
@@ -20,7 +21,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getMerchantAddressRecords, type MerchantAddressRecord } from "@/lib/api/merchant-addresses";
 
 import type { OrderDocument } from "./OrderDocumentPreview";
@@ -459,48 +460,109 @@ function FulfilmentEditor({
     ),
   );
   const [busy, setBusy] = useState(false);
+  const identifierInputRefs = useRef<Record<string, HTMLInputElement | null>>(
+    {},
+  );
   const mustTrack = workflowStatus === "dispatched";
+  const currentItemStatus = (
+    order.items[0]?.status ?? order.status ?? ""
+  ).toUpperCase();
+
+  function resolveIdentifierType(
+    value: string,
+    fallback?: string | null,
+  ): "IMEI" | "SERIAL_NUMBER" {
+    const trimmed = value.trim();
+    if (/^\d{15}$/.test(trimmed)) return "IMEI";
+    if (fallback === "IMEI" || fallback === "SERIAL_NUMBER") return fallback;
+    return "SERIAL_NUMBER";
+  }
 
   async function save() {
     setBusy(true);
     try {
-      const itemIdentifiers = order.items.flatMap((item) =>
-        identifiers[item.external_order_item_id]?.trim()
-          ? [
-              {
-                id: item.external_order_item_id,
-                identifier_type: (item.item_identifiers?.[0]?.identifier_type ??
-                  "SERIAL_NUMBER") as "IMEI" | "SERIAL_NUMBER",
-                value: identifiers[item.external_order_item_id].trim(),
-              },
-            ]
-          : [],
-      );
+      const itemIdentifiers = order.items.flatMap((item) => {
+        const value = identifiers[item.external_order_item_id]?.trim() ?? "";
+        if (!value) return [];
+        return [
+          {
+            id: item.external_order_item_id,
+            identifier_type: resolveIdentifierType(
+              value,
+              item.item_identifiers?.[0]?.identifier_type,
+            ),
+            value,
+          },
+        ];
+      });
+
+      const tracking = trackingUrl.trim();
+      const trackingOk = /^https?:\/\//i.test(tracking);
+
+      // Persist Serial/IMEI + workflow first so Save never depends on Refurbed shipping.
+      const saved = await updateOrderEditFields(order.id, {
+        workflow_status: workflowStatus || "open",
+        ...(paymentStatus ? { payment_status: paymentStatus } : {}),
+        item_identifiers: itemIdentifiers,
+        ...(tracking ? { tracking_url: tracking } : {}),
+      });
+
+      // Only queue a real Refurbed status transition when it is allowed and valid.
       const remoteStatus: RefurbedOrderStatus | null =
-        workflowStatus === "dispatched" && available.includes("SHIPPED")
+        workflowStatus === "dispatched" &&
+        available.includes("SHIPPED") &&
+        currentItemStatus !== "SHIPPED" &&
+        trackingOk
           ? "SHIPPED"
-          : workflowStatus === "open" && available.includes("ACCEPTED")
+          : workflowStatus === "open" &&
+              available.includes("ACCEPTED") &&
+              currentItemStatus === "NEW"
             ? "ACCEPTED"
             : null;
-      if (remoteStatus)
-        await updateOrderStatus(order.id, {
-          status: remoteStatus,
-          ...(remoteStatus === "SHIPPED"
-            ? { tracking_url: trackingUrl.trim() }
-            : {}),
-          ...(itemIdentifiers.length
-            ? { item_identifiers: itemIdentifiers }
-            : {}),
-        });
-      await updateOrderEditFields(order.id, {
-        workflow_status: workflowStatus,
-        payment_status: paymentStatus,
-      });
+
+      let statusMessage = "";
+      if (remoteStatus) {
+        try {
+          await updateOrderStatus(order.id, {
+            status: remoteStatus,
+            ...(remoteStatus === "SHIPPED" ? { tracking_url: tracking } : {}),
+            ...(itemIdentifiers.length
+              ? { item_identifiers: itemIdentifiers }
+              : {}),
+          });
+          statusMessage =
+            remoteStatus === "SHIPPED"
+              ? " Shipment status queued for Refurbed."
+              : " Accept status queued for Refurbed.";
+        } catch (statusError) {
+          statusMessage =
+            statusError instanceof OrdersApiError
+              ? ` Refurbed status update failed: ${statusError.message}`
+              : " Refurbed status update failed.";
+        }
+      } else if (
+        workflowStatus === "dispatched" &&
+        available.includes("SHIPPED") &&
+        currentItemStatus !== "SHIPPED" &&
+        !trackingOk
+      ) {
+        statusMessage =
+          " Add a valid tracking URL (http/https) to mark the order shipped on Refurbed.";
+      }
+
+      const apiMessage =
+        typeof saved === "object" &&
+        saved &&
+        "message" in saved &&
+        typeof saved.message === "string"
+          ? saved.message
+          : itemIdentifiers.length
+            ? "Order saved. Serial/IMEI stored in CelleXa."
+            : "Order changes saved in CelleXa.";
+
       onFeedback({
         kind: "success",
-        text: remoteStatus
-          ? "Order updated on Refurbed and in CelleXa."
-          : "Order workflow updated in CelleXa.",
+        text: `${apiMessage}${statusMessage}`,
       });
       onRefresh();
     } catch (error) {
@@ -514,6 +576,12 @@ function FulfilmentEditor({
     } finally {
       setBusy(false);
     }
+  }
+
+  function armScanner(itemId: string) {
+    const input = identifierInputRefs.current[itemId];
+    input?.focus();
+    input?.select();
   }
 
   return (
@@ -609,33 +677,57 @@ function FulfilmentEditor({
               Identifier <InfoCircle className="h-4 w-4 text-blue-600" />
             </h3>
             <div className="mt-3 space-y-3">
-              {order.items.map((item) => (
-                <label
-                  key={item.id}
-                  className="grid min-w-0 gap-2 text-sm sm:grid-cols-[minmax(0,1fr)_220px] sm:items-center"
-                >
-                  <span className="min-w-0">
-                    <span className="block font-medium">
-                      {item.item_identifiers?.[0]?.identifier_type === "IMEI"
-                        ? "IMEI number"
-                        : "Serial / IMEI number"}
+              {order.items.map((item) => {
+                const itemKey = item.external_order_item_id;
+                return (
+                  <label
+                    key={item.id}
+                    className="grid min-w-0 gap-2 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(180px,1fr)_auto] sm:items-center"
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-medium">
+                        {item.item_identifiers?.[0]?.identifier_type ===
+                          "IMEI" ||
+                        /^\d{15}$/.test((identifiers[itemKey] ?? "").trim())
+                          ? "IMEI number"
+                          : "Serial / IMEI number"}
+                      </span>
+                      <span className="block truncate text-xs text-slate-500">
+                        {item.sku}
+                      </span>
                     </span>
-                    <span className="block truncate text-xs text-slate-500">
-                      {item.sku}
-                    </span>
-                  </span>
-                  <input
-                    value={identifiers[item.external_order_item_id] ?? ""}
-                    onChange={(event) =>
-                      setIdentifiers((current) => ({
-                        ...current,
-                        [item.external_order_item_id]: event.target.value,
-                      }))
-                    }
-                    className="min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2.5"
-                  />
-                </label>
-              ))}
+                    <input
+                      ref={(node) => {
+                        identifierInputRefs.current[itemKey] = node;
+                      }}
+                      value={identifiers[itemKey] ?? ""}
+                      onChange={(event) =>
+                        setIdentifiers((current) => ({
+                          ...current,
+                          [itemKey]: event.target.value,
+                        }))
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                        }
+                      }}
+                      placeholder="Scan or type serial / IMEI"
+                      autoComplete="off"
+                      className="min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    />
+                    <button
+                      type="button"
+                      title="Focus field for barcode scanner"
+                      aria-label="Focus field for barcode scanner"
+                      onClick={() => armScanner(itemKey)}
+                      className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-600 transition hover:border-blue-400 hover:text-blue-700"
+                    >
+                      <ScanBarcode className="h-5 w-5" />
+                    </button>
+                  </label>
+                );
+              })}
             </div>
           </div>
         </div>

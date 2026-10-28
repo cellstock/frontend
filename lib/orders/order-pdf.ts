@@ -25,6 +25,29 @@ const barcodePatterns = [0x034,0x121,0x061,0x160,0x031,0x130,0x070,0x025,0x124,0
 
 export function createOrderPdf(order: Order, includePrices = true, sender?: DispatchAddress): Blob {
   const pages: string[] = [];
+  appendOrderSlipPages(pages, order, includePrices, sender);
+  return createPdfStreams(pages);
+}
+
+/** One combined PDF with a packing slip page (or pages) for every selected order. */
+export function createOrderSlipsPdf(
+  orders: Order[],
+  includePrices = true,
+  sender?: DispatchAddress,
+): Blob {
+  const pages: string[] = [];
+  for (const order of orders) {
+    appendOrderSlipPages(pages, order, includePrices, sender);
+  }
+  return createPdfStreams(pages.length ? pages : ["BT /F1 12 Tf 1 0 0 1 50 790 Tm (No orders selected) Tj ET"]);
+}
+
+function appendOrderSlipPages(
+  pages: string[],
+  order: Order,
+  includePrices = true,
+  sender?: DispatchAddress,
+): void {
   let commands: string[] = [];
   const text = (value: unknown, x: number, y: number, size = 9, bold = false) => {
     commands.push("BT /" + (bold ? "F2" : "F1") + " " + size + " Tf 1 0 0 1 " + x + " " + (842-y) + " Tm (" + pdfText(value) + ") Tj ET");
@@ -93,7 +116,6 @@ export function createOrderPdf(order: Order, includePrices = true, sender?: Disp
   const senderLines=sender ? [sender.company_name,[sender.first_name,sender.family_name].filter(Boolean).join(" "),[sender.street_name,sender.house_no].filter(Boolean).join(" "),[sender.post_code,sender.town].filter(Boolean).join(" "),sender.country_code,sender.phone_number].filter(Boolean) : ["Dispatch address not selected"];
   senderLines.forEach((value,i)=>text(value,36,y+i*11,8));y+=senderLines.length*11+20;
   barcode(185,y,230);footer();
-  return createPdfStreams(pages);
 }
 
 export function createShippingLabelPdf(order: Order): Blob {

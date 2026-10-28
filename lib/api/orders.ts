@@ -172,6 +172,11 @@ export function updateOrderEditFields(
     shipper?: string | null;
     tracking_number?: string | null;
     tracking_url?: string | null;
+    item_identifiers?: Array<{
+      id: string;
+      identifier_type: "IMEI" | "SERIAL_NUMBER";
+      value: string;
+    }>;
   },
 ): Promise<OrderResponse> {
   return orderApiRequest(`/api/orders/${orderId}/edit-fields`, undefined, {
