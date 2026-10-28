@@ -709,10 +709,17 @@ function EditableQty({
   const [value, setValue] = useState(String(offer.stock));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showSharedTip, setShowSharedTip] = useState(false);
 
   useEffect(() => {
     if (!editing) setValue(String(offer.stock));
   }, [offer.stock, editing]);
+
+  useEffect(() => {
+    if (!showSharedTip) return;
+    const timer = window.setTimeout(() => setShowSharedTip(false), 4500);
+    return () => window.clearTimeout(timer);
+  }, [showSharedTip]);
 
   async function save() {
     const next = Number(value);
@@ -723,6 +730,7 @@ function EditableQty({
     if (next === offer.stock) {
       setEditing(false);
       setError("");
+      setShowSharedTip(false);
       return;
     }
     setSaving(true);
@@ -731,6 +739,7 @@ function EditableQty({
       await updateInventoryOffer(offer.id, { stock: next });
       onSaved(offer.id, offer.sku, next);
       setEditing(false);
+      setShowSharedTip(false);
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Unable to update quantity.",
@@ -744,12 +753,13 @@ function EditableQty({
     return (
       <button
         type="button"
-        title="Double-click to edit quantity"
+        title="Double-click to edit quantity. Updates stock on all marketplaces."
         disabled={disabled}
         onDoubleClick={() => {
           if (disabled) return;
           setEditing(true);
           setError("");
+          setShowSharedTip(true);
         }}
         className="min-w-12 rounded-lg px-2 py-1 font-bold text-slate-900 hover:bg-blue-50 disabled:opacity-50"
       >
@@ -759,7 +769,19 @@ function EditableQty({
   }
 
   return (
-    <div className="inline-flex flex-col items-center gap-1">
+    <div className="relative inline-flex flex-col items-center gap-1">
+      {showSharedTip && (
+        <div
+          role="tooltip"
+          className="absolute bottom-full left-1/2 z-30 mb-2 w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-medium leading-4 text-white shadow-lg"
+        >
+          Updating quantity will update stock on all marketplaces.
+          <span
+            aria-hidden="true"
+            className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-900"
+          />
+        </div>
+      )}
       <input
         autoFocus
         type="number"
@@ -777,6 +799,7 @@ function EditableQty({
           if (event.key === "Escape") {
             setEditing(false);
             setError("");
+            setShowSharedTip(false);
             setValue(String(offer.stock));
           }
         }}
