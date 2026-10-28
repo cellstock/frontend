@@ -216,7 +216,7 @@ if (
     echo $body;
     exit;
 }
-// Uploaded invoices must pass through the cookie-authenticated gateway.
+// Uploaded invoices / proxied shipping labels must pass through the cookie-authenticated gateway.
 if ($method === 'GET' && $status === 200 &&
     preg_match('~^/orders/[0-9]+/(invoice/custom|shipping-label/file)$~', $endpoint) &&
     str_starts_with(strtolower($contentType), 'application/pdf')) {
