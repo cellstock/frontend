@@ -803,7 +803,10 @@ async function mergeShippingLabelPdfs(
   }
 
   const bytes = await merged.save();
-  return new Blob([bytes], { type: "application/pdf" });
+  // Copy into a plain ArrayBuffer-backed view for BlobPart typing (TS 5.x / DOM lib).
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return new Blob([copy], { type: "application/pdf" });
 }
 
 function printDocumentStyles(): string {
