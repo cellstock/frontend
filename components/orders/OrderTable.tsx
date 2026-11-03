@@ -47,9 +47,6 @@ const CARRIER_OPTIONS = [
 
 type CarrierOption = (typeof CARRIER_OPTIONS)[number];
 
-/** Set to true to show bulk checkboxes + "Select an action" again. */
-const SHOW_ORDER_BULK_ACTIONS = false;
-
 interface OrderTableProps {
   orders: Order[];
   onUpdated?: () => Promise<void> | void;
@@ -98,15 +95,13 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
     >
       <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex flex-wrap items-center gap-3">
-          {SHOW_ORDER_BULK_ACTIONS ? (
-            <OrderBulkActions
-              orders={orders}
-              selectedIds={selectedIds}
-              onFeedback={setFeedback}
-              onUpdated={onUpdated}
-              onClearSelection={() => setSelectedIds([])}
-            />
-          ) : null}
+          <OrderBulkActions
+            orders={orders}
+            selectedIds={selectedIds}
+            onFeedback={setFeedback}
+            onUpdated={onUpdated}
+            onClearSelection={() => setSelectedIds([])}
+          />
           <div>
             <h2
               id="orders-results-heading"
@@ -115,7 +110,7 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
               {t("Order results")}
             </h2>
             <p className="mt-0.5 text-xs text-slate-500">
-              {SHOW_ORDER_BULK_ACTIONS && selectedIds.length > 0
+              {selectedIds.length > 0
                 ? t(`${selectedIds.length} selected`)
                 : t(
                     "Customer, item, payment and delivery information for synchronized orders.",
@@ -130,7 +125,7 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
         </div>
       </div>
 
-      {SHOW_ORDER_BULK_ACTIONS && feedback ? (
+      {feedback && (
         <div
           role={feedback.kind === "error" ? "alert" : "status"}
           className={`border-b px-5 py-3 text-sm font-medium sm:px-6 ${
@@ -141,27 +136,25 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
         >
           {feedback.text}
         </div>
-      ) : null}
+      )}
 
       <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[1440px] table-fixed divide-y divide-slate-200">
           <thead className="bg-slate-50/90">
             <tr>
-              {SHOW_ORDER_BULK_ACTIONS ? (
-                <TableHeading className="w-[48px]">
-                  <span className="sr-only">{t("Select all")}</span>
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    ref={(element) => {
-                      if (element) element.indeterminate = someSelected;
-                    }}
-                    onChange={(event) => toggleAll(event.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                    aria-label={t("Select all orders")}
-                  />
-                </TableHeading>
-              ) : null}
+              <TableHeading className="w-[48px]">
+                <span className="sr-only">{t("Select all")}</span>
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(element) => {
+                    if (element) element.indeterminate = someSelected;
+                  }}
+                  onChange={(event) => toggleAll(event.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  aria-label={t("Select all orders")}
+                />
+              </TableHeading>
               <TableHeading className="w-[175px]">
                 {t("Date & site")}
               </TableHeading>
@@ -187,7 +180,6 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
               <DesktopOrderRow
                 key={order.id}
                 order={order}
-                showCheckbox={SHOW_ORDER_BULK_ACTIONS}
                 selected={selectedIds.includes(order.id)}
                 onSelectedChange={(checked) => toggleOne(order.id, checked)}
                 onUpdated={onUpdated}
@@ -202,7 +194,6 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
           <MobileOrderCard
             key={order.id}
             order={order}
-            showCheckbox={SHOW_ORDER_BULK_ACTIONS}
             selected={selectedIds.includes(order.id)}
             onSelectedChange={(checked) => toggleOne(order.id, checked)}
             onUpdated={onUpdated}
@@ -215,13 +206,11 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
 
 function DesktopOrderRow({
   order,
-  showCheckbox,
   selected,
   onSelectedChange,
   onUpdated,
 }: {
   order: Order;
-  showCheckbox: boolean;
   selected: boolean;
   onSelectedChange: (checked: boolean) => void;
   onUpdated?: () => Promise<void> | void;
@@ -233,20 +222,18 @@ function DesktopOrderRow({
   return (
     <tr
       className={`group align-top transition hover:bg-blue-50/30 ${
-        showCheckbox && selected ? "bg-blue-50/40" : ""
+        selected ? "bg-blue-50/40" : ""
       }`}
     >
-      {showCheckbox ? (
-        <td className="px-4 py-5 sm:px-5">
-          <input
-            type="checkbox"
-            checked={selected}
-            onChange={(event) => onSelectedChange(event.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-            aria-label={t(`Select order #${order.external_order_id}`)}
-          />
-        </td>
-      ) : null}
+      <td className="px-4 py-5 sm:px-5">
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={(event) => onSelectedChange(event.target.checked)}
+          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+          aria-label={t(`Select order #${order.external_order_id}`)}
+        />
+      </td>
       <td className="px-5 py-5 sm:px-6">
         <p className="text-sm font-semibold leading-5 text-slate-800">
           {formatOrderDateTime(order.ordered_at, locale)}
@@ -611,13 +598,11 @@ function DeliverySummary({
 
 function MobileOrderCard({
   order,
-  showCheckbox,
   selected,
   onSelectedChange,
   onUpdated,
 }: {
   order: Order;
-  showCheckbox: boolean;
   selected: boolean;
   onSelectedChange: (checked: boolean) => void;
   onUpdated?: () => Promise<void> | void;
@@ -625,20 +610,16 @@ function MobileOrderCard({
   const { t, locale } = useI18n();
   const primaryItem = order.items[0];
   return (
-    <article
-      className={`p-5 ${showCheckbox && selected ? "bg-blue-50/40" : ""}`}
-    >
+    <article className={`p-5 ${selected ? "bg-blue-50/40" : ""}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
-          {showCheckbox ? (
-            <input
-              type="checkbox"
-              checked={selected}
-              onChange={(event) => onSelectedChange(event.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              aria-label={t(`Select order #${order.external_order_id}`)}
-            />
-          ) : null}
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(event) => onSelectedChange(event.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            aria-label={t(`Select order #${order.external_order_id}`)}
+          />
           <div>
             <Link
               href={`/dashboard/orders/detail/?orderId=${order.id}`}

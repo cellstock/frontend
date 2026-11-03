@@ -576,7 +576,7 @@ export function OrderBulkActions({
             {t("Print an invoice")}
           </MenuButton>
 
-          <MenuItemWithSub
+          {/* <MenuItemWithSub
             label={t("Send an email")}
             open={submenu === "email"}
             onOpen={() => {
@@ -598,7 +598,7 @@ export function OrderBulkActions({
                 {t(option.label)}
               </SubMenuButton>
             ))}
-          </MenuItemWithSub>
+          </MenuItemWithSub> */}
 
           <MenuItemWithSub
             label={t("Export orders")}
@@ -611,7 +611,7 @@ export function OrderBulkActions({
             <SubMenuButton onClick={exportCsv}>{t("CSV")}</SubMenuButton>
           </MenuItemWithSub>
 
-          <MenuButton
+          {/* <MenuButton
             onClick={() =>
               onFeedback?.({
                 kind: "error",
@@ -620,7 +620,7 @@ export function OrderBulkActions({
             }
           >
             {t("Send a confirmation file")}
-          </MenuButton>
+          </MenuButton> */}
 
           <MenuButton
             onClick={() => {
@@ -803,10 +803,7 @@ async function mergeShippingLabelPdfs(
   }
 
   const bytes = await merged.save();
-  // Copy into a plain ArrayBuffer-backed view for BlobPart typing (TS 5.x / DOM lib).
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  return new Blob([copy], { type: "application/pdf" });
+  return new Blob([bytes], { type: "application/pdf" });
 }
 
 function printDocumentStyles(): string {
