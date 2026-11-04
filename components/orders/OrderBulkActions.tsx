@@ -852,7 +852,6 @@ function writePrintDocument(
   popup.document.close();
 }
 
-
 function openPrintWindow(
   bodyHtml: string,
   title: string,
@@ -867,6 +866,7 @@ function openPrintWindow(
   if (!popup) return;
   writePrintDocument(popup, title, bodyHtml, { autoPrint });
 }
+
 
 function formatAddress(order: Order): string {
   const address = order.shipping_address;
