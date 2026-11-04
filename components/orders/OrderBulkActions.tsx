@@ -852,6 +852,7 @@ function writePrintDocument(
   popup.document.close();
 }
 
+
 function openPrintWindow(
   bodyHtml: string,
   title: string,
