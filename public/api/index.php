@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-// Same-origin PHP replacement for the former Next.js API routes.
+/// Same-origin PHP replacement for the former Next.js API routes.
 // Laravel remains responsible for validation, authorization and rate limiting.
 header('Cache-Control: no-store, max-age=0');
 header('Pragma: no-cache');
