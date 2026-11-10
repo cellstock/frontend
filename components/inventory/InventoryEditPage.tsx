@@ -30,7 +30,13 @@ const readOnlyInputClass = `${controlClass} cursor-default bg-slate-100 text-sla
 const TITLE_MAX = 500;
 const DESCRIPTION_MAX = 1000;
 
-export function InventoryEditPage({ offerId }: { offerId: string }) {
+export function InventoryEditPage({
+  offerId,
+  marketplace,
+}: {
+  offerId: string;
+  marketplace?: string;
+}) {
   const router = useRouter();
   const [offer, setOffer] = useState<InventoryOfferDetails | null>(null);
   const [marketplaces, setMarketplaces] = useState<Marketplace[]>([]);
@@ -44,7 +50,7 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
   useEffect(() => {
     let active = true;
 
-    Promise.all([getInventoryOffer(offerId), getMarketplaces()])
+    Promise.all([getInventoryOffer(offerId, marketplace), getMarketplaces()])
       .then(([offerResponse, mpResponse]) => {
         if (active) {
           setOffer(offerResponse.data.offer);
@@ -70,7 +76,7 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
     return () => {
       active = false;
     };
-  }, [offerId]);
+  }, [offerId, marketplace]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -157,7 +163,10 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
 
     try {
       const response = await updateInventoryOffer(offer.id, update);
-      const saved = await getInventoryOffer(offer.id);
+      const saved = await getInventoryOffer(
+        offer.id,
+        offer.marketplace?.slug || marketplace,
+      );
       setOffer(saved.data.offer);
       setMessage(response.message);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -186,10 +195,12 @@ export function InventoryEditPage({ offerId }: { offerId: string }) {
     );
   }
 
-  const marketplaceLogo =
-    offer.marketplace.slug?.startsWith("back-market")
-      ? "/images/marketplaces/back-market.png"
-      : "/images/marketplaces/refurbed.png";
+  const marketplaceLogo = (() => {
+    const slug = offer.marketplace.slug || "";
+    if (slug.startsWith("back-market")) return "/images/marketplaces/back-market.png";
+    if (slug === "lightspeed") return "/images/marketplaces/telefoongigant-logo.png";
+    return "/images/marketplaces/refurbed.png";
+  })();
   const offerMarkets = offer.markets.filter((market) =>
     offer.market_codes.includes(market.code),
   );

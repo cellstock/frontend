@@ -140,7 +140,10 @@ export function MarketplaceDetails({
 
     const hasCredentialUpdates =
       Boolean(values.api_key) ||
-      Boolean(values.country_code);
+      Boolean(values.api_secret) ||
+      Boolean(values.country_code) ||
+      Boolean(values.cluster) ||
+      Boolean(values.language);
 
     const input: UpdateMarketplaceConnectionRequest = {
       account_name: values.account_name,
@@ -149,6 +152,9 @@ export function MarketplaceDetails({
         ? {
             credentials: {
               ...(values.api_key ? { api_key: values.api_key } : {}),
+              ...(values.api_secret ? { api_secret: values.api_secret } : {}),
+              ...(values.cluster ? { cluster: values.cluster } : {}),
+              ...(values.language ? { language: values.language } : {}),
               ...(values.country_code
                 ? { country_code: values.country_code }
                 : {}),

@@ -450,7 +450,11 @@ function FulfilmentEditor({
   const [paymentStatus, setPaymentStatus] = useState<Order["payment_status"]>(
     order.payment_status,
   );
-  const [trackingUrl, setTrackingUrl] = useState(order.tracking_url ?? "");
+  const [trackingUrl, setTrackingUrl] = useState(
+    order.marketplace.slug === "lightspeed"
+      ? (order.tracking_number ?? order.tracking_url ?? "")
+      : (order.tracking_url ?? ""),
+  );
   const [identifiers, setIdentifiers] = useState<Record<string, string>>(
     Object.fromEntries(
       order.items.map((item) => [
@@ -497,17 +501,21 @@ function FulfilmentEditor({
       });
 
       const tracking = trackingUrl.trim();
-      const trackingOk = /^https?:\/\//i.test(tracking);
+      const isLightspeed = order.marketplace.slug === "lightspeed";
+      const trackingOk = isLightspeed
+        ? tracking.length > 0
+        : /^https?:\/\//i.test(tracking);
 
-      // Persist Serial/IMEI + workflow first so Save never depends on Refurbed shipping.
+      // Persist Serial/IMEI + workflow first so Save never depends on marketplace shipping.
       const saved = await updateOrderEditFields(order.id, {
         workflow_status: workflowStatus || "open",
         ...(paymentStatus ? { payment_status: paymentStatus } : {}),
         item_identifiers: itemIdentifiers,
-        ...(tracking ? { tracking_url: tracking } : {}),
+        ...(tracking && !isLightspeed ? { tracking_url: tracking } : {}),
+        ...(tracking && isLightspeed ? { tracking_number: tracking } : {}),
       });
 
-      // Only queue a real Refurbed status transition when it is allowed and valid.
+      // Queue marketplace status transition when allowed and valid.
       const remoteStatus: RefurbedOrderStatus | null =
         workflowStatus === "dispatched" &&
         available.includes("SHIPPED") &&
@@ -525,20 +533,25 @@ function FulfilmentEditor({
         try {
           await updateOrderStatus(order.id, {
             status: remoteStatus,
-            ...(remoteStatus === "SHIPPED" ? { tracking_url: tracking } : {}),
+            ...(remoteStatus === "SHIPPED" && !isLightspeed
+              ? { tracking_url: tracking }
+              : {}),
+            ...(remoteStatus === "SHIPPED" && isLightspeed
+              ? { tracking_number: tracking }
+              : {}),
             ...(itemIdentifiers.length
               ? { item_identifiers: itemIdentifiers }
               : {}),
           });
           statusMessage =
             remoteStatus === "SHIPPED"
-              ? " Shipment status queued for Refurbed."
-              : " Accept status queued for Refurbed.";
+              ? " Shipment status queued for the marketplace."
+              : " Accept status queued for the marketplace.";
         } catch (statusError) {
           statusMessage =
             statusError instanceof OrdersApiError
-              ? ` Refurbed status update failed: ${statusError.message}`
-              : " Refurbed status update failed.";
+              ? ` Marketplace status update failed: ${statusError.message}`
+              : " Marketplace status update failed.";
         }
       } else if (
         workflowStatus === "dispatched" &&
@@ -546,8 +559,9 @@ function FulfilmentEditor({
         currentItemStatus !== "SHIPPED" &&
         !trackingOk
       ) {
-        statusMessage =
-          " Add a valid tracking URL (http/https) to mark the order shipped on Refurbed.";
+        statusMessage = isLightspeed
+          ? " Add a tracking number to mark the order shipped on Lightspeed."
+          : " Add a valid tracking URL (http/https) to mark the order shipped on the marketplace.";
       }
 
       const apiMessage =
@@ -606,21 +620,45 @@ function FulfilmentEditor({
             <label htmlFor="tracking-number">Tracking number</label>
             <input
               id="tracking-number"
-              value={order.tracking_number ?? ""}
-              readOnly
-              placeholder="Derived from carrier URL"
-              className="min-w-0 rounded-xl border border-slate-300 bg-slate-100 px-3 py-2.5 text-slate-500"
+              value={
+                order.marketplace.slug === "lightspeed"
+                  ? trackingUrl
+                  : (order.tracking_number ?? "")
+              }
+              readOnly={order.marketplace.slug !== "lightspeed"}
+              onChange={
+                order.marketplace.slug === "lightspeed"
+                  ? (event) => setTrackingUrl(event.target.value)
+                  : undefined
+              }
+              required={
+                mustTrack && order.marketplace.slug === "lightspeed"
+              }
+              placeholder={
+                order.marketplace.slug === "lightspeed"
+                  ? "Carrier tracking code"
+                  : "Derived from carrier URL"
+              }
+              className={`min-w-0 rounded-xl border border-slate-300 px-3 py-2.5 ${
+                order.marketplace.slug === "lightspeed"
+                  ? "bg-white"
+                  : "bg-slate-100 text-slate-500"
+              }`}
             />
-            <label htmlFor="tracking-url">Tracking URL</label>
-            <input
-              id="tracking-url"
-              type="url"
-              value={trackingUrl}
-              onChange={(event) => setTrackingUrl(event.target.value)}
-              required={mustTrack}
-              placeholder="https://carrier.example/track/..."
-              className="min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2.5"
-            />
+            {order.marketplace.slug !== "lightspeed" && (
+              <>
+                <label htmlFor="tracking-url">Tracking URL</label>
+                <input
+                  id="tracking-url"
+                  type="url"
+                  value={trackingUrl}
+                  onChange={(event) => setTrackingUrl(event.target.value)}
+                  required={mustTrack}
+                  placeholder="https://carrier.example/track/..."
+                  className="min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2.5"
+                />
+              </>
+            )}
           </div>
         </div>
         <div className="min-w-0">

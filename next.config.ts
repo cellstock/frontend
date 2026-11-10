@@ -16,6 +16,9 @@ export default function nextConfig(phase: string): NextConfig {
   return {
     ...(phase === PHASE_DEVELOPMENT_SERVER
       ? {
+          // Allow HMR when the app is opened via 127.0.0.1 or a LAN IP
+          // instead of only "localhost".
+          allowedDevOrigins: ["127.0.0.1", "10.110.7.30", "localhost"],
           async rewrites() {
             return [{
               source: "/api/:path*/",

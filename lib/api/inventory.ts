@@ -90,6 +90,7 @@ export function getInventory(
     stock?: string;
     sort?: string;
     market?: string;
+    marketplace?: string;
     signal?: AbortSignal;
   } = {},
 ): Promise<InventoryResponse> {
@@ -103,6 +104,7 @@ export function getInventory(
     "stock",
     "sort",
     "market",
+    "marketplace",
   ] as const)
     if (options[key]) query.set(key, options[key]);
   return request<InventoryResponse>(`/api/inventory?${query.toString()}`, {
@@ -110,12 +112,16 @@ export function getInventory(
   });
 }
 
-export function syncInventory(): Promise<{
+export function syncInventory(marketplace?: string): Promise<{
   success: boolean;
   message: string;
-  data: { synchronized: number; complete: boolean };
+  data: { synchronized: number; complete: boolean; marketplace?: string };
 }> {
-  return request("/api/inventory/sync", { method: "POST" });
+  return request("/api/inventory/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(marketplace ? { marketplace } : {}),
+  });
 }
 
 export function getInventoryDiagnostics(): Promise<InventoryDiagnosticsResponse> {
@@ -162,8 +168,14 @@ export function updateInventoryOffer(
 
 export function getInventoryOffer(
   offerId: string,
+  marketplace?: string,
 ): Promise<{ success: boolean; data: { offer: InventoryOfferDetails } }> {
-  return request(`/api/inventory/offers/${encodeURIComponent(offerId)}`);
+  const query = new URLSearchParams();
+  if (marketplace?.trim()) query.set("marketplace", marketplace.trim());
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return request(
+    `/api/inventory/offers/${encodeURIComponent(offerId)}${suffix}`,
+  );
 }
 
 export function deleteInventoryOffer(

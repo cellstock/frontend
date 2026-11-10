@@ -3,14 +3,22 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { InventoryEditPage } from "@/components/inventory/InventoryEditPage";
 function EditOffer() {
-  const offerId = useSearchParams().get("offerId");
+  const params = useSearchParams();
+  const offerId = params.get("offerId");
+  const marketplace = params.get("marketplace") || undefined;
   if (!offerId)
     return (
       <p role="alert" className="p-8">
         No offer selected.
       </p>
     );
-  return <InventoryEditPage key={offerId} offerId={offerId} />;
+  return (
+    <InventoryEditPage
+      key={`${marketplace || "any"}:${offerId}`}
+      offerId={offerId}
+      marketplace={marketplace}
+    />
+  );
 }
 export default function EditInventoryOfferPage() {
   return (

@@ -27,7 +27,11 @@ import {
 } from "@/lib/api/inventory";
 import { getMarketplaces } from "@/lib/api/marketplaces";
 import { getShippingProfiles } from "@/lib/api/shipping-profiles";
-import { isBackMarket, isRefurbed } from "@/lib/marketplaces/slugs";
+import {
+  isBackMarket,
+  isLightspeed,
+  isRefurbed,
+} from "@/lib/marketplaces/slugs";
 import type { Marketplace } from "@/types/marketplace";
 import type { InventoryInstance, InventoryMarket } from "@/types/inventory";
 
@@ -179,6 +183,10 @@ export function AddInventoryItemPage() {
           payload.backmarket_id = productId;
           payload.instance_id = productId;
           if (gtin) payload.gtin = gtin;
+        } else if (isLightspeed(slug)) {
+          throw new Error(
+            "Lightspeed products are synced from Telefoongigant. Open Inventory and select Lightspeed to manage stock there — new Lightspeed listings are not created from this form.",
+          );
         }
 
         await createInventoryOffer(payload);
@@ -223,13 +231,6 @@ export function AddInventoryItemPage() {
     >
       {initError && <Alert kind="error">{initError}</Alert>}
       {formError && <Alert kind="error">{formError}</Alert>}
-      {busy && (
-        <p className="mb-4 flex items-center gap-2 text-sm text-slate-600">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Checking product on Refurbed…
-        </p>
-      )}
-
       <div className="max-w-2xl">
         <EanAsinPanel
           onFound={(found) => {
@@ -295,7 +296,8 @@ function EanAsinPanel({
       </div>
 
       <p className="mt-3 text-sm text-slate-500">
-        For multi-site sales, give preference to search by EAN
+        Searches Refurbed, Back Market, and Lightspeed (Telefoongigant). For
+        multi-site sales, prefer EAN.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
@@ -308,7 +310,7 @@ function EanAsinPanel({
               setValue(e.target.value);
               setError("");
             }}
-            placeholder="e.g. 0194252670477 or your SKU"
+            placeholder="e.g. 190199188730, ASIN, or Lightspeed SKU"
             className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
           />
         </label>

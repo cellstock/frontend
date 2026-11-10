@@ -33,7 +33,14 @@ import {
   updateInventoryBulk,
   updateInventoryOffer,
 } from "@/lib/api/inventory";
-import type { InventoryOffer } from "@/types/inventory";
+import { marketplaceLogoPath } from "@/lib/marketplaces/slugs";
+import type {
+  InventoryMarket,
+  InventoryMarketplaceOption,
+  InventoryOffer,
+} from "@/types/inventory";
+
+const INVENTORY_MARKETPLACE_KEY = "cellexa.inventory.marketplace";
 
 type BulkAction =
   | "queue_upload"
@@ -60,6 +67,12 @@ export function InventoryTablePage() {
   const [stock, setStock] = useState("all");
   const [sort, setSort] = useState("created_desc");
   const [market, setMarket] = useState("");
+  const [marketplaceSlug, setMarketplaceSlug] = useState(() => {
+    if (typeof window === "undefined") return "lightspeed";
+    return (
+      window.localStorage.getItem(INVENTORY_MARKETPLACE_KEY) || "lightspeed"
+    );
+  });
   const [selected, setSelected] = useState<string[]>([]);
   const [bulkDialog, setBulkDialog] = useState<BulkAction | null>(null);
   const [outOfStockOffer, setOutOfStockOffer] = useState<InventoryOffer | null>(
@@ -95,11 +108,17 @@ export function InventoryTablePage() {
       stock: stock === "all" ? undefined : stock,
       sort,
       market: market.trim() ? market.trim().toUpperCase() : undefined,
+      marketplace: marketplaceSlug.trim() || undefined,
       signal: controller.signal,
     })
       .then((result) => {
         if (!controller.signal.aborted) {
           setResponse(result);
+          const nextSlug = result.data.marketplace?.slug || "";
+          if (nextSlug && nextSlug !== marketplaceSlug) {
+            setMarketplaceSlug(nextSlug);
+            window.localStorage.setItem(INVENTORY_MARKETPLACE_KEY, nextSlug);
+          }
           if (!market.trim() && result.data.selected_market) {
             setMarket(String(result.data.selected_market).toUpperCase());
           }
@@ -131,6 +150,7 @@ export function InventoryTablePage() {
     stock,
     sort,
     market,
+    marketplaceSlug,
   ]);
 
   const offers = useMemo(() => response?.data.offers ?? [], [response]);
@@ -149,7 +169,7 @@ export function InventoryTablePage() {
     setIsLoading(true);
     setActionMessage("");
     try {
-      const result = await syncInventory();
+      const result = await syncInventory(marketplaceSlug.trim() || undefined);
       setActionMessage(
         `${result.message} ${result.data.synchronized} offers stored.`,
       );
@@ -163,6 +183,16 @@ export function InventoryTablePage() {
       );
       setIsLoading(false);
     }
+  }
+
+  function selectMarketplaceOption(slug: string, marketCode: string) {
+    const nextSlug = slug.trim();
+    const nextMarket = marketCode.trim().toUpperCase();
+    window.localStorage.setItem(INVENTORY_MARKETPLACE_KEY, nextSlug);
+    setPage(1);
+    setSelected([]);
+    setMarketplaceSlug(nextSlug);
+    setMarket(nextMarket);
   }
   function clearFilters() {
     setSearchInput("");
@@ -245,17 +275,16 @@ export function InventoryTablePage() {
                   Inventory of
                 </h2>
                 <MarketplacePicker
-                  marketplace={marketplace}
+                  marketplace={response?.data.marketplace}
+                  availableMarketplaces={
+                    response?.data.available_marketplaces ?? []
+                  }
                   markets={response?.data.markets ?? []}
                   selectedMarket={
                     market || response?.data.selected_market || ""
                   }
-                  onChange={(code) => {
-                    const next = code.trim().toUpperCase();
-                    if (next === market.toUpperCase()) return;
-                    setMarket(next);
-                    setSelected([]);
-                    setPage(1);
+                  onChange={(slug, code) => {
+                    selectMarketplaceOption(slug, code);
                   }}
                 />
               </div>
@@ -417,7 +446,7 @@ export function InventoryTablePage() {
             busySku={busySku}
             onToggle={toggleOffer}
             onOutOfStock={setOutOfStockOffer}
-            onStockSaved={(offerId, sku, stock) => {
+            onStockSaved={(offerId, _sku, stock) => {
               setResponse((current) => {
                 if (!current) return current;
                 return {
@@ -425,14 +454,16 @@ export function InventoryTablePage() {
                   data: {
                     ...current.data,
                     offers: current.data.offers.map((offer) =>
-                      offer.id === offerId || (sku && offer.sku === sku)
-                        ? { ...offer, stock }
-                        : offer,
+                      offer.id === offerId ? { ...offer, stock } : offer,
                     ),
                   },
                 };
               });
-              setActionMessage("Quantity updated across marketplaces.");
+              setActionMessage(
+                marketplace?.slug === "lightspeed"
+                  ? "Quantity updated for this Lightspeed product only."
+                  : "Quantity updated across marketplaces.",
+              );
             }}
           />
         )}
@@ -488,10 +519,7 @@ function InventoryDataTable({
     value && Number(value) > 0
       ? `${Number(value).toFixed(2)} ${currency}`
       : "—";
-  const logo =
-    marketplace?.slug?.startsWith("back-market")
-      ? "/images/marketplaces/back-market.png"
-      : "/images/marketplaces/refurbed.png";
+  const logo = marketplaceLogoPath(marketplace?.slug);
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[1640px] text-left text-sm">
@@ -620,6 +648,9 @@ function InventoryDataTable({
                   <EditableQty
                     offer={offer}
                     disabled={busySku === offer.sku}
+                    shareAcrossMarketplaces={
+                      marketplace?.slug !== "lightspeed"
+                    }
                     onSaved={onStockSaved}
                   />
                 </td>
@@ -666,7 +697,11 @@ function InventoryDataTable({
                 <td className="px-4 py-5">
                   <div className="flex justify-center gap-2">
                     <AppLink
-                      href={`/dashboard/inventory/offers/edit/?offerId=${encodeURIComponent(offer.id)}`}
+                      href={`/dashboard/inventory/offers/edit/?offerId=${encodeURIComponent(offer.id)}${
+                        marketplace?.slug
+                          ? `&marketplace=${encodeURIComponent(marketplace.slug)}`
+                          : ""
+                      }`}
                       title="Edit offer"
                       className="rounded-lg p-2 text-blue-600 hover:bg-blue-100"
                     >
@@ -699,10 +734,12 @@ function InventoryDataTable({
 function EditableQty({
   offer,
   disabled,
+  shareAcrossMarketplaces = true,
   onSaved,
 }: {
   offer: InventoryOffer;
   disabled?: boolean;
+  shareAcrossMarketplaces?: boolean;
   onSaved: (offerId: string, sku: string, stock: number) => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -753,13 +790,17 @@ function EditableQty({
     return (
       <button
         type="button"
-        title="Double-click to edit quantity. Updates stock on all marketplaces."
+        title={
+          shareAcrossMarketplaces
+            ? "Double-click to edit quantity. Updates stock on all marketplaces."
+            : "Double-click to edit quantity for this product only."
+        }
         disabled={disabled}
         onDoubleClick={() => {
           if (disabled) return;
           setEditing(true);
           setError("");
-          setShowSharedTip(true);
+          setShowSharedTip(shareAcrossMarketplaces);
         }}
         className="min-w-12 rounded-lg px-2 py-1 font-bold text-slate-900 hover:bg-blue-50 disabled:opacity-50"
       >
@@ -770,7 +811,7 @@ function EditableQty({
 
   return (
     <div className="relative inline-flex flex-col items-center gap-1">
-      {showSharedTip && (
+      {showSharedTip && shareAcrossMarketplaces && (
         <div
           role="tooltip"
           className="absolute bottom-full left-1/2 z-30 mb-2 w-56 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-medium leading-4 text-white shadow-lg"
@@ -1077,6 +1118,7 @@ function InventoryPagination({
 
 function MarketplacePicker({
   marketplace,
+  availableMarketplaces,
   markets,
   selectedMarket,
   onChange,
@@ -1087,35 +1129,67 @@ function MarketplacePicker({
     logo?: string | null;
     account_name?: string | null;
   };
-  markets: Array<{
-    code: string;
-    name: string;
-    currency_code?: string | null;
-  }>;
+  availableMarketplaces: InventoryMarketplaceOption[];
+  markets: InventoryMarket[];
   selectedMarket: string;
-  onChange: (code: string) => void;
+  onChange: (slug: string, code: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [marketSearch, setMarketSearch] = useState("");
-  const logo =
-    marketplace?.slug?.startsWith("back-market")
-      ? "/images/marketplaces/back-market.png"
-      : "/images/marketplaces/refurbed.png";
-  const name = marketplace?.name || "Refurbed";
+  const options = useMemo(() => {
+    const sources =
+      availableMarketplaces.length > 0
+        ? availableMarketplaces
+        : marketplace
+          ? [
+              {
+                slug: marketplace.slug,
+                name: marketplace.name,
+                logo: marketplace.logo,
+                account_name: marketplace.account_name,
+                markets,
+              },
+            ]
+          : [];
+
+    return sources.flatMap((source) => {
+      const sourceMarkets =
+        source.markets.length > 0
+          ? source.markets
+          : [{ code: "", name: source.name, currency_code: null }];
+      return sourceMarkets.map((item) => ({
+        key: `${source.slug}:${item.code || "default"}`,
+        slug: source.slug,
+        name: source.name,
+        account_name: source.account_name,
+        code: (item.code || "").toUpperCase(),
+        marketName: item.name,
+        currency_code: item.currency_code,
+        logo: marketplaceLogoPath(source.slug),
+      }));
+    });
+  }, [availableMarketplaces, marketplace, markets]);
+
   const selectedCode = selectedMarket.trim().toUpperCase();
-  const activeMarket =
-    markets.find((item) => item.code.toUpperCase() === selectedCode) ??
-    markets[0];
-  const filteredMarkets = useMemo(() => {
+  const activeOption =
+    options.find(
+      (item) =>
+        item.slug === marketplace?.slug &&
+        (item.code === selectedCode || (!item.code && !selectedCode)),
+    ) ??
+    options.find((item) => item.slug === marketplace?.slug) ??
+    options[0];
+  const filteredOptions = useMemo(() => {
     const term = marketSearch.trim().toLowerCase();
-    if (!term) return markets;
-    return markets.filter(
+    if (!term) return options;
+    return options.filter(
       (item) =>
         item.code.toLowerCase().includes(term) ||
+        item.marketName.toLowerCase().includes(term) ||
         item.name.toLowerCase().includes(term) ||
-        `${name} ${item.code}`.toLowerCase().includes(term),
+        `${item.name} ${item.code}`.toLowerCase().includes(term),
     );
-  }, [markets, marketSearch, name]);
+  }, [options, marketSearch]);
 
   return (
     <div className="relative">
@@ -1128,7 +1202,7 @@ function MarketplacePicker({
       >
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white p-1">
           <Image
-            src={logo}
+            src={activeOption?.logo || marketplaceLogoPath(marketplace?.slug)}
             alt=""
             width={28}
             height={28}
@@ -1137,10 +1211,14 @@ function MarketplacePicker({
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-bold text-slate-900">
-            {activeMarket ? `${name} ${activeMarket.code}` : name}
+            {activeOption
+              ? `${activeOption.name}${activeOption.code ? ` ${activeOption.code}` : ""}`
+              : marketplace?.name || "Marketplace"}
           </span>
           <span className="block truncate text-xs text-slate-500">
-            {activeMarket?.name || marketplace?.account_name || "Select market"}
+            {activeOption?.marketName ||
+              marketplace?.account_name ||
+              "Select marketplace"}
           </span>
         </span>
         <ChevronDown
@@ -1170,26 +1248,24 @@ function MarketplacePicker({
                   autoFocus
                   value={marketSearch}
                   onChange={(event) => setMarketSearch(event.target.value)}
-                  placeholder="Search market…"
+                  placeholder="Search marketplace…"
                   className="min-w-0 flex-1 text-sm outline-none"
                   onClick={(event) => event.stopPropagation()}
                 />
               </div>
             </div>
             <div className="overflow-y-auto overscroll-contain p-2">
-              {filteredMarkets.map((item) => {
-                const selected =
-                  item.code.toUpperCase() ===
-                  (activeMarket?.code ?? "").toUpperCase();
+              {filteredOptions.map((item) => {
+                const selected = item.key === activeOption?.key;
 
                 return (
                   <button
-                    key={item.code}
+                    key={item.key}
                     type="button"
                     role="option"
                     aria-selected={selected}
                     onClick={() => {
-                      onChange(item.code.toUpperCase());
+                      onChange(item.slug, item.code);
                       setOpen(false);
                       setMarketSearch("");
                     }}
@@ -1197,7 +1273,7 @@ function MarketplacePicker({
                   >
                     <span className="grid h-10 w-10 place-items-center rounded-xl border border-blue-100 bg-white p-1.5">
                       <Image
-                        src={logo}
+                        src={item.logo}
                         alt=""
                         width={30}
                         height={30}
@@ -1206,10 +1282,11 @@ function MarketplacePicker({
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block font-semibold text-slate-900">
-                        {name} {item.code}
+                        {item.name}
+                        {item.code ? ` ${item.code}` : ""}
                       </span>
                       <span className="block truncate text-xs text-slate-500">
-                        {item.name}
+                        {item.marketName}
                         {item.currency_code ? ` · ${item.currency_code}` : ""}
                       </span>
                     </span>
@@ -1219,11 +1296,11 @@ function MarketplacePicker({
                   </button>
                 );
               })}
-              {filteredMarkets.length === 0 && (
+              {filteredOptions.length === 0 && (
                 <p className="px-3 py-3 text-sm text-slate-500">
-                  {markets.length === 0
-                    ? "No markets are enabled for offer management."
-                    : "No markets match your search."}
+                  {options.length === 0
+                    ? "No connected inventory marketplaces."
+                    : "No marketplaces match your search."}
                 </p>
               )}
             </div>

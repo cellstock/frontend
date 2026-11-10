@@ -62,7 +62,9 @@ export function OrderActionsMenu({
   const availableStatuses = useMemo(() => {
     const slug = order.marketplace.slug ?? "";
     const supported =
-      slug === "refurbed" || slug.startsWith("back-market");
+      slug === "refurbed" ||
+      slug.startsWith("back-market") ||
+      slug === "lightspeed";
     if (!supported || order.items.length === 0) return [];
     const options = order.items.map(
       (item) => transitions[item.status.toUpperCase()] ?? [],
@@ -114,6 +116,7 @@ export function OrderActionsMenu({
     itemIdentifiers: NonNullable<
       Parameters<typeof updateOrderStatus>[1]["item_identifiers"]
     > = [],
+    trackingNumber?: string,
   ) {
     setBusy(true);
     setError("");
@@ -121,6 +124,7 @@ export function OrderActionsMenu({
       await updateOrderStatus(order.id, {
         status,
         ...(trackingUrl ? { tracking_url: trackingUrl } : {}),
+        ...(trackingNumber ? { tracking_number: trackingNumber } : {}),
         ...(itemIdentifiers.length
           ? { item_identifiers: itemIdentifiers }
           : {}),
@@ -648,13 +652,18 @@ function OrderStatusModal({
     identifiers?: NonNullable<
       Parameters<typeof updateOrderStatus>[1]["item_identifiers"]
     >,
+    trackingNumber?: string,
   ) => Promise<void>;
 }) {
+  const isLightspeed = (order.marketplace.slug ?? "") === "lightspeed";
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const trackingUrl =
       String(data.get("tracking_url") ?? "").trim() || undefined;
+    const trackingNumber =
+      String(data.get("tracking_number") ?? "").trim() || undefined;
     const identifiers = order.items.flatMap((item) => {
       const value = String(
         data.get(`identifier_${item.external_order_item_id}`) ?? "",
@@ -670,7 +679,7 @@ function OrderStatusModal({
           ]
         : [];
     });
-    await onConfirm(status, trackingUrl, identifiers);
+    await onConfirm(status, trackingUrl, identifiers, trackingNumber);
   }
   const field =
     "mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100";
@@ -690,7 +699,9 @@ function OrderStatusModal({
               {labels[status]}
             </h2>
             <p className="mt-2 text-sm text-slate-500">
-              This update will be sent to Refurbed and saved in CelleXa.
+              {isLightspeed
+                ? "This update will be sent to Lightspeed (Telefoongigant) and saved in CelleXa."
+                : "This update will be sent to the marketplace and saved in CelleXa."}
             </p>
           </div>
           <button
@@ -704,32 +715,46 @@ function OrderStatusModal({
         <form onSubmit={submit} className="space-y-5 p-6">
           {status === "SHIPPED" && (
             <>
-              <label className="block text-sm font-semibold">
-                Parcel tracking URL
-                <input
-                  required
-                  type="url"
-                  name="tracking_url"
-                  defaultValue={order.tracking_url ?? ""}
-                  className={field}
-                />
-              </label>
-              {order.items.map((item) => (
-                <label
-                  key={item.external_order_item_id}
-                  className="block text-sm font-semibold"
-                >
-                  IMEI or serial number{" "}
-                  <span className="font-normal text-slate-400">
-                    ({item.title})
-                  </span>
+              {isLightspeed ? (
+                <label className="block text-sm font-semibold">
+                  Tracking number
                   <input
-                    name={`identifier_${item.external_order_item_id}`}
-                    defaultValue={item.item_identifiers?.[0]?.value ?? ""}
+                    required
+                    type="text"
+                    name="tracking_number"
+                    defaultValue={order.tracking_number ?? ""}
                     className={field}
                   />
                 </label>
-              ))}
+              ) : (
+                <label className="block text-sm font-semibold">
+                  Parcel tracking URL
+                  <input
+                    required
+                    type="url"
+                    name="tracking_url"
+                    defaultValue={order.tracking_url ?? ""}
+                    className={field}
+                  />
+                </label>
+              )}
+              {!isLightspeed &&
+                order.items.map((item) => (
+                  <label
+                    key={item.external_order_item_id}
+                    className="block text-sm font-semibold"
+                  >
+                    IMEI or serial number{" "}
+                    <span className="font-normal text-slate-400">
+                      ({item.title})
+                    </span>
+                    <input
+                      name={`identifier_${item.external_order_item_id}`}
+                      defaultValue={item.item_identifiers?.[0]?.value ?? ""}
+                      className={field}
+                    />
+                  </label>
+                ))}
             </>
           )}
           {error && (

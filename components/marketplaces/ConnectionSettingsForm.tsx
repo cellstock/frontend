@@ -15,6 +15,7 @@ import {
   getMarketplaceConnectionOptions,
   MarketplaceApiError,
 } from "@/lib/api/marketplaces";
+import { isLightspeed as isLightspeedSlug } from "@/lib/marketplaces/slugs";
 import type {
   MarketplaceCapability,
   MarketplaceFormValues,
@@ -95,10 +96,15 @@ export function ConnectionSettingsForm({
   const formId = useId();
 
   const isBackMarket = isBackMarketSlug(marketplaceSlug);
+  const isLightspeed = isLightspeedSlug(marketplaceSlug);
 
   const [accountName, setAccountName] = useState(initialAccountName);
   const [apiKey, setApiKey] = useState("");
+  const [apiSecret, setApiSecret] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
+  const [showApiSecret, setShowApiSecret] = useState(false);
+  const [cluster, setCluster] = useState<"eu1" | "us1">("eu1");
+  const [language, setLanguage] = useState("nl");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingMarkets, setIsLoadingMarkets] = useState(false);
   const [generalError, setGeneralError] = useState("");
@@ -108,6 +114,7 @@ export function ConnectionSettingsForm({
     sync_orders: initialSettings.sync_orders ?? true,
     sync_products: initialSettings.sync_products ?? true,
     sync_inventory: initialSettings.sync_inventory ?? true,
+    product_title_filter: initialSettings.product_title_filter ?? "ipad",
     markets: initialSettings.markets ?? [],
   });
 
@@ -232,6 +239,7 @@ export function ConnectionSettingsForm({
 
     const trimmedAccountName = accountName.trim();
     const trimmedApiKey = apiKey.trim();
+    const trimmedApiSecret = apiSecret.trim();
     const localErrors: ValidationErrors = {};
 
     if (!trimmedAccountName) {
@@ -243,6 +251,12 @@ export function ConnectionSettingsForm({
         isBackMarket
           ? "The Back Market API token is required."
           : "The API key is required.",
+      ];
+    }
+
+    if (isLightspeed && mode === "connect" && !trimmedApiSecret) {
+      localErrors["credentials.api_secret"] = [
+        "The Lightspeed API secret is required.",
       ];
     }
 
@@ -288,17 +302,36 @@ export function ConnectionSettingsForm({
           )?.code
         : undefined;
 
+      const nextSettings: MarketplaceSettings = {
+        ...settings,
+        ...(isLightspeed
+          ? {
+              product_title_filter:
+                (settings.product_title_filter ?? "ipad").trim() || "ipad",
+            }
+          : {}),
+      };
+
       await onSubmit({
         account_name: trimmedAccountName,
         api_key: trimmedApiKey,
+        ...(isLightspeed
+          ? {
+              api_secret: trimmedApiSecret,
+              cluster,
+              language: language.trim() || "nl",
+            }
+          : {}),
         ...(isBackMarket && firstSelectedLocale
           ? { country_code: firstSelectedLocale }
           : {}),
-        settings,
+        settings: nextSettings,
       });
 
       setApiKey("");
+      setApiSecret("");
       setShowApiKey(false);
+      setShowApiSecret(false);
     } catch (caughtError: unknown) {
       if (caughtError instanceof MarketplaceApiError) {
         setGeneralError(caughtError.message);
@@ -315,9 +348,13 @@ export function ConnectionSettingsForm({
     ? mode === "connect"
       ? "Paste the token from Back Market Back Office → Options → Integrations."
       : "Leave blank to keep the saved token."
-    : mode === "connect"
-      ? "Enter the API key provided by the marketplace."
-      : "Leave this blank to keep the currently saved credential.";
+    : isLightspeed
+      ? mode === "connect"
+        ? "From Lightspeed back office → Settings → Store Settings → Developers."
+        : "Leave blank to keep the saved API key."
+      : mode === "connect"
+        ? "Enter the API key provided by the marketplace."
+        : "Leave this blank to keep the currently saved credential.";
 
   const showMarketsSection = marketplaceSlug === "refurbed" || isBackMarket;
 
@@ -420,6 +457,155 @@ export function ConnectionSettingsForm({
 
         <FieldError errors={validationErrors} field="credentials.api_key" />
       </div>
+
+      {isLightspeed && (
+        <>
+          <div>
+            <label
+              htmlFor={`${formId}-api-secret`}
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              {t("API secret")}
+              {mode === "update" && (
+                <span className="ml-1 font-normal text-slate-400">
+                  {t("(optional)")}
+                </span>
+              )}
+            </label>
+
+            <div className="relative">
+              <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
+
+              <input
+                id={`${formId}-api-secret`}
+                name="api_secret"
+                type={showApiSecret ? "text" : "password"}
+                autoComplete="new-password"
+                required={mode === "connect"}
+                disabled={isSubmitting}
+                value={apiSecret}
+                onChange={(event) => setApiSecret(event.target.value)}
+                placeholder={
+                  mode === "connect"
+                    ? t("Enter Lightspeed API secret")
+                    : t("Enter a new API secret")
+                }
+                aria-invalid={
+                  Boolean(validationErrors["credentials.api_secret"]) ||
+                  undefined
+                }
+                className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-12 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              />
+
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => setShowApiSecret((current) => !current)}
+                aria-label={
+                  showApiSecret ? t("Hide API secret") : t("Show API secret")
+                }
+                aria-pressed={showApiSecret}
+                className="absolute right-2.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {showApiSecret ? (
+                  <EyeOff className="h-4.5 w-4.5" />
+                ) : (
+                  <Eye className="h-4.5 w-4.5" />
+                )}
+              </button>
+            </div>
+
+            <p className="mt-1.5 text-xs leading-5 text-slate-500">
+              {mode === "connect"
+                ? t("Click Show next to the secret in Lightspeed Developers.")
+                : t("Leave blank to keep the saved API secret.")}
+            </p>
+
+            <FieldError
+              errors={validationErrors}
+              field="credentials.api_secret"
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor={`${formId}-cluster`}
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                {t("Cluster")}
+              </label>
+              <select
+                id={`${formId}-cluster`}
+                name="cluster"
+                disabled={isSubmitting}
+                value={cluster}
+                onChange={(event) =>
+                  setCluster(event.target.value === "us1" ? "us1" : "eu1")
+                }
+                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition hover:border-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              >
+                <option value="eu1">eu1 (api.webshopapp.com)</option>
+                <option value="us1">us1 (api.shoplightspeed.com)</option>
+              </select>
+              <p className="mt-1.5 text-xs leading-5 text-slate-500">
+                {t("Use eu1 for telefoongigant.nl and other EU shops.")}
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor={`${formId}-language`}
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                {t("Shop language")}
+              </label>
+              <input
+                id={`${formId}-language`}
+                name="language"
+                type="text"
+                disabled={isSubmitting}
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                placeholder="nl"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+              />
+              <p className="mt-1.5 text-xs leading-5 text-slate-500">
+                {t("API language path, usually nl for Telefoongigant.")}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor={`${formId}-product-filter`}
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              {t("Product title filter")}
+            </label>
+            <input
+              id={`${formId}-product-filter`}
+              name="product_title_filter"
+              type="text"
+              disabled={isSubmitting}
+              value={settings.product_title_filter ?? "ipad"}
+              onChange={(event) =>
+                setSettings((current) => ({
+                  ...current,
+                  product_title_filter: event.target.value,
+                }))
+              }
+              placeholder="ipad"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+            />
+            <p className="mt-1.5 text-xs leading-5 text-slate-500">
+              {t(
+                "Only products whose title/URL contains this text are synced (default: ipad).",
+              )}
+            </p>
+          </div>
+        </>
+      )}
 
       {/* Synchronization settings */}
       <fieldset>

@@ -117,7 +117,8 @@ export function SyncMarketplaceButton({
   async function waitForSyncRun(initialRun: SyncRun): Promise<SyncRun> {
     let currentRun = initialRun;
 
-    for (let attempt = 0; attempt < 80; attempt += 1) {
+    // Lightspeed full sync can take several minutes while paging products/orders.
+    for (let attempt = 0; attempt < 400; attempt += 1) {
       if (currentRun.status === "completed" || currentRun.status === "failed") {
         return currentRun;
       }
@@ -128,11 +129,12 @@ export function SyncMarketplaceButton({
       setSyncRun(currentRun);
     }
 
-    throw new MarketplaceApiError(
-      "The synchronization is still queued. Make sure the Laravel queue worker is running.",
-      408,
-      {},
-    );
+    const hint =
+      currentRun.status === "running"
+        ? "The synchronization is still running. Large Lightspeed syncs can take several minutes — keep the queue worker running and refresh this page shortly."
+        : "The synchronization is still queued. Run: php artisan queue:work --queue=marketplaces,default,imports,notifications";
+
+    throw new MarketplaceApiError(hint, 408, {});
   }
 
   return (

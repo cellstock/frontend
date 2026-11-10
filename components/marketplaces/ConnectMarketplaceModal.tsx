@@ -70,6 +70,9 @@ export function ConnectMarketplaceModal({
         account_name: values.account_name,
         credentials: {
           api_key: values.api_key,
+          ...(values.api_secret ? { api_secret: values.api_secret } : {}),
+          ...(values.cluster ? { cluster: values.cluster } : {}),
+          ...(values.language ? { language: values.language } : {}),
           ...(values.country_code
             ? { country_code: values.country_code }
             : {}),
@@ -168,7 +171,11 @@ export function ConnectMarketplaceModal({
             initialSettings={{
               sync_orders: marketplace.capabilities.includes("orders"),
               sync_products: marketplace.capabilities.includes("products"),
-              sync_inventory: false,
+              sync_inventory:
+                marketplace.slug === "lightspeed" ||
+                marketplace.capabilities.includes("inventory"),
+              product_title_filter:
+                marketplace.slug === "lightspeed" ? "ipad" : undefined,
             }}
             onCancel={handleClose}
             onSubmit={handleConnect}
