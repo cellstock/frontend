@@ -161,6 +161,7 @@ export type RefurbedOrderStatus =
 export interface UpdateOrderStatusInput {
   status: RefurbedOrderStatus;
   tracking_url?: string;
+  tracking_number?: string;
   item_identifiers?: Array<{
     id: string;
     identifier_type: "IMEI" | "SERIAL_NUMBER";
@@ -173,6 +174,8 @@ export interface OrderFilters {
   marketplace?: string;
   status?: string;
   country_code?: string;
+  date_from?: string;
+  date_to?: string;
   page?: number;
   per_page?: number;
 }

@@ -2,19 +2,22 @@
 
 import { useI18n } from "@/components/i18n/language-provider";
 import {
+  AlertCircle,
   ArrowUpRight,
   CheckCircle2,
   CreditCard,
+  Download,
   ExternalLink,
   Mail,
   Package,
   PackageOpen,
   Truck,
   UserRound,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import Link from "@/components/ui/AppLink";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { OrderMarketplaceBadge } from "@/components/orders/OrderMarketplaceBadge";
 import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
@@ -22,6 +25,7 @@ import { OrderActionsMenu } from "@/components/orders/OrderActionsMenu";
 import { OrderBulkActions } from "@/components/orders/OrderBulkActions";
 import {
   OrdersApiError,
+  getOrders,
   updateOrderEditFields,
 } from "@/lib/api/orders";
 import {
@@ -52,13 +56,263 @@ interface OrderTableProps {
   onUpdated?: () => Promise<void> | void;
 }
 
+function todayIsoDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+const CRC32_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let index = 0; index < 256; index += 1) {
+    let value = index;
+    for (let bit = 0; bit < 8; bit += 1) {
+      value = value & 1 ? (value >>> 1) ^ 0xedb88330 : value >>> 1;
+    }
+    table[index] = value >>> 0;
+  }
+  return table;
+})();
+
+function crc32(bytes: Uint8Array): number {
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc = CRC32_TABLE[(crc ^ byte) & 0xff]! ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function encodeUtf8(value: string): Uint8Array {
+  return new TextEncoder().encode(value);
+}
+
+function concatBytes(chunks: Uint8Array[]): Uint8Array {
+  const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+
+function u16(value: number): Uint8Array {
+  return new Uint8Array([value & 0xff, (value >>> 8) & 0xff]);
+}
+
+function u32(value: number): Uint8Array {
+  return new Uint8Array([
+    value & 0xff,
+    (value >>> 8) & 0xff,
+    (value >>> 16) & 0xff,
+    (value >>> 24) & 0xff,
+  ]);
+}
+
+function createZipArchive(
+  files: Array<{ name: string; content: string }>,
+): Blob {
+  const localParts: Uint8Array[] = [];
+  const centralParts: Uint8Array[] = [];
+  let offset = 0;
+
+  for (const file of files) {
+    const nameBytes = encodeUtf8(file.name);
+    const dataBytes = encodeUtf8(file.content);
+    const checksum = crc32(dataBytes);
+    const localHeader = concatBytes([
+      u32(0x04034b50),
+      u16(20),
+      u16(0),
+      u16(0),
+      u16(0),
+      u16(0),
+      u32(checksum),
+      u32(dataBytes.length),
+      u32(dataBytes.length),
+      u16(nameBytes.length),
+      u16(0),
+      nameBytes,
+    ]);
+    localParts.push(localHeader, dataBytes);
+    centralParts.push(
+      concatBytes([
+        u32(0x02014b50),
+        u16(20),
+        u16(20),
+        u16(0),
+        u16(0),
+        u16(0),
+        u16(0),
+        u32(checksum),
+        u32(dataBytes.length),
+        u32(dataBytes.length),
+        u16(nameBytes.length),
+        u16(0),
+        u16(0),
+        u16(0),
+        u16(0),
+        u32(0),
+        u32(offset),
+        nameBytes,
+      ]),
+    );
+    offset += localHeader.length + dataBytes.length;
+  }
+
+  const centralDirectory = concatBytes(centralParts);
+  const endRecord = concatBytes([
+    u32(0x06054b50),
+    u16(0),
+    u16(0),
+    u16(files.length),
+    u16(files.length),
+    u32(centralDirectory.length),
+    u32(offset),
+    u16(0),
+  ]);
+
+  return new Blob([concatBytes([...localParts, centralDirectory, endRecord])], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+}
+
+function xmlEscape(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function downloadOrdersExcel(
+  orders: Order[],
+  dateFrom: string,
+  dateTo: string,
+) {
+  const header = [
+    "id",
+    "external_order_id",
+    "Product - Instance name",
+    "status",
+    "workflow_status",
+    "payment_status",
+    "customer",
+    "email",
+    "total_amount",
+    "currency",
+    "marketplace",
+    "ordered_at",
+    "tracking_number",
+    "tracking_url",
+  ];
+  const rows = [
+    header,
+    ...orders.map((order) => [
+      String(order.id),
+      order.external_order_id,
+      order.items[0]?.title?.trim() || "",
+      order.status,
+      order.workflow_status,
+      order.payment_status,
+      order.customer.name ?? "",
+      order.customer.email ?? "",
+      order.total_amount,
+      order.currency,
+      order.marketplace.name,
+      order.ordered_at ?? "",
+      order.tracking_number ?? "",
+      order.tracking_url ?? "",
+    ]),
+  ];
+  const sheetRows = rows
+    .map(
+      (row) =>
+        `<row>${row
+          .map(
+            (value) =>
+              `<c t="inlineStr"><is><t>${xmlEscape(String(value))}</t></is></c>`,
+          )
+          .join("")}</row>`,
+    )
+    .join("");
+
+  const blob = createZipArchive([
+    {
+      name: "[Content_Types].xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+</Types>`,
+    },
+    {
+      name: "_rels/.rels",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`,
+    },
+    {
+      name: "xl/workbook.xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Orders" sheetId="1" r:id="rId1"/>
+  </sheets>
+</workbook>`,
+    },
+    {
+      name: "xl/_rels/workbook.xml.rels",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+</Relationships>`,
+    },
+    {
+      name: "xl/worksheets/sheet1.xml",
+      content: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetData>${sheetRows}</sheetData>
+</worksheet>`,
+    },
+  ]);
+
+  const filename =
+    dateFrom === dateTo
+      ? `orders-export-${dateFrom}.xlsx`
+      : `orders-export-${dateFrom}_${dateTo}.xlsx`;
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+const exportDateInputClass =
+  "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+
 export function OrderTable({ orders, onUpdated }: OrderTableProps) {
   const { t } = useI18n();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [exportDateFrom, setExportDateFrom] = useState(todayIsoDate);
+  const [exportDateTo, setExportDateTo] = useState(todayIsoDate);
+  const [exporting, setExporting] = useState(false);
   const [feedback, setFeedback] = useState<{
     kind: "success" | "error";
     text: string;
   } | null>(null);
+  const [toast, setToast] = useState<{
+    kind: "success" | "error";
+    text: string;
+  } | null>(null);
+  const toastTimerRef = useRef<number | null>(null);
   const orderIdsKey = orders.map((order) => order.id).join(",");
 
   useEffect(() => {
@@ -66,6 +320,25 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
       current.filter((id) => orders.some((order) => order.id === id)),
     );
   }, [orderIdsKey, orders]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  function showExportToast(next: { kind: "success" | "error"; text: string }) {
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    setToast(next);
+    toastTimerRef.current = window.setTimeout(() => {
+      setToast(null);
+      toastTimerRef.current = null;
+    }, 4000);
+  }
 
   const allSelected =
     orders.length > 0 && orders.every((order) => selectedIds.includes(order.id));
@@ -86,6 +359,62 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
     );
   }
 
+  async function exportOrdersForDateRange() {
+    const today = todayIsoDate();
+    const dateFrom = exportDateFrom || today;
+    const dateTo = exportDateTo || today;
+
+    if (dateFrom > dateTo) {
+      showExportToast({
+        kind: "error",
+        text: t("From date must be on or before the to date."),
+      });
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const exported: Order[] = [];
+      let page = 1;
+      let lastPage = 1;
+      do {
+        const response = await getOrders({
+          date_from: dateFrom,
+          date_to: dateTo,
+          page,
+          per_page: 100,
+        });
+        exported.push(...response.data);
+        lastPage = response.meta.last_page;
+        page += 1;
+      } while (page <= lastPage);
+
+      if (exported.length === 0) {
+        showExportToast({
+          kind: "error",
+          text: t("No orders found for the selected date range."),
+        });
+        return;
+      }
+
+      downloadOrdersExcel(exported, dateFrom, dateTo);
+      showExportToast({
+        kind: "success",
+        text: t(`Exported ${exported.length} order(s).`),
+      });
+    } catch (caught) {
+      showExportToast({
+        kind: "error",
+        text:
+          caught instanceof OrdersApiError
+            ? caught.message
+            : t("Unable to export orders."),
+      });
+    } finally {
+      setExporting(false);
+    }
+  }
+
   if (orders.length === 0) return <OrdersEmptyState />;
 
   return (
@@ -93,6 +422,38 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
       aria-labelledby="orders-results-heading"
       className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
     >
+      {toast && (
+        <div
+          role={toast.kind === "error" ? "alert" : "status"}
+          aria-live="polite"
+          className={`fixed right-4 top-4 z-50 flex max-w-sm items-start gap-3 rounded-xl border px-4 py-3 shadow-lg ${
+            toast.kind === "error"
+              ? "border-red-200 bg-white text-red-700"
+              : "border-emerald-200 bg-white text-emerald-700"
+          }`}
+        >
+          {toast.kind === "error" ? (
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+          ) : (
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+          )}
+          <p className="flex-1 text-sm font-medium">{toast.text}</p>
+          <button
+            type="button"
+            aria-label={t("Dismiss notification")}
+            onClick={() => {
+              if (toastTimerRef.current !== null) {
+                window.clearTimeout(toastTimerRef.current);
+                toastTimerRef.current = null;
+              }
+              setToast(null);
+            }}
+            className="rounded-lg p-1 transition hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-current"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
       <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex flex-wrap items-center gap-3">
           <OrderBulkActions
@@ -119,6 +480,47 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-slate-800">
+              {t("Export")}
+            </span>
+            <label htmlFor="orders-export-date-from" className="sr-only">
+              {t("From date")}
+            </label>
+            <input
+              id="orders-export-date-from"
+              type="date"
+              value={exportDateFrom}
+              max={exportDateTo || undefined}
+              onChange={(event) => setExportDateFrom(event.target.value)}
+              className={exportDateInputClass}
+              title={t("From date")}
+            />
+            <span className="text-xs font-medium text-slate-500" aria-hidden="true">
+              –
+            </span>
+            <label htmlFor="orders-export-date-to" className="sr-only">
+              {t("To date")}
+            </label>
+            <input
+              id="orders-export-date-to"
+              type="date"
+              value={exportDateTo}
+              min={exportDateFrom || undefined}
+              onChange={(event) => setExportDateTo(event.target.value)}
+              className={exportDateInputClass}
+              title={t("To date")}
+            />
+            <button
+              type="button"
+              disabled={exporting}
+              onClick={() => void exportOrdersForDateRange()}
+              className="inline-flex items-center gap-2 rounded-lg border border-blue-500 bg-white px-3 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Download className="h-4 w-4" />
+              {exporting ? t("Exporting…") : t("Export")}
+            </button>
+          </div>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
             {orders.length} {t("shown")}
           </span>
@@ -158,19 +560,19 @@ export function OrderTable({ orders, onUpdated }: OrderTableProps) {
               <TableHeading className="w-[175px]">
                 {t("Date & site")}
               </TableHeading>
-              <TableHeading className="w-[380px]">
+              <TableHeading className="w-[360px]">
                 {t("Order & item details")}
               </TableHeading>
-              <TableHeading className="w-[230px]">
+              <TableHeading className="w-[220px]">
                 {t("Customer & total")}
               </TableHeading>
-              <TableHeading className="w-[205px]">
+              <TableHeading className="w-[200px]">
                 {t("Status & payment")}
               </TableHeading>
               <TableHeading className="w-[340px]">
                 {t("Delivery options")}
               </TableHeading>
-              <TableHeading className="sticky right-0 z-20 w-[130px] bg-slate-50 shadow-[-8px_0_12px_-12px_rgba(15,23,42,0.35)]">
+              <TableHeading className="sticky right-0 z-20 w-[300px] min-w-[300px] bg-slate-50 shadow-[-12px_0_16px_-12px_rgba(15,23,42,0.35)]">
                 {t("Actions")}
               </TableHeading>
             </tr>

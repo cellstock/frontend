@@ -39,6 +39,8 @@ export interface MarketplaceSettings {
   sync_orders: boolean;
   sync_products: boolean;
   sync_inventory: boolean;
+  /** Lightspeed: only sync products whose title/url contains this text (default: ipad). */
+  product_title_filter?: string;
   markets?: MarketplaceMarketSetting[];
 }
 
@@ -108,10 +110,13 @@ export interface MarketplaceResponse {
 
 export interface MarketplaceCredentials {
   api_key?: string;
+  api_secret?: string;
   access_token?: string;
   platform?: "eu" | "na" | "ap";
   country_code?: string;
   environment?: "preproduction" | "production";
+  cluster?: "eu1" | "us1";
+  language?: string;
 }
 
 export interface ConnectMarketplaceRequest {
@@ -173,7 +178,12 @@ export interface MarketplaceActionResponse extends ApiSuccessResponse {
 export interface MarketplaceFormValues {
   account_name: string;
   api_key?: string;
+  api_secret?: string;
   /** Accept-Language locale code, e.g. "fr-fr". Used by Back Market. */
   country_code?: string;
+  /** Lightspeed C-Series cluster (eu1 for NL shops). */
+  cluster?: "eu1" | "us1";
+  /** Lightspeed shop language path, e.g. nl or en. */
+  language?: string;
   settings: MarketplaceSettings;
 }

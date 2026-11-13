@@ -82,6 +82,7 @@ $routes = [
     '~^/orders/[0-9]+/(returns|merchant-addresses|invoice/custom|shipping-label/file)$~' => ['GET'],
     '~^/orders/[0-9]+/(status|edit-fields|address/(billing|shipping)|items/[0-9]+/shipping)$~' => ['PATCH'],
     '~^/orders/[0-9]+/(refresh|refund|refund/calculate|shipping-label|email)$~' => ['POST'],
+    '~^/orders/[0-9]+/invoice/local$~' => ['POST'],
     '~^/orders/[0-9]+/invoice$~' => ['GET', 'POST'],
     '~^/inventory(/diagnostics|/instance)?$~' => ['GET'],
     '~^/inventory/(sync|offers|import|bulk)$~' => ['POST'],

@@ -25,6 +25,15 @@ import { useEffect, useRef, useState } from "react";
 import { getMerchantAddressRecords, type MerchantAddressRecord } from "@/lib/api/merchant-addresses";
 
 import type { OrderDocument } from "./OrderDocumentPreview";
+import {
+  buildOrderItemIdentifierPayload,
+  initialItemIdentifierValues,
+  orderItemExpectsSerialNumber,
+  sanitizeImeiInput,
+  validateItemIdentifierValues,
+  orderItemIdentifierFieldLabel,
+  type ItemIdentifierValues,
+} from "@/lib/orders/item-identifiers";
 import { createOrderPdf } from "@/lib/orders/order-pdf";
 import type { Order, OrderAddress } from "@/types/order";
 import {
@@ -451,13 +460,8 @@ function FulfilmentEditor({
     order.payment_status,
   );
   const [trackingUrl, setTrackingUrl] = useState(order.tracking_url ?? "");
-  const [identifiers, setIdentifiers] = useState<Record<string, string>>(
-    Object.fromEntries(
-      order.items.map((item) => [
-        item.external_order_item_id,
-        item.item_identifiers?.[0]?.value ?? "",
-      ]),
-    ),
+  const [identifiers, setIdentifiers] = useState<ItemIdentifierValues>(() =>
+    initialItemIdentifierValues(order.items),
   );
   const [busy, setBusy] = useState(false);
   const identifierInputRefs = useRef<Record<string, HTMLInputElement | null>>(
@@ -468,33 +472,22 @@ function FulfilmentEditor({
     order.items[0]?.status ?? order.status ?? ""
   ).toUpperCase();
 
-  function resolveIdentifierType(
-    value: string,
-    fallback?: string | null,
-  ): "IMEI" | "SERIAL_NUMBER" {
-    const trimmed = value.trim();
-    if (/^\d{15}$/.test(trimmed)) return "IMEI";
-    if (fallback === "IMEI" || fallback === "SERIAL_NUMBER") return fallback;
-    return "SERIAL_NUMBER";
-  }
-
   async function save() {
     setBusy(true);
     try {
-      const itemIdentifiers = order.items.flatMap((item) => {
-        const value = identifiers[item.external_order_item_id]?.trim() ?? "";
-        if (!value) return [];
-        return [
-          {
-            id: item.external_order_item_id,
-            identifier_type: resolveIdentifierType(
-              value,
-              item.item_identifiers?.[0]?.identifier_type,
-            ),
-            value,
-          },
-        ];
-      });
+      const itemIdentifiers = buildOrderItemIdentifierPayload(
+        order.items,
+        identifiers,
+      );
+      const validationMessage = validateItemIdentifierValues(
+        order.items,
+        identifiers,
+      );
+      if (validationMessage && itemIdentifiers.length > 0) {
+        onFeedback({ kind: "error", text: validationMessage });
+        setBusy(false);
+        return;
+      }
 
       const tracking = trackingUrl.trim();
       const trackingOk = /^https?:\/\//i.test(tracking);
@@ -526,14 +519,14 @@ function FulfilmentEditor({
           await updateOrderStatus(order.id, {
             status: remoteStatus,
             ...(remoteStatus === "SHIPPED" ? { tracking_url: tracking } : {}),
-            ...(itemIdentifiers.length
+            ...(remoteStatus === "SHIPPED" && itemIdentifiers.length
               ? { item_identifiers: itemIdentifiers }
               : {}),
           });
           statusMessage =
             remoteStatus === "SHIPPED"
-              ? " Shipment status queued for Refurbed."
-              : " Accept status queued for Refurbed.";
+              ? " Shipment status updated on Refurbed."
+              : " Accept status updated on Refurbed.";
         } catch (statusError) {
           statusMessage =
             statusError instanceof OrdersApiError
@@ -677,55 +670,72 @@ function FulfilmentEditor({
               Identifier <InfoCircle className="h-4 w-4 text-blue-600" />
             </h3>
             <div className="mt-3 space-y-3">
-              {order.items.map((item) => {
+              {order.items.map((item, index) => {
                 const itemKey = item.external_order_item_id;
+                const values = identifiers[itemKey] ?? {
+                  primary: "",
+                  secondary: "",
+                };
+                const itemLabel =
+                  order.items.length > 1
+                    ? `Device ${index + 1} · ${item.sku || item.title}`
+                    : item.sku;
+
                 return (
-                  <label
+                  <div
                     key={item.id}
-                    className="grid min-w-0 gap-2 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(180px,1fr)_auto] sm:items-center"
+                    className="space-y-2 rounded-xl border border-slate-200 p-3"
                   >
-                    <span className="min-w-0">
-                      <span className="block font-medium">
-                        {item.item_identifiers?.[0]?.identifier_type ===
-                          "IMEI" ||
-                        /^\d{15}$/.test((identifiers[itemKey] ?? "").trim())
-                          ? "IMEI number"
-                          : "Serial / IMEI number"}
+                    <label className="grid min-w-0 gap-2 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(180px,1fr)_auto] sm:items-center">
+                      <span className="min-w-0">
+                        <span className="block font-medium">
+                          {orderItemIdentifierFieldLabel(item)}
+                        </span>
+                        <span className="block truncate text-xs text-slate-500">
+                          {itemLabel}
+                        </span>
                       </span>
-                      <span className="block truncate text-xs text-slate-500">
-                        {item.sku}
-                      </span>
-                    </span>
-                    <input
-                      ref={(node) => {
-                        identifierInputRefs.current[itemKey] = node;
-                      }}
-                      value={identifiers[itemKey] ?? ""}
-                      onChange={(event) =>
-                        setIdentifiers((current) => ({
-                          ...current,
-                          [itemKey]: event.target.value,
-                        }))
-                      }
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                        }
-                      }}
-                      placeholder="Scan or type serial / IMEI"
-                      autoComplete="off"
-                      className="min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                    />
-                    <button
-                      type="button"
-                      title="Focus field for barcode scanner"
-                      aria-label="Focus field for barcode scanner"
-                      onClick={() => armScanner(itemKey)}
-                      className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-600 transition hover:border-blue-400 hover:text-blue-700"
-                    >
-                      <ScanBarcode className="h-5 w-5" />
-                    </button>
-                  </label>
+                      <input
+                        ref={(node) => {
+                          identifierInputRefs.current[itemKey] = node;
+                        }}
+                        value={values.primary}
+                        onChange={(event) => {
+                          const raw = event.target.value;
+                          const next = orderItemExpectsSerialNumber(item)
+                            ? raw
+                            : sanitizeImeiInput(raw);
+                          setIdentifiers((current) => ({
+                            ...current,
+                            [itemKey]: {
+                              ...(current[itemKey] ?? {
+                                primary: "",
+                                secondary: "",
+                              }),
+                              primary: next,
+                            },
+                          }));
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                          }
+                        }}
+                        placeholder="Scan or type serial / IMEI"
+                        autoComplete="off"
+                        className="min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      />
+                      <button
+                        type="button"
+                        title="Focus field for barcode scanner"
+                        aria-label="Focus field for barcode scanner"
+                        onClick={() => armScanner(itemKey)}
+                        className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-600 transition hover:border-blue-400 hover:text-blue-700"
+                      >
+                        <ScanBarcode className="h-5 w-5" />
+                      </button>
+                    </label>
+                  </div>
                 );
               })}
             </div>

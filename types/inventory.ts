@@ -50,6 +50,14 @@ export interface InventoryMarket {
   currency_code?: string | null;
 }
 
+export interface InventoryMarketplaceOption {
+  slug: string;
+  name: string;
+  logo?: string | null;
+  account_name?: string | null;
+  markets: InventoryMarket[];
+}
+
 export interface InventoryResponse {
   success: boolean;
   data: {
@@ -60,6 +68,7 @@ export interface InventoryResponse {
       logo?: string | null;
       account_name?: string | null;
     };
+    available_marketplaces?: InventoryMarketplaceOption[];
     markets: InventoryMarket[];
     selected_market?: string | null;
     pagination: {
@@ -83,4 +92,6 @@ export interface InventoryInstance {
   gtin?: string;
   mpn?: string;
   sku?: string;
+  marketplace?: string;
+  marketplace_name?: string;
 }

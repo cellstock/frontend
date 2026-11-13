@@ -224,17 +224,26 @@ export function updateOrderAddress(
   });
 }
 
-export async function uploadOrderInvoice(
+async function postOrderInvoiceFile(
   orderId: number,
   file: File,
+  endpoint: "invoice" | "invoice/local",
 ): Promise<{ success: boolean; message: string }> {
   const body = new FormData();
   body.append("file", file);
-  const response = await apiFetch(`/api/orders/${orderId}/invoice`, {
-    method: "POST",
-    credentials: "include",
-    body,
-  });
+  let response: Response;
+  try {
+    response = await apiFetch(`/api/orders/${orderId}/${endpoint}`, {
+      method: "POST",
+      credentials: "include",
+      body,
+    });
+  } catch {
+    throw new OrdersApiError(
+      "Unable to connect to CelleXa. Please try again.",
+      0,
+    );
+  }
   const payload = (await response.json().catch(() => null)) as {
     success?: boolean;
     message?: string;
@@ -245,6 +254,20 @@ export async function uploadOrderInvoice(
       response.status,
     );
   return payload as { success: boolean; message: string };
+}
+
+export async function uploadOrderInvoice(
+  orderId: number,
+  file: File,
+): Promise<{ success: boolean; message: string }> {
+  return postOrderInvoiceFile(orderId, file, "invoice");
+}
+
+export async function storeOrderInvoiceLocal(
+  orderId: number,
+  file: File,
+): Promise<{ success: boolean; message: string }> {
+  return postOrderInvoiceFile(orderId, file, "invoice/local");
 }
 
 function appendTextFilter(
@@ -276,6 +299,8 @@ function createOrderQueryString(filters: OrderFilters): string {
   appendTextFilter(query, "marketplace", filters.marketplace);
   appendTextFilter(query, "status", filters.status);
   appendTextFilter(query, "country_code", filters.country_code);
+  appendTextFilter(query, "date_from", filters.date_from);
+  appendTextFilter(query, "date_to", filters.date_to);
 
   appendNumberFilter(query, "page", filters.page);
   appendNumberFilter(query, "per_page", filters.per_page);
