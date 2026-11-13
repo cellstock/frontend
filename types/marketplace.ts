@@ -61,12 +61,16 @@ export interface MarketplaceConnectionOptionsResponse {
   data: { markets: MarketplaceMarket[] };
 }
 
+export type RefurbedApiEnvironment = "sandbox" | "production";
+
 export interface MarketplaceConnection {
   id: number;
   account_name: string;
   external_account_id: string | null;
   status: MarketplaceConnectionStatus;
   status_label: string;
+  /** Refurbed: sandbox or production API host selection. */
+  environment?: RefurbedApiEnvironment | null;
   settings: MarketplaceSettings;
   last_tested_at: string | null;
   last_synced_at: string | null;
@@ -114,7 +118,7 @@ export interface MarketplaceCredentials {
   access_token?: string;
   platform?: "eu" | "na" | "ap";
   country_code?: string;
-  environment?: "preproduction" | "production";
+  environment?: "preproduction" | "production" | "sandbox";
   cluster?: "eu1" | "us1";
   language?: string;
 }
@@ -177,6 +181,8 @@ export interface MarketplaceActionResponse extends ApiSuccessResponse {
 
 export interface MarketplaceFormValues {
   account_name: string;
+  /** Refurbed API environment (sandbox vs production). */
+  environment?: RefurbedApiEnvironment;
   api_key?: string;
   api_secret?: string;
   /** Accept-Language locale code, e.g. "fr-fr". Used by Back Market. */

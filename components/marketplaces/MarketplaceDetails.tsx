@@ -138,9 +138,18 @@ export function MarketplaceDetails({
       return;
     }
 
+    const storedRefurbedEnvironment =
+      connection.environment === "sandbox" ? "sandbox" : "production";
+
+    const refurbedEnvironmentChanged =
+      marketplace.slug === "refurbed" &&
+      values.environment !== undefined &&
+      values.environment !== storedRefurbedEnvironment;
+
     const hasCredentialUpdates =
       Boolean(values.api_key) ||
-      Boolean(values.country_code);
+      Boolean(values.country_code) ||
+      refurbedEnvironmentChanged;
 
     const input: UpdateMarketplaceConnectionRequest = {
       account_name: values.account_name,
@@ -151,6 +160,9 @@ export function MarketplaceDetails({
               ...(values.api_key ? { api_key: values.api_key } : {}),
               ...(values.country_code
                 ? { country_code: values.country_code }
+                : {}),
+              ...(refurbedEnvironmentChanged && values.environment
+                ? { environment: values.environment }
                 : {}),
             },
           }
@@ -394,6 +406,11 @@ export function MarketplaceDetails({
                       marketplaceSlug={marketplace.slug}
                       capabilities={supportedSyncCapabilities}
                       initialAccountName={connection.account_name}
+                      initialRefurbedEnvironment={
+                        connection.environment === "sandbox"
+                          ? "sandbox"
+                          : "production"
+                      }
                       initialSettings={connection.settings}
                       onCancel={() => setIsEditing(false)}
                       onSubmit={handleUpdate}

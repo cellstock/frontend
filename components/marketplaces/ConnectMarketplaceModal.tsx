@@ -73,6 +73,9 @@ export function ConnectMarketplaceModal({
           ...(values.country_code
             ? { country_code: values.country_code }
             : {}),
+          ...(marketplace.slug === "refurbed" && values.environment
+            ? { environment: values.environment }
+            : {}),
         },
         settings: values.settings,
       });

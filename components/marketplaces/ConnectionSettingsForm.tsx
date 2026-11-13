@@ -20,6 +20,7 @@ import type {
   MarketplaceFormValues,
   MarketplaceSettings,
   MarketplaceMarketSetting,
+  RefurbedApiEnvironment,
   ValidationErrors,
 } from "@/types/marketplace";
 
@@ -28,6 +29,7 @@ interface ConnectionSettingsFormProps {
   marketplaceSlug: string;
   capabilities: MarketplaceCapability[];
   initialAccountName?: string;
+  initialRefurbedEnvironment?: RefurbedApiEnvironment;
   initialSettings?: Partial<MarketplaceSettings>;
   submitLabel?: string;
   onCancel?: () => void;
@@ -86,6 +88,7 @@ export function ConnectionSettingsForm({
   marketplaceSlug,
   capabilities,
   initialAccountName = "",
+  initialRefurbedEnvironment = "production",
   initialSettings = {},
   submitLabel,
   onCancel,
@@ -96,6 +99,8 @@ export function ConnectionSettingsForm({
 
   const isBackMarket = isBackMarketSlug(marketplaceSlug);
 
+  const [refurbedEnvironment, setRefurbedEnvironment] =
+    useState<RefurbedApiEnvironment>(initialRefurbedEnvironment);
   const [accountName, setAccountName] = useState(initialAccountName);
   const [apiKey, setApiKey] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
@@ -133,6 +138,9 @@ export function ConnectionSettingsForm({
       const response = await getMarketplaceConnectionOptions(
         marketplaceSlug,
         token || undefined,
+        marketplaceSlug === "refurbed"
+          ? { environment: refurbedEnvironment }
+          : undefined,
       );
 
       const previous = new Map(
@@ -290,6 +298,9 @@ export function ConnectionSettingsForm({
 
       await onSubmit({
         account_name: trimmedAccountName,
+        ...(marketplaceSlug === "refurbed"
+          ? { environment: refurbedEnvironment }
+          : {}),
         api_key: trimmedApiKey,
         ...(isBackMarket && firstSelectedLocale
           ? { country_code: firstSelectedLocale }
@@ -334,6 +345,38 @@ export function ConnectionSettingsForm({
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
           <span>{generalError}</span>
         </div>
+      )}
+
+      {marketplaceSlug === "refurbed" && (
+        <fieldset>
+          <legend className="mb-2 block text-sm font-semibold text-slate-700">
+            {t("API environment")}
+          </legend>
+          <div className="flex flex-wrap gap-4">
+            {(
+              [
+                { value: "sandbox", label: "Sandbox" },
+                { value: "production", label: "Production" },
+              ] as const
+            ).map((option) => (
+              <label
+                key={option.value}
+                className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-700"
+              >
+                <input
+                  type="radio"
+                  name={`${formId}-refurbed-environment`}
+                  value={option.value}
+                  checked={refurbedEnvironment === option.value}
+                  disabled={isSubmitting}
+                  onChange={() => setRefurbedEnvironment(option.value)}
+                  className="h-4 w-4 border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                {t(option.label)}
+              </label>
+            ))}
+          </div>
+        </fieldset>
       )}
 
       {/* Account name */}
