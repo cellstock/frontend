@@ -175,7 +175,18 @@ function createZipArchive(
     u16(0),
   ]);
 
-  return new Blob([concatBytes([...localParts, centralDirectory, endRecord])], {
+  const zipBytes = concatBytes([
+    ...localParts,
+    centralDirectory,
+    endRecord,
+  ]);
+  // Copy into a standalone ArrayBuffer so BlobPart typing accepts it (TS DOM libs).
+  const zipBuffer = zipBytes.buffer.slice(
+    zipBytes.byteOffset,
+    zipBytes.byteOffset + zipBytes.byteLength,
+  ) as ArrayBuffer;
+
+  return new Blob([zipBuffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
 }
